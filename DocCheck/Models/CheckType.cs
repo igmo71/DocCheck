@@ -17,5 +17,7 @@ namespace DocCheck.Models
 
 
         public bool IsActive { get; set; }
+
+        public List<DocumentCheck>? Checks { get; set; }
     }
 }

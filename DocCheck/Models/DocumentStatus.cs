@@ -4,6 +4,7 @@ namespace DocCheck.Models
 {
     public class DocumentStatus
     {
+        [Key]
         public Guid Id { get; set; }
 
 
@@ -16,5 +17,7 @@ namespace DocCheck.Models
 
 
         public bool IsActive { get; set; }
+
+        public List<Document>? Documents { get; set; }
     }
 }

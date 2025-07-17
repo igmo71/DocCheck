@@ -4,6 +4,7 @@ namespace DocCheck.Models
 {
     public class Document
     {
+        [Key]
         public Guid Id { get; set; }
 
 
@@ -22,5 +23,10 @@ namespace DocCheck.Models
         public DateTime CreatedAt { get; set; }
 
         public DateTime ScannedAt { get; set; }
+
+
+        public List<DocumentCheck>? Checks { get; set; }
+
+        public List<DocumentRejection>? Rejects { get; set; }
     }
 }
