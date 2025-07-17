@@ -1,0 +1,64 @@
+﻿@page "/documentchecks/create"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>DocumentCheck</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="DocumentCheck" OnValidSubmit="AddDocumentCheck" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="documentid" class="form-label">DocumentId:</label> 
+                <InputGuid id="documentid" @bind-Value="DocumentCheck.DocumentId" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheck.DocumentId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="checkedbyid" class="form-label">CheckedById:</label> 
+                <InputText id="checkedbyid" @bind-Value="DocumentCheck.CheckedById" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheck.CheckedById" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="checktypeid" class="form-label">CheckTypeId:</label> 
+                <InputGuid id="checktypeid" @bind-Value="DocumentCheck.CheckTypeId" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheck.CheckTypeId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="checkedat" class="form-label">CheckedAt:</label> 
+                <InputDate id="checkedat" @bind-Value="DocumentCheck.CheckedAt" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheck.CheckedAt" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="isvalid" class="form-label">IsValid:</label> 
+                <InputCheckbox id="isvalid" @bind-Value="DocumentCheck.IsValid" class="form-check-input" /> 
+                <ValidationMessage For="() => DocumentCheck.IsValid" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/documentchecks">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private DocumentCheck DocumentCheck { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddDocumentCheck()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.DocumentChecks.Add(DocumentCheck);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/documentchecks");
+    }
+}

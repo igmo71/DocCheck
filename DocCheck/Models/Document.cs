@@ -9,11 +9,11 @@ namespace DocCheck.Models
 
 
         [MaxLength(AppSettings.GUID_LENGTH)]
-        public required string Ref_Key { get; set; }
+        public string? Ref_Key { get; set; }
 
 
         [MaxLength(AppSettings.NAME_LENGTH)]
-        public required string Barcode { get; set; }
+        public string? Barcode { get; set; }
 
 
         public Guid StatusId { get; set; }

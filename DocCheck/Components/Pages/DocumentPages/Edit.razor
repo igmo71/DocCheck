@@ -1,0 +1,109 @@
+﻿@page "/documents/edit"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Document</h2>
+<hr />
+@if (Document is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Document" OnValidSubmit="UpdateDocument" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Document.Id" value="@Document.Id" />
+                <div class="mb-3">
+                    <label for="ref_key" class="form-label">Ref_Key:</label>
+                    <InputText id="ref_key" @bind-Value="Document.Ref_Key" class="form-control" />
+                    <ValidationMessage For="() => Document.Ref_Key" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="barcode" class="form-label">Barcode:</label>
+                    <InputText id="barcode" @bind-Value="Document.Barcode" class="form-control" />
+                    <ValidationMessage For="() => Document.Barcode" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="statusid" class="form-label">StatusId:</label>
+                    <InputGuid id="statusid" @bind-Value="Document.StatusId" class="form-control" />
+                    <ValidationMessage For="() => Document.StatusId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="createdat" class="form-label">CreatedAt:</label>
+                    <InputDate id="createdat" @bind-Value="Document.CreatedAt" class="form-control" />
+                    <ValidationMessage For="() => Document.CreatedAt" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="scannedat" class="form-label">ScannedAt:</label>
+                    <InputDate id="scannedat" @bind-Value="Document.ScannedAt" class="form-control" />
+                    <ValidationMessage For="() => Document.ScannedAt" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/documents">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Document? Document { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Document ??= await context.Documents.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Document is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateDocument()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Document!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!DocumentExists(Document!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/documents");
+    }
+
+    private bool DocumentExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Documents.Any(e => e.Id == id);
+    }
+}

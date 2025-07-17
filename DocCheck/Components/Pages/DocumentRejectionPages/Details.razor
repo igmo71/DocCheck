@@ -1,0 +1,52 @@
+﻿@page "/documentrejections/details"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>DocumentRejection</h2>
+    <hr />
+    @if (documentrejection is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">DocumentId</dt>
+            <dd class="col-sm-10">@documentrejection.DocumentId</dd>
+            <dt class="col-sm-2">RejectedById</dt>
+            <dd class="col-sm-10">@documentrejection.RejectedById</dd>
+            <dt class="col-sm-2">RejectionReasonId</dt>
+            <dd class="col-sm-10">@documentrejection.RejectionReasonId</dd>
+            <dt class="col-sm-2">RejectedAt</dt>
+            <dd class="col-sm-10">@documentrejection.RejectedAt</dd>
+        </dl>
+        <div>
+            <a href="@($"/documentrejections/edit?id={documentrejection.Id}")">Edit</a> |
+            <a href="@($"/documentrejections")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private DocumentRejection? documentrejection;
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        documentrejection = await context.DocumentRejections.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (documentrejection is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

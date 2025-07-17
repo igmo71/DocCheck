@@ -9,50 +9,35 @@
 <h3>Счет-фактура выданный</h3>
 
 <div class="table-container" tabindex="-1">
-    <QuickGrid Class="table table-hover table-striped"
-               ItemsProvider="@itemsProvider"
-               OverscanCount=20
-               Virtualize="true"
-               ItemKey="(x => x.Ref_Key)"
-               @ref="grid">
+    <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=20 Virtualize="true" ItemKey="(x => x.Ref_Key)" @ref="grid">
         <TemplateColumn Context="context">
             <a class="btn btn-outline-primary" href="@($"invoices/details?Ref_Key={context.Ref_Key}")" title="Детали">
                 <i class="bi bi-question"></i>
             </a>
         </TemplateColumn>
 
-        <PropertyColumn Title="Дата"
-                        Property="@(c => c.Date)"
-                        Sortable="true"
-                        InitialSortDirection="SortDirection.Descending"
-                        IsDefaultSortColumn="true">
+        <PropertyColumn Title="Дата" Property="@(c => c.Date)" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true">
             <ColumnOptions>
                 <div class="search-box">
-                    <input type="date"
+                    <input type="date" autofocus placeholder=" Дата..."
                            @bind="searchParams.Date"
                            @bind:event="oninput"
-                           @bind:after="() => grid.RefreshDataAsync()"
-                           autofocus
-                           placeholder=" Дата..." />
+                           @bind:after="() => grid.RefreshDataAsync()" />
                 </div>
             </ColumnOptions>
         </PropertyColumn>
 
-        <PropertyColumn Title="Номер"
-                        Property="@(c => c.Number)"
-                        Sortable="true"
-                        InitialSortDirection="SortDirection.Descending">
+        <PropertyColumn Title="Номер" Property="@(c => c.Number)" Sortable="true" InitialSortDirection="SortDirection.Descending">
             <ColumnOptions>
                 <div class="search-box">
-                    <input type="search"
-                           autofocus
+                    <input type="search" autofocus placeholder=" Номер..."
                            @bind="searchParams.Number"
                            @bind:event="oninput"
-                           @bind:after="() => grid.RefreshDataAsync()"
-                           placeholder=" Номер..." />
+                           @bind:after="() => grid.RefreshDataAsync()" />
                 </div>
             </ColumnOptions>
         </PropertyColumn>
+        <PropertyColumn Title="Ref_Key" Property="@(c => c.Ref_Key)"></PropertyColumn>
         <TemplateColumn>
             <i class="bi bi-check-circle" style="font-size: 2rem; color: forestgreen;"></i>
         </TemplateColumn>

@@ -1,0 +1,39 @@
+﻿@page "/checktypes"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using DocCheck.Models
+@using DocCheck.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="checktypes/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.CheckTypes">
+    <PropertyColumn Property="checktype => checktype.Name" />
+    <PropertyColumn Property="checktype => checktype.Description" />
+    <PropertyColumn Property="checktype => checktype.IsActive" />
+    <PropertyColumn Property="checktype => checktype.Id" />
+
+    <TemplateColumn Context="checktype">
+        <a href="@($"checktypes/edit?id={checktype.Id}")">Edit</a> |
+        <a href="@($"checktypes/details?id={checktype.Id}")">Details</a> |
+        <a href="@($"checktypes/delete?id={checktype.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

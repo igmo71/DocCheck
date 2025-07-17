@@ -1,0 +1,24 @@
+﻿@inherits InputBase<Guid>
+
+<input type="text"
+       @bind="CurrentValueAsString"
+       @bind:event="oninput"
+       class="@CssClass" />
+
+@code {
+    protected override bool TryParseValueFromString(string? value, out Guid result, out string errorMessage)
+    {
+        if (Guid.TryParse(value, out result))
+        {
+            errorMessage = "";
+            return true;
+        }
+
+        errorMessage = "Неверный формат GUID";
+        result = Guid.Empty;
+        return false;
+    }
+
+    protected override string FormatValueAsString(Guid value)
+        => value.ToString();
+}

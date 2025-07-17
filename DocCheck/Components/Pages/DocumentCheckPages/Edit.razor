@@ -1,0 +1,109 @@
+﻿@page "/documentchecks/edit"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>DocumentCheck</h2>
+<hr />
+@if (DocumentCheck is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="DocumentCheck" OnValidSubmit="UpdateDocumentCheck" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="DocumentCheck.Id" value="@DocumentCheck.Id" />
+                <div class="mb-3">
+                    <label for="documentid" class="form-label">DocumentId:</label>
+                    <InputGuid id="documentid" @bind-Value="DocumentCheck.DocumentId" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheck.DocumentId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="checkedbyid" class="form-label">CheckedById:</label>
+                    <InputText id="checkedbyid" @bind-Value="DocumentCheck.CheckedById" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheck.CheckedById" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="checktypeid" class="form-label">CheckTypeId:</label>
+                    <InputGuid id="checktypeid" @bind-Value="DocumentCheck.CheckTypeId" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheck.CheckTypeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="checkedat" class="form-label">CheckedAt:</label>
+                    <InputDate id="checkedat" @bind-Value="DocumentCheck.CheckedAt" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheck.CheckedAt" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="isvalid" class="form-label">IsValid:</label>
+                    <InputCheckbox id="isvalid" @bind-Value="DocumentCheck.IsValid" class="form-check-input" />
+                    <ValidationMessage For="() => DocumentCheck.IsValid" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/documentchecks">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private DocumentCheck? DocumentCheck { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        DocumentCheck ??= await context.DocumentChecks.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (DocumentCheck is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateDocumentCheck()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(DocumentCheck!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!DocumentCheckExists(DocumentCheck!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/documentchecks");
+    }
+
+    private bool DocumentCheckExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.DocumentChecks.Any(e => e.Id == id);
+    }
+}

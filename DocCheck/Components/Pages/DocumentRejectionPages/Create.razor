@@ -1,0 +1,59 @@
+﻿@page "/documentrejections/create"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>DocumentRejection</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="DocumentRejection" OnValidSubmit="AddDocumentRejection" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="documentid" class="form-label">DocumentId:</label> 
+                <InputGuid id="documentid" @bind-Value="DocumentRejection.DocumentId" class="form-control" /> 
+                <ValidationMessage For="() => DocumentRejection.DocumentId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="rejectedbyid" class="form-label">RejectedById:</label> 
+                <InputText id="rejectedbyid" @bind-Value="DocumentRejection.RejectedById" class="form-control" /> 
+                <ValidationMessage For="() => DocumentRejection.RejectedById" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="rejectionreasonid" class="form-label">RejectionReasonId:</label> 
+                <InputGuid id="rejectionreasonid" @bind-Value="DocumentRejection.RejectionReasonId" class="form-control" />
+                <ValidationMessage For="() => DocumentRejection.RejectionReasonId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="rejectedat" class="form-label">RejectedAt:</label> 
+                <InputDate id="rejectedat" @bind-Value="DocumentRejection.RejectedAt" class="form-control" /> 
+                <ValidationMessage For="() => DocumentRejection.RejectedAt" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/documentrejections">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private DocumentRejection DocumentRejection { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddDocumentRejection()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.DocumentRejections.Add(DocumentRejection);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/documentrejections");
+    }
+}

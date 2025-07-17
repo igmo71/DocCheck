@@ -1,0 +1,64 @@
+﻿@page "/documents/create"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Document</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Document" OnValidSubmit="AddDocument" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="ref_key" class="form-label">Ref_Key:</label> 
+                <InputText id="ref_key" @bind-Value="Document.Ref_Key" class="form-control" /> 
+                <ValidationMessage For="() => Document.Ref_Key" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="barcode" class="form-label">Barcode:</label> 
+                <InputText id="barcode" @bind-Value="Document.Barcode" class="form-control" /> 
+                <ValidationMessage For="() => Document.Barcode" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="statusid" class="form-label">StatusId:</label> 
+                <InputGuid id="statusid" @bind-Value="Document.StatusId" class="form-control" /> 
+                <ValidationMessage For="() => Document.StatusId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createdat" class="form-label">CreatedAt:</label> 
+                <InputDate id="createdat" @bind-Value="Document.CreatedAt" class="form-control" /> 
+                <ValidationMessage For="() => Document.CreatedAt" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="scannedat" class="form-label">ScannedAt:</label> 
+                <InputDate id="scannedat" @bind-Value="Document.ScannedAt" class="form-control" /> 
+                <ValidationMessage For="() => Document.ScannedAt" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/documents">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Document Document { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddDocument()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Documents.Add(Document);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/documents");
+    }
+}

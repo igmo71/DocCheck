@@ -1,6 +1,8 @@
 using DocCheck.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace DocCheck.Data
 {
@@ -15,6 +17,8 @@ namespace DocCheck.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
+
             builder.Entity<CheckType>().HasKey(e => e.Id);
 
             builder.Entity<Document>().HasKey(e => e.Id);

@@ -1,0 +1,54 @@
+﻿@page "/documentchecks/details"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>DocumentCheck</h2>
+    <hr />
+    @if (documentcheck is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">DocumentId</dt>
+            <dd class="col-sm-10">@documentcheck.DocumentId</dd>
+            <dt class="col-sm-2">CheckedById</dt>
+            <dd class="col-sm-10">@documentcheck.CheckedById</dd>
+            <dt class="col-sm-2">CheckTypeId</dt>
+            <dd class="col-sm-10">@documentcheck.CheckTypeId</dd>
+            <dt class="col-sm-2">CheckedAt</dt>
+            <dd class="col-sm-10">@documentcheck.CheckedAt</dd>
+            <dt class="col-sm-2">IsValid</dt>
+            <dd class="col-sm-10">@documentcheck.IsValid</dd>
+        </dl>
+        <div>
+            <a href="@($"/documentchecks/edit?id={documentcheck.Id}")">Edit</a> |
+            <a href="@($"/documentchecks")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private DocumentCheck? documentcheck;
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        documentcheck = await context.DocumentChecks.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (documentcheck is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
