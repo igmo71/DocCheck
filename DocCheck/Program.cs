@@ -2,6 +2,7 @@ using DocCheck.Components;
 using DocCheck.Components.Account;
 using DocCheck.Data;
 using DocCheck.OData;
+using DocCheck.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,8 @@ namespace DocCheck
                 httpClient.BaseAddress = new Uri(odataConfig.BaseAddress);
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authenticationString);
             });
+
+            builder.Services.AddScoped<DataSource>();
 
             var app = builder.Build();
 

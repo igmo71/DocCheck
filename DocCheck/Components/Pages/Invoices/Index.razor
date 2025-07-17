@@ -1,0 +1,128 @@
+﻿@page "/invoices"
+
+@using DocCheck.Models.OData
+@using DocCheck.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject DataSource DataSource
+
+<h3>Счет-фактура выданный</h3>
+
+<div class="table-container" tabindex="-1">
+    <QuickGrid Class="table table-hover table-striped"
+               ItemsProvider="@itemsProvider"
+               OverscanCount=20
+               Virtualize="true"
+               ItemKey="(x => x.Ref_Key)"
+               @ref="grid">
+        <TemplateColumn Context="context">
+            <a class="btn btn-outline-primary" href="@($"invoices/details?Ref_Key={context.Ref_Key}")" title="Детали">
+                <i class="bi bi-question"></i>
+            </a>
+        </TemplateColumn>
+
+        <PropertyColumn Title="Дата"
+                        Property="@(c => c.Date)"
+                        Sortable="true"
+                        InitialSortDirection="SortDirection.Descending"
+                        IsDefaultSortColumn="true">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="date"
+                           @bind="searchParams.Date"
+                           @bind:event="oninput"
+                           @bind:after="() => grid.RefreshDataAsync()"
+                           autofocus
+                           placeholder=" Дата..." />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+
+        <PropertyColumn Title="Номер"
+                        Property="@(c => c.Number)"
+                        Sortable="true"
+                        InitialSortDirection="SortDirection.Descending">
+            <ColumnOptions>
+                <div class="search-box">
+                    <input type="search"
+                           autofocus
+                           @bind="searchParams.Number"
+                           @bind:event="oninput"
+                           @bind:after="() => grid.RefreshDataAsync()"
+                           placeholder=" Номер..." />
+                </div>
+            </ColumnOptions>
+        </PropertyColumn>
+        <TemplateColumn>
+            <i class="bi bi-check-circle" style="font-size: 2rem; color: forestgreen;"></i>
+        </TemplateColumn>
+        <TemplateColumn>
+            <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: brown"></i>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+<div class="mt-3 h5">
+    @if (searchResultCount == totalCount)
+    {
+        <span>Всего @searchResultCount </span>
+    }
+    else
+    {
+        <span>Найдено @searchResultCount из @totalCount </span>
+    }
+    @if (searchParams.HasAnyValue)
+    {
+        <button class="btn btn-outline-secondary ms-2" @onclick=ClearFilter>Очистить поиск</button>
+    }
+</div>
+
+@code {
+    QuickGrid<Document_СчетФактураВыданный> grid = new();
+    GridItemsProvider<Document_СчетФактураВыданный>? itemsProvider;
+    int totalCount;
+    int searchResultCount;
+    SearchParams searchParams = new();
+
+    private Rootobject<Document_СчетФактураВыданный>? rootobject;
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            if (request.Count is null)
+            {
+                totalCount = await DataSource.GetTotalCountAsync<Document_СчетФактураВыданный>();
+
+                var result = new GridItemsProviderResult<Document_СчетФактураВыданный>
+                {
+                    Items = [],
+                    TotalItemCount = totalCount
+                };
+                return result;
+            }
+            else
+            {
+                var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, request);
+
+                var result = new GridItemsProviderResult<Document_СчетФактураВыданный>
+                {
+                    Items = rootobject?.Value ?? [],
+                    TotalItemCount = rootobject?.ODataCount ?? 0
+                };
+
+                if (result.TotalItemCount != searchResultCount && !request.CancellationToken.IsCancellationRequested)
+                {
+                    searchResultCount = result.TotalItemCount;
+                    StateHasChanged();
+                }
+                return result;
+            }
+        };
+    }
+    private void ClearFilter(MouseEventArgs args)
+    {
+        searchParams = new();
+        grid?.RefreshDataAsync();
+    }
+}
