@@ -1,12 +1,16 @@
 ﻿@page "/invoices"
 
+@using DocCheck.Common
 @using DocCheck.Models.OData
 @using DocCheck.Services
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 @inject DataSource DataSource
+@inject NavigationManager NavigationManager
 
 <h3>Счет-фактура выданный</h3>
+
+<ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
 
 <div class="table-container" tabindex="-1">
     <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=20 Virtualize="true" ItemKey="(x => x.Ref_Key)" @ref="grid">
@@ -69,6 +73,9 @@
     int searchResultCount;
     SearchParams searchParams = new();
 
+    private string? barcode;
+    private string? refKey;
+
     private Rootobject<Document_СчетФактураВыданный>? rootobject;
 
     protected override void OnInitialized()
@@ -109,5 +116,10 @@
     {
         searchParams = new();
         grid?.RefreshDataAsync();
+    }
+    private void ScannedBarcodeHandle(string barcode)
+    {
+        refKey = GuidConvert.FromNumStr(barcode);
+        NavigationManager?.NavigateTo($"invoices/details?Ref_Key={refKey}");
     }
 }
