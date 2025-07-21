@@ -5,6 +5,7 @@
         public string? Ref_Key { get; set; }
         public string? Number { get; set; }
         public DateTime Date { get; set; }
+        public Document_СчетФактураВыданный_ДокументыОснования[]? ДокументыОснования { get; set; }
 
         //public string? DataVersion { get; set; }
         //public bool DeletionMark { get; set; }
@@ -48,7 +49,6 @@
         //public string? Автор_Key { get; set; }
         //public bool НДССМежценовойРазницы { get; set; }
         //public string? СозданНаОсновании_Key { get; set; }
-        //public СчетФактураВыданный_ДокументыОснования[]? ДокументыОснования { get; set; }
         //public СчетФактураВыданный_ПлатежноРасчетныеДокументы[]? ПлатежноРасчетныеДокументы { get; set; }
         //public object[]? Товары { get; set; }
         //public object[]? Покупатели { get; set; }
@@ -58,16 +58,16 @@
         //public string? СчетФактураОснованиеnavigationLinkUrl { get; set; }
     }
 
-    //public class СчетФактураВыданный_ДокументыОснования
-    //{
-    //    public string? Ref_Key { get; set; }
-    //    public string? LineNumber { get; set; }
-    //    public string? ДокументОснование { get; set; }
-    //    public string? ДокументОснование_Type { get; set; }
-    //    public string? ХозяйственнаяОперация { get; set; }
-    //    public string? СчетФактураПолученныйОтПродавца_Key { get; set; }
-    //    public string? ПорядковыеНомераСтрок { get; set; }
-    //}
+    public class Document_СчетФактураВыданный_ДокументыОснования
+    {
+        public string? Ref_Key { get; set; }
+        public int LineNumber { get; set; }
+        public string? ДокументОснование { get; set; }
+        public string? ДокументОснование_Type { get; set; }
+        //public string? ХозяйственнаяОперация { get; set; }
+        //public string? СчетФактураПолученныйОтПродавца_Key { get; set; }
+        //public string? ПорядковыеНомераСтрок { get; set; }
+    }
 
     //public class СчетФактураВыданный_ПлатежноРасчетныеДокументы
     //{
@@ -76,4 +76,6 @@
     //    public string? НомерПлатежноРасчетногоДокумента { get; set; }
     //    public DateTime ДатаПлатежноРасчетногоДокумента { get; set; }
     //}
+
+
 }

@@ -1,0 +1,155 @@
+﻿@page "/invoices/details"
+
+@using DocCheck.Models.OData
+@using DocCheck.Services
+
+@inject DataSource DataSource
+
+<h3>Счет-фактура</h3>
+@if (document is null)
+{
+    <div class="spinner-grow" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+    </div>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-sm-2">Номер</dt>
+        <dd class="col-sm-10">@document?.Number</dd>
+        <dt class="col-sm-2">Дата</dt>
+        <dd class="col-sm-10">@document?.Date</dd>
+        <dt class="col-sm-2">Ref_Key</dt>
+        <dd class="col-sm-10">@document?.Ref_Key</dd>
+        <dt class="col-sm-2">ДокументыОснования</dt>
+        <dd class="col-sm-10">
+            @if (saleDocuments != null)
+            {
+
+                <div class="card">
+                    <div class="card-header">
+                        @nameof(Document_РеализацияТоваровУслуг)
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            @foreach (var doc in saleDocuments)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@($"saledocuments/details?Ref_Key={doc.Ref_Key}")"> @doc.Number</a></td>
+                                    <td>@doc.Date</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+            }
+            @if (correctionDocuments != null)
+            {
+                <div class="h5"> @nameof(Document_КорректировкаРеализации)</div>
+                <table class="table">
+                    @foreach (var doc in correctionDocuments)
+                    {
+                        <tr>
+                            <td>@doc.Number</td>
+                            <td>@doc.Date</td>
+                        </tr>
+                    }
+                </table>
+            }
+        </dd>
+    </dl>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public required string Ref_Key { get; set; }
+
+    private Document_СчетФактураВыданный? document;
+    private List<Document_РеализацияТоваровУслуг>? saleDocuments;
+    private List<Document_КорректировкаРеализации>? correctionDocuments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetDocumentAsync();
+
+        await GetBaseDocuments();
+    }
+
+    private async Task GetDocumentAsync()
+    {
+        var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(
+            new SearchParams
+            {
+                Ref_Key = Ref_Key,
+                Date = null,
+                Number = null,
+                Select = "Ref_Key,Number,Date,ДокументыОснования/ДокументОснование,ДокументыОснования/ДокументОснование_Type"
+            });
+
+        document = rootobject?.Value?.FirstOrDefault();
+    }
+
+    private async Task GetBaseDocuments()
+    {
+        if (document?.ДокументыОснования is not null)
+        {
+            foreach (var doc in document.ДокументыОснования)
+            {
+                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_РеализацияТоваровУслуг)))
+                {
+                    saleDocuments ??= [];
+
+                    if (await GetSaleDocument(doc.ДокументОснование) is Document_РеализацияТоваровУслуг baseDoc)
+                        saleDocuments.Add(baseDoc);
+                }
+                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_КорректировкаРеализации)))
+                {
+                    correctionDocuments ??= [];
+
+                    if (await GetCorrectionDocument(doc.ДокументОснование) is Document_КорректировкаРеализации baseDoc)
+                        correctionDocuments.Add(baseDoc);
+                }
+            }
+        }
+    }
+
+    private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? kefKey)
+    {
+        if (Ref_Key is null)
+            return null;
+
+        var rootobject = await DataSource.GetDataAsync<Document_РеализацияТоваровУслуг>(
+                           new SearchParams
+                           {
+                               Ref_Key = kefKey,
+                               Date = null,
+                               Number = null,
+                               Select = "Ref_Key,Number,Date"
+                           });
+
+        var baseDoc = rootobject?.Value?.FirstOrDefault();
+
+        return baseDoc;
+    }
+
+    private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? kefKey)
+    {
+        if (Ref_Key is null)
+            return null;
+
+        var rootobject = await DataSource.GetDataAsync<Document_КорректировкаРеализации>(
+                           new SearchParams
+                           {
+                               Ref_Key = kefKey,
+                               Date = null,
+                               Number = null,
+                               Select = "Ref_Key,Number,Date"
+                           });
+
+        var baseDoc = rootobject?.Value?.FirstOrDefault();
+
+        return baseDoc;
+    }
+}

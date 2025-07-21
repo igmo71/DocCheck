@@ -60,7 +60,7 @@
     {
         <span>Найдено @searchResultCount из @totalCount </span>
     }
-    @if (searchParams.HasAnyValue)
+    @if (searchParams.HasFilterValue)
     {
         <button class="btn btn-outline-secondary ms-2" @onclick=ClearFilter>Очистить поиск</button>
     }
@@ -71,7 +71,7 @@
     GridItemsProvider<Document_СчетФактураВыданный>? itemsProvider;
     int totalCount;
     int searchResultCount;
-    SearchParams searchParams = new();
+    SearchParams searchParams = new() { IsInlinecount = true };
 
     private string? barcode;
     private string? refKey;

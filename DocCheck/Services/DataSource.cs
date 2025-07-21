@@ -33,22 +33,31 @@ namespace DocCheck.Services
 
         private static string BuildQuery<TGridItem>(SearchParams searchParams)
         {
-            var query = $"{typeof(TGridItem).Name}?$format=json&$inlinecount=allpages&$select=Ref_Key,Number,Date";
+            var query = $"{typeof(TGridItem).Name}?$format=json";
 
-            if (searchParams.HasAnyValue)
+            if(searchParams.IsInlinecount) 
+                query += "&$inlinecount=allpages";
+
+            if (!string.IsNullOrEmpty(searchParams.Select))
+                query += $"&$select={searchParams.Select}";
+
+            if (!string.IsNullOrEmpty(searchParams.Expand))
+                query += $"&$expand={searchParams.Expand}";
+
+            if (searchParams.HasFilterValue)
             {
-                var searchList = new List<string>();
+                var filter = new List<string>();
 
                 if (searchParams.Ref_Key != null)
-                    searchList.Add($"Ref_Key eq guid'{searchParams.Ref_Key}'");
+                    filter.Add($"Ref_Key eq guid'{searchParams.Ref_Key}'");
 
                 if (searchParams.Number != null)
-                    searchList.Add($"substringof('{searchParams.Number}', Number)");
+                    filter.Add($"substringof('{searchParams.Number}', Number)");
 
                 if (searchParams.Date != null)
-                    searchList.Add($"Date ge datetime'{searchParams.Date:s}' and Date lt datetime'{((DateTime)searchParams.Date).AddDays(1):s}'");
+                    filter.Add($"Date ge datetime'{searchParams.Date:s}' and Date lt datetime'{((DateTime)searchParams.Date).AddDays(1):s}'");
 
-                query += "&$filter=" + string.Join(" and ", searchList);
+                query += "&$filter=" + string.Join(" and ", filter);
             }
 
             return query;
