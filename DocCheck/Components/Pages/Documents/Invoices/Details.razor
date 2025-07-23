@@ -27,9 +27,9 @@ else
             @if (saleDocuments != null)
             {
 
-                <div class="card">
+                <div class="card col-6">
                     <div class="card-header">
-                        @nameof(Document_РеализацияТоваровУслуг)
+                        @Document_РеализацияТоваровУслуг.Name
                     </div>
                     <div class="card-body">
                         <table class="table">
@@ -49,7 +49,7 @@ else
             }
             @if (correctionDocuments != null)
             {
-                <div class="h5"> @nameof(Document_КорректировкаРеализации)</div>
+                <div class="h5"> @Document_КорректировкаРеализации.Name</div>
                 <table class="table">
                     @foreach (var doc in correctionDocuments)
                     {

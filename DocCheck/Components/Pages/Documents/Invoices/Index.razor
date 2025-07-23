@@ -14,7 +14,9 @@
 <ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
 
 <div class="table-container" tabindex="-1">
-    <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=20 Virtualize="true" ItemKey="(x => x.Ref_Key)" @ref="grid">
+    <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=20 Virtualize="true" ItemKey="(x => x.Ref_Key)" 
+        @ref="grid">
+        
         <TemplateColumn Context="context">
             <a class="btn btn-outline-primary" href="@($"invoices/details?Ref_Key={context.Ref_Key}")" title="Детали">
                 <i class="bi bi-question"></i>
@@ -42,19 +44,26 @@
                 </div>
             </ColumnOptions>
         </PropertyColumn>
-        <TemplateColumn Title="Корректировочный" Context="context">
-            @if (context.Корректировочный)
-            {
-                <i class="bi bi-check" style="font-size: 2rem; color: darkblue"></i>
-            }
+
+        <TemplateColumn Title="Корректировочный" Context="context">            
+            <ChildContent>
+                @if (context.Корректировочный)
+                {
+                    <i class="bi bi-check" style="font-size: 2rem; color: darkblue"></i>
+                }
+            </ChildContent>
         </TemplateColumn>
+
         <PropertyColumn Title="Ref_Key" Property="@(c => c.Ref_Key)"></PropertyColumn>
+
         <TemplateColumn>
             <i class="bi bi-check-circle" style="font-size: 2rem; color: forestgreen;"></i>
         </TemplateColumn>
+
         <TemplateColumn>
             <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: brown"></i>
         </TemplateColumn>
+
     </QuickGrid>
 </div>
 
