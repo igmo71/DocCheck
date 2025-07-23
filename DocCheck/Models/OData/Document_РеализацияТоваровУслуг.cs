@@ -1,4 +1,6 @@
-﻿namespace DocCheck.Models.OData
+﻿using DocCheck.OData;
+
+namespace DocCheck.Models.OData
 {
     public class Document_РеализацияТоваровУслуг
     {
@@ -6,6 +8,18 @@
         public string? Number { get; set; }
         public DateTime Date { get; set; }
         public Document_РеализацияТоваровУслуг_Товары[]? Товары { get; set; }
+        public string? Автор_Key { get; set; }
+        public Catalog_Пользователи? Автор { get; set; }
+        public string? Менеджер_Key { get; set; }
+        public Catalog_Пользователи? Менеджер { get; set; }
+        public string? Контрагент_Key { get; set; }
+        public Catalog_Контрагенты? Контрагент { get; set; }
+
+        public static ODataParams ODataParams => new()
+        {
+            Expand = "Менеджер,Автор,Контрагент",
+            Select = "Ref_Key,Number,Date,Менеджер/Description,Автор/Description,Контрагент/Description"
+        };
 
         //public string DataVersion { get; set; }
         //public bool DeletionMark { get; set; }
@@ -26,8 +40,6 @@
         //public string ЗаказКлиента { get; set; }
         //public string ЗаказКлиента_Type { get; set; }
         //public string Организация_Key { get; set; }
-        //public string Контрагент_Key { get; set; }
-        //public string Менеджер_Key { get; set; }
         //public string НалогообложениеНДС { get; set; }
         //public float СуммаДокумента { get; set; }
         //public string Партнер_Key { get; set; }
@@ -51,7 +63,6 @@
         //public string Договор_Key { get; set; }
         //public string Основание { get; set; }
         //public string Статус { get; set; }
-        //public string Автор_Key { get; set; }
         //public string СпособДоставки { get; set; }
         //public string ЗонаДоставки_Key { get; set; }
         //public string АдресДоставкиЗначенияПолей { get; set; }
@@ -130,13 +141,18 @@
 
     public class Document_РеализацияТоваровУслуг_Товары
     {
-        public string? Номенклатура_Key { get; set; }
+        public int LineNumber { get; set; }
         public int Количество { get; set; }
-
+        public string? Номенклатура_Key { get; set; }
         public Catalog_Номенклатура? Номенклатура { get; set; }
 
+        public static ODataParams ODataParams => new ODataParams
+        {
+            Expand = "Номенклатура",
+            Select = "Номенклатура/Description,Номенклатура_Key,Количество"
+        };
+
         //public string Ref_Key { get; set; }
-        //public string LineNumber { get; set; }
         //public string Характеристика_Key { get; set; }
         //public string Назначение_Key { get; set; }
         //public string Упаковка_Key { get; set; }
@@ -230,6 +246,4 @@
     //    public string ОбъектРасчетов_Key { get; set; }
     //    public string ВариантОтсчета { get; set; }
     //}
-
-
 }

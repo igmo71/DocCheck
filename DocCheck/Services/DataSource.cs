@@ -7,18 +7,18 @@ namespace DocCheck.Services
     public class DataSource(ODataClient oDataClient)
     {
 
-        public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams)
+        public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams, ODataParams oDataParams)
         {
-            string query = BuildQuery<TGridItem>(searchParams);
+            string query = BuildQuery<TGridItem>(searchParams, oDataParams);
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<TGridItem>>(query);
 
             return rootobject;
         }
 
-        public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams, GridItemsProviderRequest<TGridItem> request)
+        public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams, ODataParams oDataParams, GridItemsProviderRequest<TGridItem> request)
         {
-            string query = BuildQuery<TGridItem>(searchParams, request);
+            string query = BuildQuery<TGridItem>(searchParams, oDataParams, request);
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<TGridItem>>(query);
 
@@ -31,18 +31,18 @@ namespace DocCheck.Services
             return result;
         }
 
-        private static string BuildQuery<TGridItem>(SearchParams searchParams)
+        private static string BuildQuery<TGridItem>(SearchParams searchParams, ODataParams oDataParams)
         {
             var query = $"{typeof(TGridItem).Name}?$format=json";
 
-            if(searchParams.IsInlinecount) 
-                query += "&$inlinecount=allpages";
+            if(!string.IsNullOrEmpty(oDataParams.Inlinecount)) 
+                query += $"&$inlinecount={oDataParams.Inlinecount}";
 
-            if (!string.IsNullOrEmpty(searchParams.Select))
-                query += $"&$select={searchParams.Select}";
+            if (!string.IsNullOrEmpty(oDataParams.Select))
+                query += $"&$select={oDataParams.Select}";
 
-            if (!string.IsNullOrEmpty(searchParams.Expand))
-                query += $"&$expand={searchParams.Expand}";
+            if (!string.IsNullOrEmpty(oDataParams.Expand))
+                query += $"&$expand={oDataParams.Expand}";
 
             if (searchParams.HasFilterValue)
             {
@@ -63,9 +63,9 @@ namespace DocCheck.Services
             return query;
         }
 
-        private static string BuildQuery<TGridItem>(SearchParams searchParams, GridItemsProviderRequest<TGridItem> request)
+        private static string BuildQuery<TGridItem>(SearchParams searchParams, ODataParams oDataParams, GridItemsProviderRequest<TGridItem> request)
         {
-            var query = BuildQuery<TGridItem>(searchParams) + $"&$skip={request.StartIndex}&$top={request.Count}";
+            var query = BuildQuery<TGridItem>(searchParams, oDataParams) + $"&$skip={request.StartIndex}&$top={request.Count}";
 
             if (request.SortByColumn != null)
             {

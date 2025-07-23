@@ -1,6 +1,7 @@
 ﻿@page "/invoices/details"
 
 @using DocCheck.Models.OData
+@using DocCheck.OData
 @using DocCheck.Services
 
 @inject DataSource DataSource
@@ -36,7 +37,8 @@ else
                             {
                                 <tr>
                                     <td>
-                                        <a href="@($"saledocuments/details?Ref_Key={doc.Ref_Key}")"> @doc.Number</a></td>
+                                        <a href="@($"saledocuments/details?Ref_Key={doc.Ref_Key}")"> @doc.Number</a>
+                                    </td>
                                     <td>@doc.Date</td>
                                 </tr>
                             }
@@ -69,9 +71,13 @@ else
     private Document_СчетФактураВыданный? document;
     private List<Document_РеализацияТоваровУслуг>? saleDocuments;
     private List<Document_КорректировкаРеализации>? correctionDocuments;
+    private SearchParams searchParams = new();
+    private ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
 
     protected override async Task OnInitializedAsync()
     {
+        searchParams.Ref_Key = Ref_Key;
+
         await GetDocumentAsync();
 
         await GetBaseDocuments();
@@ -79,14 +85,7 @@ else
 
     private async Task GetDocumentAsync()
     {
-        var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(
-            new SearchParams
-            {
-                Ref_Key = Ref_Key,
-                Date = null,
-                Number = null,
-                Select = "Ref_Key,Number,Date,ДокументыОснования/ДокументОснование,ДокументыОснования/ДокументОснование_Type"
-            });
+        var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams);
 
         document = rootobject?.Value?.FirstOrDefault();
     }
@@ -117,17 +116,8 @@ else
 
     private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? kefKey)
     {
-        if (Ref_Key is null)
-            return null;
-
-        var rootobject = await DataSource.GetDataAsync<Document_РеализацияТоваровУслуг>(
-                           new SearchParams
-                           {
-                               Ref_Key = kefKey,
-                               Date = null,
-                               Number = null,
-                               Select = "Ref_Key,Number,Date"
-                           });
+        var rootobject = await DataSource
+            .GetDataAsync<Document_РеализацияТоваровУслуг>(new SearchParams { Ref_Key = kefKey }, Document_РеализацияТоваровУслуг.ODataParams);
 
         var baseDoc = rootobject?.Value?.FirstOrDefault();
 
@@ -136,17 +126,8 @@ else
 
     private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? kefKey)
     {
-        if (Ref_Key is null)
-            return null;
-
-        var rootobject = await DataSource.GetDataAsync<Document_КорректировкаРеализации>(
-                           new SearchParams
-                           {
-                               Ref_Key = kefKey,
-                               Date = null,
-                               Number = null,
-                               Select = "Ref_Key,Number,Date"
-                           });
+        var rootobject = await DataSource
+            .GetDataAsync<Document_КорректировкаРеализации>(new SearchParams { Ref_Key = kefKey }, Document_КорректировкаРеализации.ODataParams);
 
         var baseDoc = rootobject?.Value?.FirstOrDefault();
 

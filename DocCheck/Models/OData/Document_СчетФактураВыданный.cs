@@ -1,11 +1,20 @@
-﻿namespace DocCheck.Models.OData
+﻿using DocCheck.OData;
+
+namespace DocCheck.Models.OData
 {
     public class Document_СчетФактураВыданный
     {
         public string? Ref_Key { get; set; }
         public string? Number { get; set; }
         public DateTime Date { get; set; }
+        public bool Корректировочный { get; set; }
         public Document_СчетФактураВыданный_ДокументыОснования[]? ДокументыОснования { get; set; }
+
+        public static ODataParams ODataParams => new()
+        {
+            Select = "Ref_Key,Number,Date,Корректировочный,ДокументыОснования/ДокументОснование,ДокументыОснования/ДокументОснование_Type",
+            Inlinecount = "allpages"
+        };
 
         //public string? DataVersion { get; set; }
         //public bool DeletionMark { get; set; }
@@ -19,7 +28,6 @@
         //public string? СтрокаПлатежноРасчетныеДокументы { get; set; }
         //public bool Исправление { get; set; }
         //public string? НомерИсправления { get; set; }
-        //public bool Корректировочный { get; set; }
         //public string? Валюта_Key { get; set; }
         //public bool ВыставленВЭлектронномВиде { get; set; }
         //public DateTime ДатаВыставления { get; set; }

@@ -2,6 +2,7 @@
 
 @using DocCheck.Common
 @using DocCheck.Models.OData
+@using DocCheck.OData
 @using DocCheck.Services
 @using Microsoft.AspNetCore.Components.QuickGrid
 
@@ -41,6 +42,12 @@
                 </div>
             </ColumnOptions>
         </PropertyColumn>
+        <TemplateColumn Title="Корректировочный" Context="context">
+            @if (context.Корректировочный)
+            {
+                <i class="bi bi-check" style="font-size: 2rem; color: darkblue"></i>
+            }
+        </TemplateColumn>
         <PropertyColumn Title="Ref_Key" Property="@(c => c.Ref_Key)"></PropertyColumn>
         <TemplateColumn>
             <i class="bi bi-check-circle" style="font-size: 2rem; color: forestgreen;"></i>
@@ -71,7 +78,8 @@
     GridItemsProvider<Document_СчетФактураВыданный>? itemsProvider;
     int totalCount;
     int searchResultCount;
-    SearchParams searchParams = new() { IsInlinecount = true };
+    SearchParams searchParams = new();
+    ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
 
     private string? barcode;
     private string? refKey;
@@ -95,7 +103,7 @@
             }
             else
             {
-                var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, request);
+                var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams, request);
 
                 var result = new GridItemsProviderResult<Document_СчетФактураВыданный>
                 {
@@ -112,11 +120,13 @@
             }
         };
     }
+
     private void ClearFilter(MouseEventArgs args)
     {
         searchParams = new();
         grid?.RefreshDataAsync();
     }
+
     private void ScannedBarcodeHandle(string barcode)
     {
         refKey = GuidConvert.FromNumStr(barcode);
