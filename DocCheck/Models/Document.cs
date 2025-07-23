@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DocCheck.Models.OData;
+using System.ComponentModel.DataAnnotations;
 
 namespace DocCheck.Models
 {
@@ -9,7 +10,9 @@ namespace DocCheck.Models
 
 
         [MaxLength(AppSettings.GUID_LENGTH)]
-        public string? Ref_Key { get; set; }
+        public string? DocumentRefKey { get; set; } // Счет-фактура выданный Ref_Key
+
+        public Document_СчетФактураВыданный? DocumentRef { get; set; } // Счет-фактура выданный 
 
 
         [MaxLength(AppSettings.NAME_LENGTH)]

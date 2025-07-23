@@ -14,10 +14,10 @@
     <a href="documents/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Documents">
-    <PropertyColumn Property="document => document.Ref_Key" />
+<QuickGrid Class="table" Items="documents">
+    <PropertyColumn Property="document => document.DocumentRefKey" />
     <PropertyColumn Property="document => document.Barcode" />
-    <PropertyColumn Property="document => document.StatusId" />
+    <PropertyColumn Title="Статус" Property="document => document.Status.Description ?? string.Empty" />
     <PropertyColumn Property="document => document.CreatedAt" />
     <PropertyColumn Property="document => document.ScannedAt" />
     <PropertyColumn Property="document => document.Id" />
@@ -31,10 +31,14 @@
 
 @code {
     private ApplicationDbContext context = default!;
+    private IQueryable<Document>? documents;
 
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+        documents = context.Documents
+            .Include(e => e.Status)
+            .AsQueryable<Document>();
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
