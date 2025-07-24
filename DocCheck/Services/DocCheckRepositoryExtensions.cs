@@ -1,10 +1,11 @@
-﻿using DocCheck.Models;
+﻿using DocCheck.Common;
 
 namespace DocCheck.Services
 {
-    public static class RepositoryExtensions
+    public static class DocCheckRepositoryExtensions
     {
-        public static IQueryable<DocumentCheck> HandleFilterQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
+        public static IQueryable<TEntity> HandleFilterQuery<TEntity>(this IQueryable<TEntity> query, SearchParams searchParams)
+            where TEntity : class, IHasDocument
         {
             if (searchParams.RefKey is not null)
                 query = query.Where(e => e.RefKey == searchParams.RefKey);
@@ -21,7 +22,8 @@ namespace DocCheck.Services
             return query;
         }
 
-        public static IQueryable<DocumentCheck> HandleQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
+        public static IQueryable<TEntity> HandleQuery<TEntity>(this IQueryable<TEntity> query, SearchParams searchParams)
+            where TEntity : class, IHasDocument
         {
             query = query.HandleFilterQuery(searchParams);
 

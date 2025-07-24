@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DocCheck.Services
 {
     public class Repository<TEntity>(ApplicationDbContext dbContext) 
-        where TEntity : class, IHasDate, IHasNumber, IHasRefKey
+        where TEntity : class , IHasId, IHasDocument
     {
         public async Task<TEntity[]> GetValuesAsync(SearchParams searchParams)
         {
@@ -25,6 +25,16 @@ namespace DocCheck.Services
                 .AsNoTracking()
                 .HandleFilterQuery(searchParams)
                 .CountAsync();
+
+            return result;
+        }
+
+        public async Task<TEntity?> GetValueAsync(Guid id)
+        {
+            var result = await dbContext
+                .Set<TEntity>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             return result;
         }

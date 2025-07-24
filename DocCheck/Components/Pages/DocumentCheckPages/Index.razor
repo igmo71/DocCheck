@@ -1,13 +1,11 @@
 ﻿@page "/documentchecks"
 
 @using DocCheck.Common
-@using DocCheck.Services
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using DocCheck.Models
-@using DocCheck.Data
+@using DocCheck.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
 
-@inject Repository<DocumentCheck> Repository
+@inject DocCheckRepository Repository
 @inject NavigationManager NavigationManager
 
 <PageTitle>Index</PageTitle>
@@ -25,9 +23,9 @@
         <div class="col">
             <div class="input-group mb-2">
                 <span class="input-group-text">№</span>
-                <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер документа..." />
+                <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер УПД..." />
             </div>
-        </div>        
+        </div>
         <div class="col">
             <div class="input-group mb-2">
                 <span class="input-group-text">Дата с</span>
@@ -37,7 +35,7 @@
         <div class="col">
             <div class="input-group mb-2">
                 <span class="input-group-text">Дата по</span>
-                <InputDate class="form-control" @bind-Value="SearchParams.DateTo"/>
+                <InputDate class="form-control" @bind-Value="SearchParams.DateTo" />
             </div>
         </div>
         <div class="col">
@@ -50,8 +48,8 @@
 </EditForm>
 
 <QuickGrid Class="table" ItemsProvider="itemsProvider" @ref="docCheckGrid">
-    <PropertyColumn Property="dc => dc.CreatedAt" />
-    <PropertyColumn Property="dc => dc.UpdatedAt" />
+    <PropertyColumn Title="Номер" Property="dc => dc.Number" />
+    <PropertyColumn Title="Дата" Property="dc => dc.Date" />
     <PropertyColumn Title="Статус" Property="dc => dc.Status == null ? string.Empty : dc.Status.GetDescription()" />
     <PropertyColumn Title="Позиция" Property="dc => dc.Position == null ? string.Empty : dc.Position.GetDescription()" />
     <PropertyColumn Property="dc => dc.UserId" />
@@ -70,7 +68,6 @@
 
     private QuickGrid<DocumentCheck>? docCheckGrid;
 
-    private ApplicationDbContext context = default!;
     GridItemsProvider<DocumentCheck>? itemsProvider;
 
     protected override void OnInitialized()
@@ -83,7 +80,7 @@
         SearchParams.Skip = request.StartIndex;
         SearchParams.Take = request.Count;
 
-        var items = await Repository.GetValuesAsync(SearchParams);
+        var items = await Repository.GetItemsAsync(SearchParams);
         var totalItemsCount = await Repository.GetCountAsync(SearchParams);
 
         var result = GridItemsProviderResult.From(items, totalItemsCount);
@@ -91,14 +88,8 @@
         return result;
     }
 
-    private void ScannedBarcodeHandle(string barcode)
-    {
-        var id = GuidConvert.FromNumStr(barcode);
-        NavigationManager?.NavigateTo($"documentchecks/details?id={id}");
-    }
-
     private async Task SearchDocumentCheck(EditContext args)
-    {               
+    {
         if (docCheckGrid is not null)
             await docCheckGrid.RefreshDataAsync();
     }
@@ -109,5 +100,17 @@
 
         if (docCheckGrid is not null)
             await docCheckGrid.RefreshDataAsync();
+    }
+
+    private async Task ScannedBarcodeHandle(string barcode)
+    {
+        var refKey = GuidConvert.FromNumStr(barcode);
+
+        SearchParams = new() { RefKey = refKey };
+
+        if (await Repository.ExistsAsync(refKey))
+            NavigationManager?.NavigateTo($"documentchecks/details?RefKey={refKey}");
+        else
+            NavigationManager?.NavigateTo($"documentchecks/create?RefKey={refKey}");
     }
 }

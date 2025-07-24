@@ -1,7 +1,12 @@
 ﻿@page "/documentchecks/details"
-@using Microsoft.EntityFrameworkCore
+
 @using DocCheck.Models
-@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@using DocCheck.Models.OData
+@using DocCheck.OData
+@using DocCheck.Services
+
+@inject DocCheckRepository Repository
+@inject DataSource DataSource
 @inject NavigationManager NavigationManager
 
 <PageTitle>Details</PageTitle>
@@ -17,18 +22,55 @@
     }
     else {
         <dl class="row">
-            <dt class="col-sm-2">CreatedAt</dt>
+            <dt class="col-sm-2">Создан</dt>
             <dd class="col-sm-10">@documentcheck.CreatedAt</dd>
-            <dt class="col-sm-2">UpdatedAt</dt>
+            <dt class="col-sm-2">Изменен</dt>
             <dd class="col-sm-10">@documentcheck.UpdatedAt</dd>
-            <dt class="col-sm-2">Status</dt>
+            <dt class="col-sm-2">Статус</dt>
             <dd class="col-sm-10">@documentcheck.Status</dd>
-            <dt class="col-sm-2">Handler</dt>
+            <dt class="col-sm-2">Позиция</dt>
             <dd class="col-sm-10">@documentcheck.Position</dd>
             <dt class="col-sm-2">UserId</dt>
             <dd class="col-sm-10">@documentcheck.UserId</dd>
-            <dt class="col-sm-2">DocumentRefKey</dt>
+            <dt class="col-sm-2">RefKey</dt>
             <dd class="col-sm-10">@documentcheck.RefKey</dd>
+            <dt class="col-sm-2">ДокументыОснования</dt>
+            <dd class="col-sm-10">
+                @if (saleDocuments != null)
+                {
+                    <div class="card col-6">
+                        <div class="card-header">
+                            @Document_РеализацияТоваровУслуг.Name
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                @foreach (var doc in saleDocuments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@($"saledocuments/details?Ref_Key={doc.Ref_Key}")"> @doc.Number</a>
+                                        </td>
+                                        <td>@doc.Date</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                }
+                @if (correctionDocuments != null)
+                {
+                    <div class="h5"> @Document_КорректировкаРеализации.Name</div>
+                    <table class="table">
+                        @foreach (var doc in correctionDocuments)
+                        {
+                            <tr>
+                                <td>@doc.Number</td>
+                                <td>@doc.Date</td>
+                            </tr>
+                        }
+                    </table>
+                }
+            </dd>
         </dl>
         <div>
             <a href="@($"/documentchecks/edit?id={documentcheck.Id}")">Edit</a> |
@@ -38,19 +80,87 @@
 </div>
 
 @code {
-    private DocumentCheck? documentcheck;
-
     [SupplyParameterFromQuery]
     private Guid Id { get; set; }
 
+    private DocumentCheck? documentcheck;
+
+    private Document_СчетФактураВыданный? invoice;
+    private SearchParams searchParams = new();
+    private ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
+
+    private List<Document_РеализацияТоваровУслуг>? saleDocuments;
+    private List<Document_КорректировкаРеализации>? correctionDocuments;
+
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        documentcheck = await context.DocumentCheck.FirstOrDefaultAsync(m => m.Id == Id);
+        await GetDocumentCheck();
+
+        await GetInvoice();
+
+        await GetBaseDocuments();
+    }
+
+    private async Task GetDocumentCheck()
+    {
+        documentcheck = await Repository.GetItemAsync(Id);
 
         if (documentcheck is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
+    }
+
+    private async Task GetInvoice()
+    {
+        searchParams.RefKey = documentcheck?.RefKey;
+
+        var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams);
+
+        invoice = rootobject?.Value?.FirstOrDefault();
+    }
+
+    private async Task GetBaseDocuments()
+    {
+        if (invoice?.ДокументыОснования is not null)
+        {
+            foreach (var doc in invoice.ДокументыОснования)
+            {
+                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_РеализацияТоваровУслуг)))
+                {
+                    saleDocuments ??= [];
+
+                    if (await GetSaleDocument(doc.ДокументОснование) is Document_РеализацияТоваровУслуг baseDoc)
+                        saleDocuments.Add(baseDoc);
+                }
+                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_КорректировкаРеализации)))
+                {
+                    correctionDocuments ??= [];
+
+                    if (await GetCorrectionDocument(doc.ДокументОснование) is Document_КорректировкаРеализации baseDoc)
+                        correctionDocuments.Add(baseDoc);
+                }
+            }
+        }
+    }
+
+    private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? refKey)
+    {
+        var rootobject = await DataSource
+            .GetDataAsync<Document_РеализацияТоваровУслуг>(new SearchParams { RefKey = refKey }, Document_РеализацияТоваровУслуг.ODataParams);
+
+        var baseDoc = rootobject?.Value?.FirstOrDefault();
+
+        return baseDoc;
+    }
+
+    private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? refKey)
+    {
+        var rootobject = await DataSource
+            .GetDataAsync<Document_КорректировкаРеализации>(new SearchParams { RefKey = refKey }, Document_КорректировкаРеализации.ODataParams);
+
+        var baseDoc = rootobject?.Value?.FirstOrDefault();
+
+        return baseDoc;
     }
 }

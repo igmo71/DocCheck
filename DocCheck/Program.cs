@@ -57,6 +57,7 @@ namespace DocCheck
             });
 
             builder.Services.AddScoped<DataSource>();
+            builder.Services.AddScoped<DocCheckRepository>();
             builder.Services.AddScoped(typeof(Repository<>));
 
             var app = builder.Build();

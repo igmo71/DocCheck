@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace DocCheck.Models
 {
-    public class DocumentCheck : IHasDate, IHasNumber, IHasRefKey
+    public class DocumentCheck : IHasId, IHasDocument
     {
         [Key]
         public Guid Id { get; set; }

@@ -1,7 +1,11 @@
 ﻿@page "/documentchecks/create"
+
+@using DocCheck.Services
 @using Microsoft.EntityFrameworkCore
 @using DocCheck.Models
-@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+
+@inject DocCheckRepository Repository
+@inject DataSource DataSource
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
@@ -26,7 +30,7 @@
                 <ValidationMessage For="() => DocumentCheck.UpdatedAt" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="status" class="form-label">Status:</label>
+                <label for="status" class="form-label">Статус:</label>
                 <InputSelect id="status" @bind-Value="DocumentCheck.Status" class="form-control">
                     <option value="">
                         Выберите статус...
@@ -39,10 +43,10 @@
                 <ValidationMessage For="() => DocumentCheck.Status" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="handler" class="form-label">Handler:</label>
+                <label for="handler" class="form-label">Позиция:</label>
                 <InputSelect id="handler" @bind-Value="DocumentCheck.Position" class="form-control">
                     <option value="">
-                        Выберите обработчика...
+                        Выберите позицию...
                     </option>
                     @foreach (var item in Enum.GetValues<Position>())
                     {
@@ -56,12 +60,30 @@
                 <InputText id="userid" @bind-Value="DocumentCheck.UserId" class="form-control" />
                 <ValidationMessage For="() => DocumentCheck.UserId" class="text-danger" />
             </div>
-            <div class="mb-3">
-                <label for="documentrefkey" class="form-label">DocumentRefKey:</label>
-                <InputText id="documentrefkey" @bind-Value="DocumentCheck.RefKey" class="form-control" />
-                <ValidationMessage For="() => DocumentCheck.RefKey" class="text-danger" />
+            <div class="card">
+                <div class="card-header">
+                    <span>Счет-фактура</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="documentrefkey" class="form-label">RefKey:</label>
+                        <InputText id="documentrefkey" @bind-Value="DocumentCheck.RefKey" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.RefKey" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="documentnumber" class="form-label">Number:</label>
+                        <InputText id="documentnumber" @bind-Value="DocumentCheck.Number" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.Number" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="documentdate" class="form-label">Date:</label>
+                        <InputDate id="documentdate" @bind-Value="DocumentCheck.Date" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.Date" class="text-danger" />
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            
+            <button type="submit" class="btn btn-primary mt-3">Create</button>
         </EditForm>
     </div>
 </div>
@@ -71,15 +93,21 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    private string? RefKey { get; set; }
+
     [SupplyParameterFromForm]
     private DocumentCheck DocumentCheck { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task AddDocumentCheck()
+    protected override Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.DocumentCheck.Add(DocumentCheck);
-        await context.SaveChangesAsync();
+        return base.OnInitializedAsync();
+    }
+
+    private async Task AddDocumentCheck()
+    {        
+        await Repository.CreateAsync(DocumentCheck);
+
         NavigationManager.NavigateTo("/documentchecks");
     }
 }
