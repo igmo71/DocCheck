@@ -72,6 +72,7 @@ namespace DocCheck.Models.OData
         public int LineNumber { get; set; }
         public string? ДокументОснование { get; set; }
         public string? ДокументОснование_Type { get; set; }
+
         //public string? ХозяйственнаяОперация { get; set; }
         //public string? СчетФактураПолученныйОтПродавца_Key { get; set; }
         //public string? ПорядковыеНомераСтрок { get; set; }

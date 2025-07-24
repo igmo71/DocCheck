@@ -144,11 +144,11 @@ namespace DocCheck.Models.OData
     public class Document_РеализацияТоваровУслуг_Товары
     {
         public int LineNumber { get; set; }
-        public int Количество { get; set; }
+        public double Количество { get; set; }
         public string? Номенклатура_Key { get; set; }
         public Catalog_Номенклатура? Номенклатура { get; set; }
 
-        public static ODataParams ODataParams => new ODataParams
+        public static ODataParams ODataParams => new()
         {
             Expand = "Номенклатура",
             Select = "Номенклатура/Description,Номенклатура_Key,Количество"

@@ -1,5 +1,9 @@
 ﻿using DocCheck.Data;
+using DocCheck.Models.OData;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DocCheck.Models
 {
@@ -8,21 +12,30 @@ namespace DocCheck.Models
         [Key]
         public Guid Id { get; set; }
 
+        public DateTime CreatedAt { get; set; }
 
-        public Guid DocumentId { get; set; }
-        public Document? Document { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+        public DocumentStatus? Status { get; set; } = DocumentStatus.New;
+
+        public DocumentHandler? Handler { get; set; }
+
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
+
+        public List<DocumentError>? Errors { get; set; }
 
 
-        public string? CheckedById { get; set; }
-        public ApplicationUser? CheckedBy { get; set; }
+        [MaxLength(AppSettings.GUID_LENGTH)]
+        public string? DocumentRefKey { get; set; } // Счет-фактура выданный Ref_Key
+        
+        [NotMapped]
+        [JsonIgnore]
+        public Document_СчетФактураВыданный? DocumentRef { get; set; } // Счет-фактура выданный 
 
-
-        public Guid CheckTypeId { get; set; }
-        public CheckType? CheckType { get; set; }
-
-
-        public DateTime CheckedAt { get; set; }
-
-        public bool IsValid { get; set; }
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
     }
 }

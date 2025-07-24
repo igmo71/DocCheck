@@ -18,24 +18,28 @@
     }
     else {
         <dl class="row">
-            <dt class="col-sm-2">DocumentId</dt>
-            <dd class="col-sm-10">@documentcheck.DocumentId</dd>
+            <dt class="col-sm-2">CreatedAt</dt>
+            <dd class="col-sm-10">@documentcheck.CreatedAt</dd>
         </dl>
         <dl class="row">
-            <dt class="col-sm-2">CheckedById</dt>
-            <dd class="col-sm-10">@documentcheck.CheckedById</dd>
+            <dt class="col-sm-2">UpdatedAt</dt>
+            <dd class="col-sm-10">@documentcheck.UpdatedAt</dd>
         </dl>
         <dl class="row">
-            <dt class="col-sm-2">CheckTypeId</dt>
-            <dd class="col-sm-10">@documentcheck.CheckTypeId</dd>
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">@documentcheck.Status</dd>
         </dl>
         <dl class="row">
-            <dt class="col-sm-2">CheckedAt</dt>
-            <dd class="col-sm-10">@documentcheck.CheckedAt</dd>
+            <dt class="col-sm-2">Handler</dt>
+            <dd class="col-sm-10">@documentcheck.Handler</dd>
         </dl>
         <dl class="row">
-            <dt class="col-sm-2">IsValid</dt>
-            <dd class="col-sm-10">@documentcheck.IsValid</dd>
+            <dt class="col-sm-2">UserId</dt>
+            <dd class="col-sm-10">@documentcheck.UserId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">DocumentRefKey</dt>
+            <dd class="col-sm-10">@documentcheck.DocumentRefKey</dd>
         </dl>
         <EditForm method="post" Model="documentcheck" OnValidSubmit="DeleteDocumentCheck" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(documentcheck is null)">Delete</button> |
@@ -53,7 +57,7 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        documentcheck = await context.DocumentChecks.FirstOrDefaultAsync(m => m.Id == Id);
+        documentcheck = await context.DocumentCheck.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (documentcheck is null)
         {
@@ -64,7 +68,7 @@
     private async Task DeleteDocumentCheck()
     {
         using var context = DbFactory.CreateDbContext();
-        context.DocumentChecks.Remove(documentcheck!);
+        context.DocumentCheck.Remove(documentcheck!);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/documentchecks");
     }

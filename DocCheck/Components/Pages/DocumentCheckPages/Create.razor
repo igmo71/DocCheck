@@ -14,32 +14,53 @@
     <div class="col-md-4">
         <EditForm method="post" Model="DocumentCheck" OnValidSubmit="AddDocumentCheck" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="documentid" class="form-label">DocumentId:</label> 
-                <InputGuid id="documentid" @bind-Value="DocumentCheck.DocumentId" class="form-control" /> 
-                <ValidationMessage For="() => DocumentCheck.DocumentId" class="text-danger" /> 
-            </div>        
+                <label for="createdat" class="form-label">CreatedAt:</label>
+                <InputDate id="createdat" @bind-Value="DocumentCheck.CreatedAt" class="form-control" />
+                <ValidationMessage For="() => DocumentCheck.CreatedAt" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="checkedbyid" class="form-label">CheckedById:</label> 
-                <InputText id="checkedbyid" @bind-Value="DocumentCheck.CheckedById" class="form-control" /> 
-                <ValidationMessage For="() => DocumentCheck.CheckedById" class="text-danger" /> 
-            </div>        
+                <label for="updatedat" class="form-label">UpdatedAt:</label>
+                <InputDate id="updatedat" @bind-Value="DocumentCheck.UpdatedAt" class="form-control" />
+                <ValidationMessage For="() => DocumentCheck.UpdatedAt" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="checktypeid" class="form-label">CheckTypeId:</label> 
-                <InputGuid id="checktypeid" @bind-Value="DocumentCheck.CheckTypeId" class="form-control" /> 
-                <ValidationMessage For="() => DocumentCheck.CheckTypeId" class="text-danger" /> 
-            </div>        
+                <label for="status" class="form-label">Status:</label>
+                <InputSelect id="status" @bind-Value="DocumentCheck.Status" class="form-control">
+                    <option value="">
+                        Выберите статус...
+                    </option>
+                    @foreach (var item in Enum.GetValues<DocumentStatus>())
+                    {
+                        <option value="@item">@(item.GetDescription())</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => DocumentCheck.Status" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="checkedat" class="form-label">CheckedAt:</label> 
-                <InputDate id="checkedat" @bind-Value="DocumentCheck.CheckedAt" class="form-control" /> 
-                <ValidationMessage For="() => DocumentCheck.CheckedAt" class="text-danger" /> 
-            </div>        
+                <label for="handler" class="form-label">Handler:</label>
+                <InputSelect id="handler" @bind-Value="DocumentCheck.Handler" class="form-control">
+                    <option value="">
+                        Выберите обработчика...
+                    </option>
+                    @foreach (var item in Enum.GetValues<DocumentHandler>())
+                    {
+                        <option value="@item">@(item.GetDescription())</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => DocumentCheck.Handler" class="text-danger" />
+            </div>
             <div class="mb-3">
-                <label for="isvalid" class="form-label">IsValid:</label> 
-                <InputCheckbox id="isvalid" @bind-Value="DocumentCheck.IsValid" class="form-check-input" /> 
-                <ValidationMessage For="() => DocumentCheck.IsValid" class="text-danger" /> 
-            </div>        
+                <label for="userid" class="form-label">UserId:</label>
+                <InputText id="userid" @bind-Value="DocumentCheck.UserId" class="form-control" />
+                <ValidationMessage For="() => DocumentCheck.UserId" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="documentrefkey" class="form-label">DocumentRefKey:</label>
+                <InputText id="documentrefkey" @bind-Value="DocumentCheck.DocumentRefKey" class="form-control" />
+                <ValidationMessage For="() => DocumentCheck.DocumentRefKey" class="text-danger" />
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -57,7 +78,7 @@
     private async Task AddDocumentCheck()
     {
         using var context = DbFactory.CreateDbContext();
-        context.DocumentChecks.Add(DocumentCheck);
+        context.DocumentCheck.Add(DocumentCheck);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/documentchecks");
     }

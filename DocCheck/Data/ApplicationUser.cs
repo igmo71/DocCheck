@@ -6,5 +6,4 @@ namespace DocCheck.Data
     public class ApplicationUser : IdentityUser
     {
     }
-
 }

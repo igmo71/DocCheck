@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DocCheck.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250717095728_CreateBasicModels")]
-    partial class CreateBasicModels
+    [Migration("20250724072630_CreateDocumentCheck")]
+    partial class CreateDocumentCheck
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,161 +90,81 @@ namespace DocCheck.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("DocCheck.Models.CheckType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CheckTypes");
-                });
-
-            modelBuilder.Entity("DocCheck.Models.Document", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Barcode")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Ref_Key")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
-
-                    b.Property<DateTime>("ScannedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StatusId");
-
-                    b.ToTable("Documents");
-                });
-
             modelBuilder.Entity("DocCheck.Models.DocumentCheck", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CheckTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CheckedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CheckedById")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("DocumentRefKey")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("Handler")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsValid")
-                        .HasColumnType("bit");
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("CheckTypeId");
-
-                    b.HasIndex("CheckedById");
-
-                    b.HasIndex("DocumentId");
-
-                    b.ToTable("DocumentChecks");
-                });
-
-            modelBuilder.Entity("DocCheck.Models.DocumentRejection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("RejectedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RejectedById")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("RejectionReasonId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DocumentId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("RejectedById");
-
-                    b.HasIndex("RejectionReasonId");
-
-                    b.ToTable("DocumentRejections");
+                    b.ToTable("DocumentCheck");
                 });
 
-            modelBuilder.Entity("DocCheck.Models.DocumentStatus", b =>
+            modelBuilder.Entity("DocCheck.Models.DocumentCheckLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<Guid>("DocumentCheckId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
+                    b.Property<string>("Log")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DocumentStatuses");
+                    b.ToTable("DocumentCheckLog");
                 });
 
-            modelBuilder.Entity("DocCheck.Models.RejectionReason", b =>
+            modelBuilder.Entity("DocCheck.Models.DocumentError", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
+                    b.Property<Guid>("DocumentCheckId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<int>("LineNumber")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
-                    b.ToTable("RejectionReasons");
+                    b.HasIndex("DocumentCheckId");
+
+                    b.ToTable("DocumentError");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -380,67 +300,25 @@ namespace DocCheck.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DocCheck.Models.Document", b =>
-                {
-                    b.HasOne("DocCheck.Models.DocumentStatus", "Status")
-                        .WithMany("Documents")
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Status");
-                });
-
             modelBuilder.Entity("DocCheck.Models.DocumentCheck", b =>
                 {
-                    b.HasOne("DocCheck.Models.CheckType", "CheckType")
-                        .WithMany("Checks")
-                        .HasForeignKey("CheckTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DocCheck.Data.ApplicationUser", "CheckedBy")
+                    b.HasOne("DocCheck.Data.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("CheckedById")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("DocCheck.Models.Document", "Document")
-                        .WithMany("Checks")
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CheckType");
-
-                    b.Navigation("CheckedBy");
-
-                    b.Navigation("Document");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DocCheck.Models.DocumentRejection", b =>
+            modelBuilder.Entity("DocCheck.Models.DocumentError", b =>
                 {
-                    b.HasOne("DocCheck.Models.Document", "Document")
-                        .WithMany("Rejects")
-                        .HasForeignKey("DocumentId")
+                    b.HasOne("DocCheck.Models.DocumentCheck", "DocumentCheck")
+                        .WithMany("Errors")
+                        .HasForeignKey("DocumentCheckId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DocCheck.Data.ApplicationUser", "RejectedBy")
-                        .WithMany()
-                        .HasForeignKey("RejectedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("DocCheck.Models.RejectionReason", "RejectionReason")
-                        .WithMany("Rejects")
-                        .HasForeignKey("RejectionReasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Document");
-
-                    b.Navigation("RejectedBy");
-
-                    b.Navigation("RejectionReason");
+                    b.Navigation("DocumentCheck");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -494,26 +372,9 @@ namespace DocCheck.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DocCheck.Models.CheckType", b =>
+            modelBuilder.Entity("DocCheck.Models.DocumentCheck", b =>
                 {
-                    b.Navigation("Checks");
-                });
-
-            modelBuilder.Entity("DocCheck.Models.Document", b =>
-                {
-                    b.Navigation("Checks");
-
-                    b.Navigation("Rejects");
-                });
-
-            modelBuilder.Entity("DocCheck.Models.DocumentStatus", b =>
-                {
-                    b.Navigation("Documents");
-                });
-
-            modelBuilder.Entity("DocCheck.Models.RejectionReason", b =>
-                {
-                    b.Navigation("Rejects");
+                    b.Navigation("Errors");
                 });
 #pragma warning restore 612, 618
         }

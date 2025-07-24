@@ -14,12 +14,13 @@
     <a href="documentchecks/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.DocumentChecks">
-    <PropertyColumn Property="documentcheck => documentcheck.DocumentId" />
-    <PropertyColumn Property="documentcheck => documentcheck.CheckedById" />
-    <PropertyColumn Property="documentcheck => documentcheck.CheckTypeId" />
-    <PropertyColumn Property="documentcheck => documentcheck.CheckedAt" />
-    <PropertyColumn Property="documentcheck => documentcheck.IsValid" />
+<QuickGrid Class="table" Items="context.DocumentCheck">
+    <PropertyColumn Property="documentcheck => documentcheck.CreatedAt" />
+    <PropertyColumn Property="documentcheck => documentcheck.UpdatedAt" />
+    <PropertyColumn Title="Статус" Property="documentcheck => documentcheck.Status == null ? string.Empty : documentcheck.Status.GetDescription()" />
+    <PropertyColumn Title="Обработчик" Property="documentcheck => documentcheck.Handler == null ? string.Empty : documentcheck.Handler.GetDescription()" />
+    <PropertyColumn Property="documentcheck => documentcheck.UserId" />
+    <PropertyColumn Property="documentcheck => documentcheck.DocumentRefKey" />
 
     <TemplateColumn Context="documentcheck">
         <a href="@($"documentchecks/edit?id={documentcheck.Id}")">Edit</a> |

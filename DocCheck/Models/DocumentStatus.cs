@@ -1,23 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace DocCheck.Models
 {
-    public class DocumentStatus
+
+    public enum DocumentStatus
     {
-        [Key]
-        public Guid Id { get; set; }
+        [Description("Новый")]
+        New,
 
+        [Description("В работе")]
+        InProcess,
 
-        [MaxLength(AppSettings.GUID_LENGTH)]
-        public string? Name { get; set; }
-
-
-        [MaxLength(AppSettings.GUID_LENGTH)]
-        public string? Description { get; set; }
-
-
-        public bool IsActive { get; set; }
-
-        public List<Document>? Documents { get; set; }
+        [Description("Закрыт")]
+        Closed
     }
 }

@@ -90,11 +90,6 @@
     SearchParams searchParams = new();
     ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
 
-    private string? barcode;
-    private string? refKey;
-
-    private Rootobject<Document_СчетФактураВыданный>? rootobject;
-
     protected override void OnInitialized()
     {
         itemsProvider = async request =>
@@ -138,7 +133,7 @@
 
     private void ScannedBarcodeHandle(string barcode)
     {
-        refKey = GuidConvert.FromNumStr(barcode);
+        var refKey = GuidConvert.FromNumStr(barcode);
         NavigationManager?.NavigateTo($"invoices/details?Ref_Key={refKey}");
     }
 }

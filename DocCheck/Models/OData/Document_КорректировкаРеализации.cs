@@ -123,10 +123,16 @@ namespace DocCheck.Models.OData
 
     public class Document_КорректировкаРеализации_Товары
     {
-        public string LineNumber { get; set; }
-        public float Количество { get; set; }
-        public string Номенклатура_Key { get; set; }
+        public int LineNumber { get; set; }
+        public double Количество { get; set; }
+        public string? Номенклатура_Key { get; set; }
         public Catalog_Номенклатура? Номенклатура { get; set; }
+
+        public static ODataParams ODataParams => new()
+        {
+            Expand = "Номенклатура",
+            Select = "Номенклатура/Description,Номенклатура_Key,Количество"
+        };
 
         //public string Ref_Key { get; set; }
         //public string Характеристика_Key { get; set; }
