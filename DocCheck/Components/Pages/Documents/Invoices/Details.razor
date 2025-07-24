@@ -76,7 +76,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        searchParams.Ref_Key = Ref_Key;
+        searchParams.RefKey = Ref_Key;
 
         await GetDocumentAsync();
 
@@ -114,20 +114,20 @@ else
         }
     }
 
-    private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? kefKey)
+    private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? refKey)
     {
         var rootobject = await DataSource
-            .GetDataAsync<Document_РеализацияТоваровУслуг>(new SearchParams { Ref_Key = kefKey }, Document_РеализацияТоваровУслуг.ODataParams);
+            .GetDataAsync<Document_РеализацияТоваровУслуг>(new SearchParams { RefKey = refKey }, Document_РеализацияТоваровУслуг.ODataParams);
 
         var baseDoc = rootobject?.Value?.FirstOrDefault();
 
         return baseDoc;
     }
 
-    private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? kefKey)
+    private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? refKey)
     {
         var rootobject = await DataSource
-            .GetDataAsync<Document_КорректировкаРеализации>(new SearchParams { Ref_Key = kefKey }, Document_КорректировкаРеализации.ODataParams);
+            .GetDataAsync<Document_КорректировкаРеализации>(new SearchParams { RefKey = refKey }, Document_КорректировкаРеализации.ODataParams);
 
         var baseDoc = rootobject?.Value?.FirstOrDefault();
 

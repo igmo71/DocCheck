@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace DocCheck.Models
 {
 
-    public enum DocumentStatus
+    public enum Status
     {
         [Description("Новый")]
         New,

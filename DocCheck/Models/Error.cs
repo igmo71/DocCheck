@@ -2,7 +2,7 @@
 
 namespace DocCheck.Models
 {
-    public class DocumentError
+    public class Error
     {
         [Key]
         public Guid Id { get; set; }

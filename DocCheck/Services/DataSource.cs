@@ -48,8 +48,8 @@ namespace DocCheck.Services
             {
                 var filter = new List<string>();
 
-                if (searchParams.Ref_Key != null)
-                    filter.Add($"Ref_Key eq guid'{searchParams.Ref_Key}'");
+                if (searchParams.RefKey != null)
+                    filter.Add($"Ref_Key eq guid'{searchParams.RefKey}'");
 
                 if (searchParams.Number != null)
                     filter.Add($"substringof('{searchParams.Number}', Number)");

@@ -96,12 +96,19 @@ namespace DocCheck.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DocumentRefKey")
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Number")
                         .HasMaxLength(36)
                         .HasColumnType("nvarchar(36)");
 
-                    b.Property<int?>("Handler")
+                    b.Property<int?>("Position")
                         .HasColumnType("int");
+
+                    b.Property<string>("RefKey")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int");
@@ -139,7 +146,7 @@ namespace DocCheck.Migrations
                     b.ToTable("DocumentCheckLog");
                 });
 
-            modelBuilder.Entity("DocCheck.Models.DocumentError", b =>
+            modelBuilder.Entity("DocCheck.Models.Error", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +168,7 @@ namespace DocCheck.Migrations
 
                     b.HasIndex("DocumentCheckId");
 
-                    b.ToTable("DocumentError");
+                    b.ToTable("Error");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -307,7 +314,7 @@ namespace DocCheck.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DocCheck.Models.DocumentError", b =>
+            modelBuilder.Entity("DocCheck.Models.Error", b =>
                 {
                     b.HasOne("DocCheck.Models.DocumentCheck", "DocumentCheck")
                         .WithMany("Errors")

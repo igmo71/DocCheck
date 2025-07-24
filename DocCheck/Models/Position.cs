@@ -2,7 +2,7 @@
 
 namespace DocCheck.Models
 {
-    public enum DocumentHandler
+    public enum Position
     {
         [Description("Оператор")]
         Operator,

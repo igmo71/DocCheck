@@ -1,10 +1,14 @@
 ﻿@page "/documentchecks"
+
+@using DocCheck.Common
+@using DocCheck.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using DocCheck.Models
 @using DocCheck.Data
-@implements IAsyncDisposable
-@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+
+@inject Repository<DocumentCheck> Repository
+@inject NavigationManager NavigationManager
 
 <PageTitle>Index</PageTitle>
 
@@ -14,13 +18,44 @@
     <a href="documentchecks/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.DocumentCheck">
-    <PropertyColumn Property="documentcheck => documentcheck.CreatedAt" />
-    <PropertyColumn Property="documentcheck => documentcheck.UpdatedAt" />
-    <PropertyColumn Title="Статус" Property="documentcheck => documentcheck.Status == null ? string.Empty : documentcheck.Status.GetDescription()" />
-    <PropertyColumn Title="Обработчик" Property="documentcheck => documentcheck.Handler == null ? string.Empty : documentcheck.Handler.GetDescription()" />
-    <PropertyColumn Property="documentcheck => documentcheck.UserId" />
-    <PropertyColumn Property="documentcheck => documentcheck.DocumentRefKey" />
+<ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
+
+<EditForm Model="SearchParams" FormName="SearchDocumentCheck" OnSubmit="SearchDocumentCheck">
+    <div class="row">
+        <div class="col">
+            <div class="input-group mb-2">
+                <span class="input-group-text">№</span>
+                <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер документа..." />
+            </div>
+        </div>        
+        <div class="col">
+            <div class="input-group mb-2">
+                <span class="input-group-text">Дата с</span>
+                <InputDate class="form-control" @bind-Value="SearchParams.DateFrom" />
+            </div>
+        </div>
+        <div class="col">
+            <div class="input-group mb-2">
+                <span class="input-group-text">Дата по</span>
+                <InputDate class="form-control" @bind-Value="SearchParams.DateTo"/>
+            </div>
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Поиск</button>
+        </div>
+        <div class="col">
+            <button type="button" class="btn btn-primary" @onclick="Reset">Сбросить</button>
+        </div>
+    </div>
+</EditForm>
+
+<QuickGrid Class="table" ItemsProvider="itemsProvider" @ref="docCheckGrid">
+    <PropertyColumn Property="dc => dc.CreatedAt" />
+    <PropertyColumn Property="dc => dc.UpdatedAt" />
+    <PropertyColumn Title="Статус" Property="dc => dc.Status == null ? string.Empty : dc.Status.GetDescription()" />
+    <PropertyColumn Title="Позиция" Property="dc => dc.Position == null ? string.Empty : dc.Position.GetDescription()" />
+    <PropertyColumn Property="dc => dc.UserId" />
+    <PropertyColumn Property="dc => dc.RefKey" />
 
     <TemplateColumn Context="documentcheck">
         <a href="@($"documentchecks/edit?id={documentcheck.Id}")">Edit</a> |
@@ -30,12 +65,49 @@
 </QuickGrid>
 
 @code {
+    [SupplyParameterFromForm]
+    private SearchParams SearchParams { get; set; } = new();
+
+    private QuickGrid<DocumentCheck>? docCheckGrid;
+
     private ApplicationDbContext context = default!;
+    GridItemsProvider<DocumentCheck>? itemsProvider;
 
     protected override void OnInitialized()
     {
-        context = DbFactory.CreateDbContext();
+        itemsProvider = ItemsProviderDelegate;
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private async ValueTask<GridItemsProviderResult<DocumentCheck>> ItemsProviderDelegate(GridItemsProviderRequest<DocumentCheck> request)
+    {
+        SearchParams.Skip = request.StartIndex;
+        SearchParams.Take = request.Count;
+
+        var items = await Repository.GetValuesAsync(SearchParams);
+        var totalItemsCount = await Repository.GetCountAsync(SearchParams);
+
+        var result = GridItemsProviderResult.From(items, totalItemsCount);
+
+        return result;
+    }
+
+    private void ScannedBarcodeHandle(string barcode)
+    {
+        var id = GuidConvert.FromNumStr(barcode);
+        NavigationManager?.NavigateTo($"documentchecks/details?id={id}");
+    }
+
+    private async Task SearchDocumentCheck(EditContext args)
+    {               
+        if (docCheckGrid is not null)
+            await docCheckGrid.RefreshDataAsync();
+    }
+
+    private async Task Reset(MouseEventArgs args)
+    {
+        SearchParams = new();
+
+        if (docCheckGrid is not null)
+            await docCheckGrid.RefreshDataAsync();
+    }
 }

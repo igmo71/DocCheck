@@ -19,9 +19,11 @@ namespace DocCheck.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: true),
-                    Handler = table.Column<int>(type: "int", nullable: true),
+                    Position = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DocumentRefKey = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true)
+                    RefKey = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
+                    Number = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,7 +51,7 @@ namespace DocCheck.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DocumentError",
+                name: "Error",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -60,9 +62,9 @@ namespace DocCheck.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DocumentError", x => x.Id);
+                    table.PrimaryKey("PK_Error", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DocumentError_DocumentCheck_DocumentCheckId",
+                        name: "FK_Error_DocumentCheck_DocumentCheckId",
                         column: x => x.DocumentCheckId,
                         principalTable: "DocumentCheck",
                         principalColumn: "Id",
@@ -75,8 +77,8 @@ namespace DocCheck.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DocumentError_DocumentCheckId",
-                table: "DocumentError",
+                name: "IX_Error_DocumentCheckId",
+                table: "Error",
                 column: "DocumentCheckId");
         }
 
@@ -87,7 +89,7 @@ namespace DocCheck.Migrations
                 name: "DocumentCheckLog");
 
             migrationBuilder.DropTable(
-                name: "DocumentError");
+                name: "Error");
 
             migrationBuilder.DropTable(
                 name: "DocumentCheck");
