@@ -1,0 +1,38 @@
+﻿@page "/documentchecklogs"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using DocCheck.Models
+@using DocCheck.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="documentchecklogs/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.DocumentCheckLog">
+    <PropertyColumn Property="documentchecklog => documentchecklog.DateTime" />
+    <PropertyColumn Property="documentchecklog => documentchecklog.DocumentCheckId" />
+    <PropertyColumn Property="documentchecklog => documentchecklog.Log" />
+
+    <TemplateColumn Context="documentchecklog">
+        <a href="@($"documentchecklogs/edit?id={documentchecklog.Id}")">Edit</a> |
+        <a href="@($"documentchecklogs/details?id={documentchecklog.Id}")">Details</a> |
+        <a href="@($"documentchecklogs/delete?id={documentchecklog.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

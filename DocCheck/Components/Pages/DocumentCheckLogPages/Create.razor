@@ -1,0 +1,63 @@
+﻿@page "/documentchecklogs/create"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>DocumentCheckLog</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="DocumentCheckLog" OnValidSubmit="AddDocumentCheckLog" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="datetime" class="form-label">DateTime:</label> 
+                <InputDate id="datetime" @bind-Value="DocumentCheckLog.DateTime" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheckLog.DateTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="documentcheckid" class="form-label">DocumentCheckId:</label> 
+                <InputText id="documentcheckid" @bind-Value="DocumentCheckLog.DocumentCheckIdString" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheckLog.DocumentCheckId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="log" class="form-label">Log:</label> 
+                <InputText id="log" @bind-Value="DocumentCheckLog.Log" class="form-control" /> 
+                <ValidationMessage For="() => DocumentCheckLog.Log" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/documentchecklogs">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private DocumentCheckLog DocumentCheckLog { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddDocumentCheckLog()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.DocumentCheckLog.Add(DocumentCheckLog);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/documentchecklogs");
+    }
+    public string DocumentCheckIdString
+    {
+        get => DocumentCheckLog.DocumentCheckId.ToString();
+        set
+        {
+            if (Guid.TryParse(value, out var guid))
+                DocumentCheckLog.DocumentCheckId = guid;
+        }
+    }
+}

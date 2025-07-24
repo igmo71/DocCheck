@@ -26,6 +26,16 @@ namespace DocCheck.Models
         public string? Log { get; set; }
 
         [NotMapped]
+        public string DocumentCheckIdString
+        {
+            get => DocumentCheckId.ToString();
+            set { 
+                if(Guid.TryParse(value, out Guid id))
+                    DocumentCheckId = id;
+            }
+        }
+
+        [NotMapped]
         public DocumentCheck? DocumentCheck => Log is null ? null : JsonSerializer.Deserialize<DocumentCheck>(Log);
     }
 }

@@ -1,0 +1,50 @@
+﻿@page "/documentchecklogs/details"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>DocumentCheckLog</h2>
+    <hr />
+    @if (documentchecklog is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">DateTime</dt>
+            <dd class="col-sm-10">@documentchecklog.DateTime</dd>
+            <dt class="col-sm-2">DocumentCheckId</dt>
+            <dd class="col-sm-10">@documentchecklog.DocumentCheckId</dd>
+            <dt class="col-sm-2">Log</dt>
+            <dd class="col-sm-10">@documentchecklog.Log</dd>
+        </dl>
+        <div>
+            <a href="@($"/documentchecklogs/edit?id={documentchecklog.Id}")">Edit</a> |
+            <a href="@($"/documentchecklogs")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private DocumentCheckLog? documentchecklog;
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        documentchecklog = await context.DocumentCheckLog.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (documentchecklog is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

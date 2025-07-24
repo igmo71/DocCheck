@@ -1,0 +1,99 @@
+﻿@page "/documentchecklogs/edit"
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>DocumentCheckLog</h2>
+<hr />
+@if (DocumentCheckLog is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="DocumentCheckLog" OnValidSubmit="UpdateDocumentCheckLog" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="DocumentCheckLog.Id" value="@DocumentCheckLog.Id" />
+                <div class="mb-3">
+                    <label for="datetime" class="form-label">DateTime:</label>
+                    <InputDate id="datetime" @bind-Value="DocumentCheckLog.DateTime" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheckLog.DateTime" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="documentcheckid" class="form-label">DocumentCheckId:</label>
+                    <InputText id="documentcheckid" @bind-Value="DocumentCheckLog.DocumentCheckIdString" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheckLog.DocumentCheckId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="log" class="form-label">Log:</label>
+                    <InputText id="log" @bind-Value="DocumentCheckLog.Log" class="form-control" />
+                    <ValidationMessage For="() => DocumentCheckLog.Log" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/documentchecklogs">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private DocumentCheckLog? DocumentCheckLog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        DocumentCheckLog ??= await context.DocumentCheckLog.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (DocumentCheckLog is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateDocumentCheckLog()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(DocumentCheckLog!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!DocumentCheckLogExists(DocumentCheckLog!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/documentchecklogs");
+    }
+
+    private bool DocumentCheckLogExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.DocumentCheckLog.Any(e => e.Id == id);
+    }
+}
