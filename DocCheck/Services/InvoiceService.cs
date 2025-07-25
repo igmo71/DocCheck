@@ -16,7 +16,7 @@ namespace DocCheck.Services
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_СчетФактураВыданный>>(query);
 
-            var invoice = rootobject?.Value?[0];
+            var invoice = rootobject?.Value?.FirstOrDefault();
 
             return invoice;
         }

@@ -3,6 +3,7 @@
 @using DocCheck.Services
 @using Microsoft.EntityFrameworkCore
 @using DocCheck.Models
+@using Models.OData
 
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
@@ -12,17 +13,16 @@
 
 <h3>Создать Проблемный Документ</h3>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm method="post" Model="DocumentCheck" OnValidSubmit="AddDocumentCheck" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />            
-            <div class="mb-3">
-                <label for="status" class="form-label">Статус:</label>
-                <InputSelect id="status" @bind-Value="DocumentCheck.Status" class="form-control">
-                    <option value="">
-                        Выберите статус...
-                    </option>
+
+<EditForm method="post" Model="DocumentCheck" OnValidSubmit="AddDocumentCheck" FormName="create" Enhance>
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" role="alert" />
+    <div class="row">
+        <div class="col">
+            <div class="input-group">
+                <label for="status" class="input-group-text">Статус:</label>
+                <InputSelect id="status" class="form-control" @bind-Value="DocumentCheck.Status">
+                    <option value="">Выберите статус...</option>
                     @foreach (var item in Enum.GetValues<Status>())
                     {
                         <option value="@item">@(item.GetDescription())</option>
@@ -30,12 +30,12 @@
                 </InputSelect>
                 <ValidationMessage For="() => DocumentCheck.Status" class="text-danger" />
             </div>
-            <div class="mb-3">
-                <label for="handler" class="form-label">Позиция:</label>
+        </div>
+        <div class="col">
+            <div class="input-group">
+                <label for="handler" class="input-group-text">Позиция:</label>
                 <InputSelect id="handler" @bind-Value="DocumentCheck.Position" class="form-control">
-                    <option value="">
-                        Выберите позицию...
-                    </option>
+                    <option value="">Выберите позицию...</option>
                     @foreach (var item in Enum.GetValues<Position>())
                     {
                         <option value="@item">@(item.GetDescription())</option>
@@ -43,43 +43,64 @@
                 </InputSelect>
                 <ValidationMessage For="() => DocumentCheck.Position" class="text-danger" />
             </div>
-            <div class="mb-3">
-                <label for="userid" class="form-label">UserId:</label>
+        </div>
+        <div class="col">
+            <div class="input-group">
+                <label for="userid" class="input-group-text">UserId:</label>
                 <InputText id="userid" @bind-Value="DocumentCheck.UserId" class="form-control" />
                 <ValidationMessage For="() => DocumentCheck.UserId" class="text-danger" />
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <span>Счет-фактура</span>
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Create</button>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="documentrefkey" class="form-label">RefKey:</label>
-                        <InputText id="documentrefkey" @bind-Value="DocumentCheck.InvoiceRefKey" class="form-control" />Invoice
-                        <ValidationMessage For="() => DocumentCheck.InvoiceRefKey" class="text-danger" />
-Invoice
-                    </div>
-                    <div class="mb-3">
-                        <label for="documentnumber" class="form-label">Number:</label>
-                        <InputText id="documentnumber" @bind-Value="DocumentCheck.InvoiceNumber" class="form-control" />
+                <div class="col">
+                    <a href="/documentchecks">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="row">
+                <div class="col">
+                    @Document_СчетФактураВыданный.Name
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <label for="documentnumber" class="input-group-text">№</label>
+                        <InputText id="documentnumber" @bind-Value="DocumentCheck.InvoiceNumber" class="form-control" disabled="true" />
                         <ValidationMessage For="() => DocumentCheck.InvoiceNumber" class="text-danger" />
                     </div>
-                    <div class="mb-3">
-                        <label for="documentdate" class="form-label">Date:</label>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <label for="documentdate" class="input-group-text">Дата</label>
                         <InputDate id="documentdate" @bind-Value="DocumentCheck.InvoiceDate" class="form-control" />
                         <ValidationMessage For="() => DocumentCheck.InvoiceDate" class="text-danger" />
                     </div>
                 </div>
+                <div class="col">
+                    <div class="input-group">
+                        <label for="documentrefkey" class="input-group-text">RefKey</label>
+                        <InputText id="documentrefkey" @bind-Value="DocumentCheck.InvoiceRefKey" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.InvoiceRefKey" class="text-danger" />
+                    </div>
+                </div>
+            </div>            
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
             </div>
-            
-            <button type="submit" class="btn btn-primary mt-3">Create</button>
-        </EditForm>
+            <div class="mb-3">
+            </div>
+            <div class="mb-3">               
+            </div>
+        </div>
     </div>
-</div>
-
-<div>
-    <a href="/documentchecks">Back to List</a>
-</div>
+</EditForm>
 
 @code {
     [SupplyParameterFromQuery]
@@ -95,7 +116,7 @@ Invoice
     }
 
     private async Task AddDocumentCheck()
-    {        
+    {
         await Repository.CreateAsync(DocumentCheck);
 
         NavigationManager.NavigateTo("/documentchecks");
