@@ -19,7 +19,7 @@ namespace DocCheck.Models
 
         public Status? Status { get; set; } = Models.Status.New;
 
-        public Position? Position { get; set; }
+        public Position? Position { get; set; } = Models.Position.Operator;
                 
         public string? UserId { get; set; }
         public ApplicationUser? User { get; set; }
@@ -38,7 +38,7 @@ namespace DocCheck.Models
         public bool IsInvoiceCorrection { get; set; }
 
         [NotMapped]
-        public List<Document_СчетФактураВыданный_ДокументыОснования>? InvoiceBaseDocuments { get; set; }
+        public Document_СчетФактураВыданный_ДокументыОснования[]? InvoiceBaseDocuments { get; set; }
 
         [NotMapped]
         [JsonIgnore]

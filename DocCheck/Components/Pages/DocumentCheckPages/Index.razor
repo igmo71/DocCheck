@@ -84,7 +84,7 @@
         searchParams = new() { RefKey = refKey };
 
         if (await Repository.ExistsAsync(refKey))
-            NavigationManager?.NavigateTo($"documentchecks/details?RefKey={refKey}");
+            NavigationManager?.NavigateTo($"documentchecks/edit?RefKey={refKey}");
         else
             NavigationManager?.NavigateTo($"documentchecks/create?RefKey={refKey}");
     }

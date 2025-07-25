@@ -5,29 +5,18 @@
 @using DocCheck.Models
 
 @inject DocCheckRepository Repository
+@inject IDocCheckService Service
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
 
-<h1>Create</h1>
-
-<h2>DocumentCheck</h2>
+<h3>Создать Проблемный Документ</h3>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <EditForm method="post" Model="DocumentCheck" OnValidSubmit="AddDocumentCheck" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
-                <label for="createdat" class="form-label">CreatedAt:</label>
-                <InputDate id="createdat" @bind-Value="DocumentCheck.CreatedAt" class="form-control" />
-                <ValidationMessage For="() => DocumentCheck.CreatedAt" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="updatedat" class="form-label">UpdatedAt:</label>
-                <InputDate id="updatedat" @bind-Value="DocumentCheck.UpdatedAt" class="form-control" />
-                <ValidationMessage For="() => DocumentCheck.UpdatedAt" class="text-danger" />
-            </div>
+            <ValidationSummary class="text-danger" role="alert" />            
             <div class="mb-3">
                 <label for="status" class="form-label">Статус:</label>
                 <InputSelect id="status" @bind-Value="DocumentCheck.Status" class="form-control">
@@ -93,10 +82,18 @@ Invoice
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    public string? RefKey { get; set; }
+
     [SupplyParameterFromForm]
     private DocumentCheck DocumentCheck { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    protected override async Task OnInitializedAsync()
+    {
+        DocumentCheck.InvoiceRefKey = RefKey;
+        await Service.LoadBaseDocuments(DocumentCheck);
+    }
+
     private async Task AddDocumentCheck()
     {        
         await Repository.CreateAsync(DocumentCheck);

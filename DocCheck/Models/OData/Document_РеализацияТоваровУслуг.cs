@@ -156,7 +156,7 @@ namespace DocCheck.Models.OData
         public static ODataParams ODataParams => new()
         {
             Expand = "Номенклатура",
-            Select = "Номенклатура/Description,Номенклатура_Key,Количество"
+            Select = "LineNumber,Количество,Номенклатура_Key,Номенклатура/Description"
         };
 
         //public string Ref_Key { get; set; }

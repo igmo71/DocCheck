@@ -58,7 +58,12 @@ namespace DocCheck
 
             builder.Services.AddScoped<ODataService>();
             builder.Services.AddScoped<DocCheckRepository>();
-            builder.Services.AddScoped(typeof(Repository<>));
+            //builder.Services.AddScoped(typeof(Repository<>));
+            builder.Services.AddScoped<IDocCheckService, DocCheckService>();
+            builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+            builder.Services.AddScoped<ISaleDocService, SaleDocService>();
+            builder.Services.AddScoped<ICorrectionDocService, CorrectionDocService>();
+
 
             var app = builder.Build();
 
