@@ -5,7 +5,6 @@
 @using DocCheck.Models
 
 @inject DocCheckRepository Repository
-@inject DataSource DataSource
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
@@ -67,18 +66,19 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="documentrefkey" class="form-label">RefKey:</label>
-                        <InputText id="documentrefkey" @bind-Value="DocumentCheck.RefKey" class="form-control" />
-                        <ValidationMessage For="() => DocumentCheck.RefKey" class="text-danger" />
+                        <InputText id="documentrefkey" @bind-Value="DocumentCheck.InvoiceRefKey" class="form-control" />Invoice
+                        <ValidationMessage For="() => DocumentCheck.InvoiceRefKey" class="text-danger" />
+Invoice
                     </div>
                     <div class="mb-3">
                         <label for="documentnumber" class="form-label">Number:</label>
-                        <InputText id="documentnumber" @bind-Value="DocumentCheck.Number" class="form-control" />
-                        <ValidationMessage For="() => DocumentCheck.Number" class="text-danger" />
+                        <InputText id="documentnumber" @bind-Value="DocumentCheck.InvoiceNumber" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.InvoiceNumber" class="text-danger" />
                     </div>
                     <div class="mb-3">
                         <label for="documentdate" class="form-label">Date:</label>
-                        <InputDate id="documentdate" @bind-Value="DocumentCheck.Date" class="form-control" />
-                        <ValidationMessage For="() => DocumentCheck.Date" class="text-danger" />
+                        <InputDate id="documentdate" @bind-Value="DocumentCheck.InvoiceDate" class="form-control" />
+                        <ValidationMessage For="() => DocumentCheck.InvoiceDate" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -93,17 +93,10 @@
 </div>
 
 @code {
-    [SupplyParameterFromQuery]
-    private string? RefKey { get; set; }
-
     [SupplyParameterFromForm]
     private DocumentCheck DocumentCheck { get; set; } = new();
 
-    protected override Task OnInitializedAsync()
-    {
-        return base.OnInitializedAsync();
-    }
-
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddDocumentCheck()
     {        
         await Repository.CreateAsync(DocumentCheck);

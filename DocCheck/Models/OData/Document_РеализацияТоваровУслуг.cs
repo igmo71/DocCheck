@@ -7,11 +7,15 @@ namespace DocCheck.Models.OData
         public string? Ref_Key { get; set; }
         public string? Number { get; set; }
         public DateTime Date { get; set; }
+        
         public Document_РеализацияТоваровУслуг_Товары[]? Товары { get; set; }
+        
         public string? Автор_Key { get; set; }
         public Catalog_Пользователи? Автор { get; set; }
+        
         public string? Менеджер_Key { get; set; }
         public Catalog_Пользователи? Менеджер { get; set; }
+        
         public string? Контрагент_Key { get; set; }
         public Catalog_Контрагенты? Контрагент { get; set; }
 
@@ -145,6 +149,7 @@ namespace DocCheck.Models.OData
     {
         public int LineNumber { get; set; }
         public double Количество { get; set; }
+
         public string? Номенклатура_Key { get; set; }
         public Catalog_Номенклатура? Номенклатура { get; set; }
 

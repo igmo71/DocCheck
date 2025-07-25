@@ -47,14 +47,14 @@ namespace DocCheck.Services
             if (isIncludeErrors)
                 query = query.Include(e => e.Errors);
 
-            var result = await query.FirstOrDefaultAsync(e => e.RefKey == refKey);
+            var result = await query.FirstOrDefaultAsync(e => e.InvoiceRefKey == refKey);
 
             return result;
         }
 
         public async Task<bool> ExistsAsync(string refKey)
         {
-            var result = await dbContext.DocumentCheck.AsNoTracking().AnyAsync(e => e.RefKey == refKey);
+            var result = await dbContext.DocumentCheck.AsNoTracking().AnyAsync(e => e.InvoiceRefKey == refKey);
 
             return result;
         }

@@ -56,7 +56,7 @@ namespace DocCheck
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authenticationString);
             });
 
-            builder.Services.AddScoped<DataSource>();
+            builder.Services.AddScoped<ODataService>();
             builder.Services.AddScoped<DocCheckRepository>();
             builder.Services.AddScoped(typeof(Repository<>));
 

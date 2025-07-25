@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DocCheck.Services
 {
     public class Repository<TEntity>(ApplicationDbContext dbContext) 
-        where TEntity : class , IHasId, IHasDocument
+        where TEntity : class , IHasId, IHasInvoice
     {
         public async Task<TEntity[]> GetValuesAsync(SearchParams searchParams)
         {

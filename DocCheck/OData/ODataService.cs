@@ -1,10 +1,10 @@
 ﻿using DocCheck.Models.OData;
-using DocCheck.OData;
+using DocCheck.Services;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
-namespace DocCheck.Services
+namespace DocCheck.OData
 {
-    public class DataSource(ODataClient oDataClient)
+    public class ODataService(ODataClient oDataClient)
     {
 
         public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams, ODataParams oDataParams)
@@ -18,7 +18,7 @@ namespace DocCheck.Services
 
         public async ValueTask<Rootobject<TGridItem>?> GetDataAsync<TGridItem>(SearchParams searchParams, ODataParams oDataParams, GridItemsProviderRequest<TGridItem> request)
         {
-            string query = BuildQuery<TGridItem>(searchParams, oDataParams, request);
+            string query = BuildQuery(searchParams, oDataParams, request);
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<TGridItem>>(query);
 

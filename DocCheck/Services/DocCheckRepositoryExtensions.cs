@@ -5,25 +5,25 @@ namespace DocCheck.Services
     public static class DocCheckRepositoryExtensions
     {
         public static IQueryable<TEntity> HandleFilterQuery<TEntity>(this IQueryable<TEntity> query, SearchParams searchParams)
-            where TEntity : class, IHasDocument
+            where TEntity : class, IHasInvoice
         {
             if (searchParams.RefKey is not null)
-                query = query.Where(e => e.RefKey == searchParams.RefKey);
+                query = query.Where(e => e.InvoiceRefKey == searchParams.RefKey);
 
             if (searchParams.Number is not null)
-                query = query.Where(e => e.Number == searchParams.Number);
+                query = query.Where(e => e.InvoiceNumber == searchParams.Number);
 
             if (searchParams.DateFrom is not null)
-                query = query.Where(e => e.Date.Date >= searchParams.DateFrom);
+                query = query.Where(e => e.InvoiceDate.Date >= searchParams.DateFrom);
 
             if (searchParams.DateTo is not null)
-                query = query.Where(e => e.Date.Date < ((DateTime)searchParams.DateTo).AddDays(1));
+                query = query.Where(e => e.InvoiceDate.Date < ((DateTime)searchParams.DateTo).AddDays(1));
 
             return query;
         }
 
         public static IQueryable<TEntity> HandleQuery<TEntity>(this IQueryable<TEntity> query, SearchParams searchParams)
-            where TEntity : class, IHasDocument
+            where TEntity : class, IHasInvoice
         {
             query = query.HandleFilterQuery(searchParams);
 

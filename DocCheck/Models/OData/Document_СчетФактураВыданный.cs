@@ -8,6 +8,7 @@ namespace DocCheck.Models.OData
         public string? Number { get; set; }
         public DateTime Date { get; set; }
         public bool Корректировочный { get; set; }
+
         public Document_СчетФактураВыданный_ДокументыОснования[]? ДокументыОснования { get; set; }
 
         public static ODataParams ODataParams => new()

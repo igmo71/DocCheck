@@ -9,7 +9,7 @@ namespace DocCheck.Components.Pages.Documents.Invoices
     public partial class Details
     {
         [Inject]
-        public DataSource? DataSource { get; set; }
+        public ODataService? DataSource { get; set; }
 
         [SupplyParameterFromQuery]
         public required string Ref_Key { get; set; }

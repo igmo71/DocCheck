@@ -7,16 +7,16 @@ namespace DocCheck.Services
         public static IQueryable<DocumentCheck> HandleFilterQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
         {
             if (searchParams.RefKey is not null)
-                query = query.Where(e => e.RefKey == searchParams.RefKey);
+                query = query.Where(e => e.InvoiceRefKey == searchParams.RefKey);
 
             if (searchParams.Number is not null)
-                query = query.Where(e => e.Number == searchParams.Number);
+                query = query.Where(e => e.InvoiceNumber == searchParams.Number);
 
             if (searchParams.DateFrom is not null)
-                query = query.Where(e => e.Date.Date >= searchParams.DateFrom);
+                query = query.Where(e => e.InvoiceDate.Date >= searchParams.DateFrom);
 
             if (searchParams.DateTo is not null)
-                query = query.Where(e => e.Date.Date < ((DateTime)searchParams.DateTo).AddDays(1));
+                query = query.Where(e => e.InvoiceDate.Date < ((DateTime)searchParams.DateTo).AddDays(1));
 
             return query;
         }

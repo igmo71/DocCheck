@@ -6,7 +6,7 @@
 @using DocCheck.Services
 
 @inject DocCheckRepository Repository
-@inject DataSource DataSource
+@inject ODataService DataSource
 @inject NavigationManager NavigationManager
 
 <PageTitle>Details</PageTitle>
@@ -33,7 +33,7 @@
             <dt class="col-sm-2">UserId</dt>
             <dd class="col-sm-10">@documentcheck.UserId</dd>
             <dt class="col-sm-2">RefKey</dt>
-            <dd class="col-sm-10">@documentcheck.RefKey</dd>
+            <dd class="col-sm-10">@documentcheck.InvoiceRefKey</dd>
             <dt class="col-sm-2">ДокументыОснования</dt>
             <dd class="col-sm-10">
                 @if (saleDocuments != null)
@@ -113,7 +113,7 @@
 
     private async Task GetInvoice()
     {
-        searchParams.RefKey = documentcheck?.RefKey;
+        searchParams.RefKey = documentcheck?.InvoiceRefKey;
 
         var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams);
 

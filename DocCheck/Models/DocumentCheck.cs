@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace DocCheck.Models
 {
-    public class DocumentCheck : IHasId, IHasDocument
+    public class DocumentCheck : IHasId, IHasInvoice
     {
         [Key]
         public Guid Id { get; set; }
@@ -26,14 +26,27 @@ namespace DocCheck.Models
 
         public List<Error>? Errors { get; set; }
 
+        
+        [MaxLength(AppSettings.GUID_LENGTH)]
+        public string? InvoiceRefKey { get; set; } // Счет-фактура выданный Ref_Key
 
         [MaxLength(AppSettings.GUID_LENGTH)]
-        public string? RefKey { get; set; } // Счет-фактура выданный Ref_Key
+        public string? InvoiceNumber { get; set; } // Счет-фактура выданный Number
 
-        [MaxLength(AppSettings.GUID_LENGTH)]
-        public string? Number { get; set; } // Счет-фактура выданный Number
+        public DateTime InvoiceDate { get; set; } // Счет-фактура выданный Date
 
-        public DateTime Date { get; set; } // Счет-фактура выданный Date
+        public bool IsInvoiceCorrection { get; set; }
+
+        [NotMapped]
+        public List<Document_СчетФактураВыданный_ДокументыОснования>? InvoiceBaseDocuments { get; set; }
+
+        [NotMapped]
+        [JsonIgnore]
+        public List<Document_РеализацияТоваровУслуг>? SaleDocuments { get; set; }
+
+        [NotMapped]
+        [JsonIgnore]
+        public List<Document_КорректировкаРеализации>? CorrectionDocuments { get; set; }
 
         [NotMapped]
         [JsonIgnore]
