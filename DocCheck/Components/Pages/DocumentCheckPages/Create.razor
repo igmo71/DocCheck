@@ -118,6 +118,7 @@
                                 <table class="table table-hover table-striped">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>Номенклатура</th>
                                             <th>Количество</th>
                                             <th>Факт Кол-во</th>
@@ -127,6 +128,7 @@
                                         @foreach (var item in saleDoc.Товары)
                                         {
                                             <tr>
+                                                <td>@item.LineNumber</td>
                                                 <td>@item.Номенклатура?.Description</td>
                                                 <td>@item.Количество</td>
                                                 <td>

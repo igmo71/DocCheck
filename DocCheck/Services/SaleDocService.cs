@@ -32,9 +32,9 @@ namespace DocCheck.Services
 
             var query = $"{nameof(Document_РеализацияТоваровУслуг)}" +
                 $"?$format=json" +
+                $"&$filter=Ref_Key eq guid'{refKey}'" +
                 $"&$expand={oDataParams.Expand}" +
-                $"&$select={oDataParams.Select}" +
-                $"&$filter=Ref_Key eq guid'{refKey}'";
+                $"&$select={oDataParams.Select}";
 
             return query;
         }
@@ -56,9 +56,10 @@ namespace DocCheck.Services
 
             var query = $"{nameof(Document_РеализацияТоваровУслуг_Товары)}" +
                 $"?$format=json" +
+                $"&$filter=Ref_Key eq guid'{refKey}'" +
                 $"&$expand={oDataParams.Expand}" +
                 $"&$select={oDataParams.Select}" +
-                $"&$filter=Ref_Key eq guid'{refKey}'";
+                $"&$orderby={oDataParams.OrderBy}";
 
             return query;
         }
