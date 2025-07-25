@@ -18,34 +18,7 @@
 
 <ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
 
-<EditForm Model="SearchParams" FormName="SearchDocumentCheck" OnSubmit="SearchDocumentCheck">
-    <div class="row">
-        <div class="col">
-            <div class="input-group mb-2">
-                <span class="input-group-text">№</span>
-                <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер УПД..." />
-            </div>
-        </div>
-        <div class="col">
-            <div class="input-group mb-2">
-                <span class="input-group-text">Дата с</span>
-                <InputDate class="form-control" @bind-Value="SearchParams.DateFrom" />
-            </div>
-        </div>
-        <div class="col">
-            <div class="input-group mb-2">
-                <span class="input-group-text">Дата по</span>
-                <InputDate class="form-control" @bind-Value="SearchParams.DateTo" />
-            </div>
-        </div>
-        <div class="col">
-            <button type="submit" class="btn btn-primary">Поиск</button>
-        </div>
-        <div class="col">
-            <button type="button" class="btn btn-primary" @onclick="Reset">Сбросить</button>
-        </div>
-    </div>
-</EditForm>
+<SearchForm SearchParams="SearchParams" OnSubmit="SearchDocumentCheck" />
 
 <QuickGrid Class="table" ItemsProvider="itemsProvider" @ref="docCheckGrid">
     <PropertyColumn Title="Номер" Property="dc => dc.Number" />
@@ -62,8 +35,7 @@
     </TemplateColumn>
 </QuickGrid>
 
-@code {
-    [SupplyParameterFromForm]
+@code {    
     private SearchParams SearchParams { get; set; } = new();
 
     private QuickGrid<DocumentCheck>? docCheckGrid;
@@ -88,15 +60,9 @@
         return result;
     }
 
-    private async Task SearchDocumentCheck(EditContext args)
+    private async Task SearchDocumentCheck(SearchParams searchParams)
     {
-        if (docCheckGrid is not null)
-            await docCheckGrid.RefreshDataAsync();
-    }
-
-    private async Task Reset(MouseEventArgs args)
-    {
-        SearchParams = new();
+        SearchParams = searchParams;
 
         if (docCheckGrid is not null)
             await docCheckGrid.RefreshDataAsync();

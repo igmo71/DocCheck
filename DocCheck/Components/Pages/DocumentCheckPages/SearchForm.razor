@@ -1,0 +1,57 @@
+@using DocCheck.Common
+@using DocCheck.Models
+@using DocCheck.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<EditForm Model="SearchParams" FormName="SearchForm" OnSubmit="Search">
+    @if (SearchParams is not null)
+    {
+        <div class="row">
+            <div class="col">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">№</span>
+                    <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер УПД..." />
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Дата с</span>
+                    <InputDate class="form-control" @bind-Value="SearchParams.DateFrom" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">Дата по</span>
+                    <InputDate class="form-control" @bind-Value="SearchParams.DateTo" />
+                </div>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Поиск</button>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-primary" @onclick="Reset">Сбросить</button>
+            </div>
+        </div>
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public SearchParams? SearchParams { get; set; }
+
+    [Parameter]
+    public EventCallback<SearchParams> OnSubmit { get; set; }
+
+
+    private async Task Search(EditContext args)
+    {
+        await OnSubmit.InvokeAsync(SearchParams);
+    }
+
+    private async Task Reset(MouseEventArgs args)
+    {
+        SearchParams = new();
+
+        await OnSubmit.InvokeAsync(SearchParams);
+    }
+}

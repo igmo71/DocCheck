@@ -81,7 +81,7 @@
 
 @code {
     [SupplyParameterFromQuery]
-    private Guid Id { get; set; }
+    private string? RefKey { get; set; }
 
     private DocumentCheck? documentcheck;
 
@@ -103,7 +103,7 @@
 
     private async Task GetDocumentCheck()
     {
-        documentcheck = await Repository.GetItemAsync(Id);
+        documentcheck = await Repository.GetItemAsync(RefKey);
 
         if (documentcheck is null)
         {

@@ -1,12 +1,7 @@
 ﻿@page "/invoices/details"
 
-@using DocCheck.Models.OData
-@using DocCheck.OData
-@using DocCheck.Services
-
-@inject DataSource DataSource
-
 <h3>Счет-фактура</h3>
+
 @if (document is null)
 {
     <div class="spinner-grow" role="status">
@@ -29,7 +24,7 @@ else
 
                 <div class="card col-6">
                     <div class="card-header">
-                        @Document_РеализацияТоваровУслуг.Name
+                        @DocCheck.Models.OData.Document_РеализацияТоваровУслуг.Name
                     </div>
                     <div class="card-body">
                         <table class="table">
@@ -49,7 +44,7 @@ else
             }
             @if (correctionDocuments != null)
             {
-                <div class="h5"> @Document_КорректировкаРеализации.Name</div>
+                <div class="h5"> @DocCheck.Models.OData.Document_КорректировкаРеализации.Name</div>
                 <table class="table">
                     @foreach (var doc in correctionDocuments)
                     {
@@ -62,75 +57,4 @@ else
             }
         </dd>
     </dl>
-}
-
-@code {
-    [SupplyParameterFromQuery]
-    public required string Ref_Key { get; set; }
-
-    private Document_СчетФактураВыданный? document;
-    private List<Document_РеализацияТоваровУслуг>? saleDocuments;
-    private List<Document_КорректировкаРеализации>? correctionDocuments;
-    private SearchParams searchParams = new();
-    private ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
-
-    protected override async Task OnInitializedAsync()
-    {
-        searchParams.RefKey = Ref_Key;
-
-        await GetDocumentAsync();
-
-        await GetBaseDocuments();
-    }
-
-    private async Task GetDocumentAsync()
-    {
-        var rootobject = await DataSource.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams);
-
-        document = rootobject?.Value?.FirstOrDefault();
-    }
-
-    private async Task GetBaseDocuments()
-    {
-        if (document?.ДокументыОснования is not null)
-        {
-            foreach (var doc in document.ДокументыОснования)
-            {
-                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_РеализацияТоваровУслуг)))
-                {
-                    saleDocuments ??= [];
-
-                    if (await GetSaleDocument(doc.ДокументОснование) is Document_РеализацияТоваровУслуг baseDoc)
-                        saleDocuments.Add(baseDoc);
-                }
-                if (!string.IsNullOrEmpty(doc.ДокументОснование_Type) && doc.ДокументОснование_Type.Contains(nameof(Document_КорректировкаРеализации)))
-                {
-                    correctionDocuments ??= [];
-
-                    if (await GetCorrectionDocument(doc.ДокументОснование) is Document_КорректировкаРеализации baseDoc)
-                        correctionDocuments.Add(baseDoc);
-                }
-            }
-        }
-    }
-
-    private async Task<Document_РеализацияТоваровУслуг?> GetSaleDocument(string? refKey)
-    {
-        var rootobject = await DataSource
-            .GetDataAsync<Document_РеализацияТоваровУслуг>(new SearchParams { RefKey = refKey }, Document_РеализацияТоваровУслуг.ODataParams);
-
-        var baseDoc = rootobject?.Value?.FirstOrDefault();
-
-        return baseDoc;
-    }
-
-    private async Task<Document_КорректировкаРеализации?> GetCorrectionDocument(string? refKey)
-    {
-        var rootobject = await DataSource
-            .GetDataAsync<Document_КорректировкаРеализации>(new SearchParams { RefKey = refKey }, Document_КорректировкаРеализации.ODataParams);
-
-        var baseDoc = rootobject?.Value?.FirstOrDefault();
-
-        return baseDoc;
-    }
 }
