@@ -21,9 +21,10 @@ namespace DocCheck.Migrations
                     Status = table.Column<int>(type: "int", nullable: true),
                     Position = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    RefKey = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
-                    Number = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    InvoiceRefKey = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
+                    InvoiceNumber = table.Column<string>(type: "nvarchar(36)", maxLength: 36, nullable: true),
+                    InvoiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsInvoiceCorrection = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

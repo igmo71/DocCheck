@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DocCheck.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250724120808_CreateDocumentCheck")]
+    [Migration("20250725074949_CreateDocumentCheck")]
     partial class CreateDocumentCheck
     {
         /// <inheritdoc />
@@ -99,19 +99,22 @@ namespace DocCheck.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("InvoiceDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Number")
+                    b.Property<string>("InvoiceNumber")
                         .HasMaxLength(36)
                         .HasColumnType("nvarchar(36)");
+
+                    b.Property<string>("InvoiceRefKey")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<bool>("IsInvoiceCorrection")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("Position")
                         .HasColumnType("int");
-
-                    b.Property<string>("RefKey")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int");
