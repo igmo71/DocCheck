@@ -11,6 +11,7 @@
         public int Skip { get; set; }
         public int? Take { get; set; }
         public string? OrderBy { get; set; }
+        public bool IsOrderAsc { get; set; }
 
         public bool HasFilterValue => 
             RefKey is not null || 

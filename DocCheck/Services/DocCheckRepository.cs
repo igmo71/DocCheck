@@ -1,13 +1,16 @@
 ﻿using DocCheck.Data;
 using DocCheck.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace DocCheck.Services
 {
-    public class DocCheckRepository(ApplicationDbContext dbContext)
+    public class DocCheckRepository(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     {
         public async Task<DocumentCheck[]> GetItemsAsync(SearchParams searchParams)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var result = await dbContext.DocumentCheck
                 .AsNoTracking()
                 .HandleQuery(searchParams)
@@ -18,6 +21,8 @@ namespace DocCheck.Services
 
         public async Task<int> GetCountAsync(SearchParams searchParams)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var result = await dbContext.DocumentCheck
                 .AsNoTracking()
                 .HandleFilterQuery(searchParams)
@@ -26,34 +31,25 @@ namespace DocCheck.Services
             return result;
         }
 
-        public async Task<DocumentCheck?> GetItemAsync(Guid id, bool isIncludeErrors = false)
+        public async Task<DocumentCheck?> GetItemAsync(string invoiceRefKey, bool isIncludeErrors = false)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var query = dbContext.DocumentCheck
                 .AsNoTracking();
 
             if (isIncludeErrors)
                 query = query.Include(e => e.Errors);
 
-            var result = await query.FirstOrDefaultAsync(e => e.Id == id);
-
-            return result;
-        }
-
-        public async Task<DocumentCheck?> GetItemAsync(string refKey, bool isIncludeErrors = false)
-        {
-            var query = dbContext.DocumentCheck
-                .AsNoTracking();
-
-            if (isIncludeErrors)
-                query = query.Include(e => e.Errors);
-
-            var result = await query.FirstOrDefaultAsync(e => e.InvoiceRefKey == refKey);
+            var result = await query.FirstOrDefaultAsync(e => e.InvoiceRefKey == invoiceRefKey);
 
             return result;
         }
 
         public async Task<bool> ExistsAsync(string refKey)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var result = await dbContext.DocumentCheck.AsNoTracking().AnyAsync(e => e.InvoiceRefKey == refKey);
 
             return result;
@@ -61,6 +57,8 @@ namespace DocCheck.Services
 
         public async Task CreateAsync(DocumentCheck item)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             item.CreatedAt = DateTime.Now;
 
             dbContext.DocumentCheck.Add(item);
@@ -70,6 +68,8 @@ namespace DocCheck.Services
 
         public async Task UpdateAsync(DocumentCheck item)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var existing = await dbContext.DocumentCheck.FirstOrDefaultAsync(e => e.Id == item.Id);
 
             if (existing == null)
@@ -84,6 +84,8 @@ namespace DocCheck.Services
 
         public async Task DeleteAsync(Guid id)
         {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
             var existing = await dbContext.DocumentCheck.FirstOrDefaultAsync(e => e.Id == id);
 
             if (existing == null)

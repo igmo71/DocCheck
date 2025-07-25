@@ -14,7 +14,7 @@
 <ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
 
 <div class="table-container" tabindex="-1">
-    <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=20 Virtualize="true" ItemKey="(x => x.Ref_Key)" 
+    <QuickGrid Class="table table-hover table-striped" ItemsProvider="@itemsProvider" OverscanCount=32 Virtualize="true" ItemKey="(x => x.Ref_Key)" 
         @ref="grid">
         
         <TemplateColumn Context="context">
