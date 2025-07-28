@@ -16,7 +16,7 @@ namespace DocCheck.Services
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_РеализацияТоваровУслуг>>(query);
 
-            var saleDoc = rootobject?.Value?[0];
+            var saleDoc = rootobject?.Value?.FirstOrDefault();
 
             if(saleDoc == null) 
                 return null;    
