@@ -6,9 +6,9 @@
 
 <PageTitle>Edit</PageTitle>
 
-<h1>Edit</h1>
+<h2>Изменить</h2>
 
-<h2>DocumentCheck</h2>
+<h3>Проблемный документ</h3>
 <hr />
 @if (DocumentCheck is null)
 {
@@ -49,7 +49,7 @@ else
                     <label for="handler" class="form-label">Handler:</label>
                     <InputSelect id="handler" @bind-Value="DocumentCheck.Position" class="form-control">
                         <option value="">
-                            Выберите обработчика...
+                            Выберите позицию...
                         </option>
                         @foreach (var item in Enum.GetValues<Position>())
                         {
@@ -68,14 +68,14 @@ else
                     <InputText id="documentrefkey" @bind-Value="DocumentCheck.InvoiceRefKey" class="form-control" />
                     <ValidationMessage For="() => DocumentCheck.InvoiceRefKey" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primInvoiceary">Save</button>
+                <button type="submit" class="btn btn-primInvoiceary">Сохранить</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/documeInvoicentchecks">Back to List</a>
+    <a href="/documentchecks">Назад к списку</a>
 </div>
 
 @code {

@@ -8,13 +8,13 @@
 @inject DocCheckRepository Repository
 @inject NavigationManager NavigationManager
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Проблемные документы</PageTitle>
 
-<h1>Index</h1>
+<h2>Проблемные документы</h2>
 
-<p>
+@* <p>
     <a href="documentchecks/create">Create New</a>
-</p>
+</p> *@
 
 <ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
 
@@ -30,9 +30,9 @@
     <PropertyColumn Property="dc => dc.UserId" />
 
     <TemplateColumn Context="documentcheck">
-        <a href="@($"documentchecks/edit?id={documentcheck.Id}")">Edit</a> |
-        <a href="@($"documentchecks/details?id={documentcheck.Id}")">Details</a> |
-        <a href="@($"documentchecks/delete?id={documentcheck.Id}")">Delete</a>
+        <a href="@($"documentchecks/edit?id={documentcheck.Id}")">Изменить</a> |
+        @* <a href="@($"documentchecks/details?id={documentcheck.Id}")">Details</a> | *@
+        <a href="@($"documentchecks/delete?id={documentcheck.Id}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
 
