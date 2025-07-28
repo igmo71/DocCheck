@@ -5,27 +5,14 @@ namespace DocCheck.Services
 {
     public interface IDocCheckService
     {
-        //Task<DocumentCheck> GetItem(string invoiceRefKey);
-        //Task<List<DocumentCheck>> GetItems(SearchParams SearchParams);
         Task LoadBaseDocuments(DocumentCheck documentCheck);
     }
 
     public class DocCheckService(
-        DocCheckRepository repository,
         IInvoiceService invoiceService,
         ISaleDocService saleDocService,
         ICorrectionDocService correctionDocService) : IDocCheckService
     {
-        //public Task<DocumentCheck> GetItem(string invoiceRefKey)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public Task<List<DocumentCheck>> GetItems(SearchParams SearchParams)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         public async Task LoadBaseDocuments(DocumentCheck documentCheck)
         {
             if (documentCheck.InvoiceRefKey is null)

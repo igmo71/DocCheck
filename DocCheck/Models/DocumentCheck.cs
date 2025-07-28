@@ -17,7 +17,7 @@ namespace DocCheck.Models
 
         public DateTime UpdatedAt { get; set; }
 
-        public Status? Status { get; set; } = Models.Status.New;
+        public Status? Status { get; set; } = Models.Status.Draft;
 
         public Position? Position { get; set; } = Models.Position.Operator;
                 

@@ -1,0 +1,315 @@
+﻿@page "/documentchecks/createorupdate"
+
+@using DocCheck.Services
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@using Models.OData
+
+@inject DocCheckRepository Repository
+@inject IDocCheckService Service
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Проблемный Документ</PageTitle>
+
+<h3>
+    @if (operation == Operations.Create)
+    {
+        <span>Создать</span>
+    }
+    @if (operation == Operations.Update)
+    {
+        <span>Изменить</span>
+    }
+    <span> Проблемный Документ</span>
+</h3>
+<hr />
+@if (RefKey is null)
+{
+    <div class="alert alert-warning mt-2">
+        RefKey is null
+    </div>
+}
+else
+{
+    <EditForm method="post" Model="DocCheck" OnValidSubmit="DocCheckHandle" FormName="create" Enhance>
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" role="alert" />
+        <div class="row">
+            <div class="col">
+                <div class="input-group">
+                    <label for="status" class="input-group-text">Статус:</label>
+                    <InputSelect id="status" class="form-control" @bind-Value="DocCheck.Status" disabled="true">
+                        <option value="">Выберите статус...</option>
+                        @foreach (var item in Enum.GetValues<Status>())
+                        {
+                            <option value="@item">@(item.GetDescription())</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => DocCheck.Status" class="text-danger" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <label for="handler" class="input-group-text">Позиция:</label>
+                    <InputSelect id="handler" @bind-Value="DocCheck.Position" class="form-control">
+                        <option value="">Выберите позицию...</option>
+                        @foreach (var item in Enum.GetValues<Position>())
+                        {
+                            <option value="@item">@(item.GetDescription())</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => DocCheck.Position" class="text-danger" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <label for="userid" class="input-group-text">UserId:</label>
+                    <InputText id="userid" @bind-Value="DocCheck.UserId" class="form-control" disabled="true" />
+                    <ValidationMessage For="() => DocCheck.UserId" class="text-danger" />
+                </div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">
+                                @if (operation == Operations.Create)
+                                {
+                                    <div>Создать</div>
+                                }
+                                @if (operation == Operations.Update)
+                                {
+                                    <div>Сохранить</div>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mt-2"><a href="/documentchecks">Назад к списку</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (isInitializing)
+        {
+            <div class="spinner-grow mt-3" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+        }
+        else
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-center mt-2">@Document_СчетФактураВыданный.Name</div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group">
+                                <label for="documentnumber" class="input-group-text">№</label>
+                                <InputText id="documentnumber" @bind-Value="DocCheck.InvoiceNumber" class="form-control" disabled="true" />
+                                <ValidationMessage For="() => DocCheck.InvoiceNumber" class="text-danger" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group">
+                                <label for="documentdate" class="input-group-text">Дата</label>
+                                <InputDate id="documentdate" @bind-Value="DocCheck.InvoiceDate" class="form-control" disabled="true" />
+                                <ValidationMessage For="() => DocCheck.InvoiceDate" class="text-danger" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (DocCheck.SaleDocuments is null || DocCheck.SaleDocuments.Count == 0)
+                    {
+                        <div class="alert alert-warning mt-2">Документы основания не найдены</div>
+                    }
+                    else
+                    {
+                        foreach (var saleDoc in DocCheck.SaleDocuments)
+                        {
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="h5 card-title">
+                                        <div class="row">
+                                            <div class="col"><div class="text-center">@Document_РеализацияТоваровУслуг.Name</div></div>
+                                            <div class="col"><span>№ </span><span> @saleDoc.Number</span></div>
+                                            <div class="col"><span>от </span><span> @saleDoc.Date</span></div>
+                                        </div>
+                                        <hr />
+                                        <div class="row">
+                                            <div class="col"><div class="text-center"><small>Контрагент: </small><span> @saleDoc.Контрагент?.Description</span></div></div>
+                                            <div class="col"><small>Менеджер: </small><span> @saleDoc.Менеджер?.Description</span></div>
+                                            <div class="col"><small>Автор: </small><span> @saleDoc.Автор?.Description</span></div>
+                                        </div>
+                                        <hr />
+                                    </div>
+
+                                    @if (saleDoc.Товары is null || saleDoc.Товары.Length == 0)
+                                    {
+                                        <div class="alert alert-warning mt-2">Товары не найдены или табличная часть пуста</div>
+                                    }
+                                    else
+                                    {
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Номенклатура</th>
+                                                    <th>Количество</th>
+                                                    <th>Факт Кол-во</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in saleDoc.Товары)
+                                                {
+                                                    var errorValue = DocCheck?.Errors?.FirstOrDefault(e => e.LineNumber == item.LineNumber)?.Quantity;
+                                                    string itemWarning = errorValue is null ? string.Empty : "table-warning";
+
+                                                    <tr class="@itemWarning">
+                                                        <td>@item.LineNumber</td>
+                                                        <td>@item.Номенклатура?.Description</td>
+                                                        <td>@item.Количество</td>
+                                                        <td>
+                                                            <div class="row">
+                                                                <div class="col">
+                                                                    <input type="text" value="@errorValue" @onchange="@((args) => CreateOrUpdateError(args, item.LineNumber))" />
+                                                                </div>
+                                                                <div class="col">
+                                                                    @if (errorValue is not null)
+                                                                    {
+                                                                        <button type="button" class="btn" title="Очистить" @onclick="@(() => DeleteError(item.LineNumber))">
+                                                                            <i class="bi bi-x-lg"></i>
+                                                                        </button>
+                                                                    }
+                                                                </div>
+                                                            </div>
+
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </EditForm>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? RefKey { get; set; }
+
+    [SupplyParameterFromForm]
+    private DocumentCheck DocCheck { get; set; } = new();
+
+    AuthenticationState? authState;
+
+    private string? pageMessage;
+    private bool isInitializing;
+    private Operations operation = Operations.Create;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isInitializing = true;
+
+        if (RefKey is null)
+        {
+            pageMessage = "Что-то пошло не так...(RefKey is null)";
+            return;
+        }
+
+        await DocCheckInitialize(RefKey);
+
+        isInitializing = false;
+    }
+
+    private async Task DocCheckInitialize(string refKey)
+    {
+        DocCheck.InvoiceRefKey = refKey;
+
+        if (await Repository.ExistsAsync(DocCheck.InvoiceRefKey))
+        {
+            operation = Operations.Update;
+
+            var documentCheck = await Repository.GetItemAsync(DocCheck.InvoiceRefKey, isIncludeErrors: true);
+
+            if (documentCheck is null)
+            {
+                pageMessage = "Что-то пошло не так...(DocumentCheck is null)";
+                return;
+            }
+            DocCheck = documentCheck;
+        }
+
+        await Service.LoadBaseDocuments(DocCheck);
+
+        authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        DocCheck.UserId = authState?.User?.Identity?.Name;
+    }
+
+    private async Task DocCheckHandle()
+    {
+        if (DocCheck == null)
+            return;
+
+        if (DocCheck.Errors != null)
+        {
+            if (DocCheck.Errors.Count == 0)
+                DocCheck.Status = Status.Draft;
+            else
+                DocCheck.Status = Status.InProcess;
+        }
+
+        if (operation == Operations.Create)
+            await Repository.CreateAsync(DocCheck);
+
+        if (operation == Operations.Update)
+            await Repository.UpdateAsync(DocCheck);
+
+        NavigationManager.NavigateTo("/documentchecks");
+    }
+
+    private void CreateOrUpdateError(ChangeEventArgs args, int lineNumber)
+    {
+        if (!double.TryParse(args.Value?.ToString(), out double quantity))
+            return;
+
+        DocCheck.Errors ??= [];
+
+        var error = DocCheck.Errors.FirstOrDefault(e => e.LineNumber == lineNumber);
+
+        if (error is null)
+        {
+            error = new Error() { DocumentCheckId = DocCheck.Id };
+
+            DocCheck.Errors.Add(error);
+        }
+
+        error.LineNumber = lineNumber;
+        error.Quantity = quantity;
+    }
+
+    private void DeleteError(int lineNumber)
+    {
+        var error = DocCheck?.Errors?.FirstOrDefault(e => e.LineNumber == lineNumber);
+
+        if (DocCheck == null || error == null)
+            return;
+
+        DocCheck.Errors?.Remove(error);
+    }
+
+
+    private enum Operations
+    {
+        Create, Update
+    }
+}

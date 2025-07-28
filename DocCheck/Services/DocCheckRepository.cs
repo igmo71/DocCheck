@@ -70,12 +70,16 @@ namespace DocCheck.Services
         {
             using var dbContext = dbContextFactory.CreateDbContext();
 
-            var existing = await dbContext.DocumentCheck.FirstOrDefaultAsync(e => e.Id == item.Id);
+            var existing = await dbContext.DocumentCheck
+                .Include(e => e.Errors)
+                .FirstOrDefaultAsync(e => e.Id == item.Id);
 
             if (existing == null)
                 return;
 
             dbContext.Entry(existing).CurrentValues.SetValues(item);
+
+            existing.Errors = item.Errors;
 
             existing.UpdatedAt = DateTime.Now;
 

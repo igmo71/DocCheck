@@ -5,8 +5,8 @@ namespace DocCheck.Models
 
     public enum Status
     {
-        [Description("Новый")]
-        New,
+        [Description("Черновик")]
+        Draft,
 
         [Description("В работе")]
         InProcess,

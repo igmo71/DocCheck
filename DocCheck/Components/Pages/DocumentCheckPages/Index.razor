@@ -30,8 +30,7 @@
     <PropertyColumn Property="dc => dc.UserId" />
 
     <TemplateColumn Context="documentcheck">
-        <a href="@($"documentchecks/edit?id={documentcheck.Id}")">Изменить</a> |
-        @* <a href="@($"documentchecks/details?id={documentcheck.Id}")">Details</a> | *@
+        <a href="@($"documentchecks/createorupdate?RefKey={documentcheck.InvoiceRefKey}")">Изменить</a> |
         <a href="@($"documentchecks/delete?id={documentcheck.Id}")">Удалить</a>
     </TemplateColumn>
 </QuickGrid>
@@ -77,15 +76,18 @@
             await docCheckGrid.RefreshDataAsync();
     }
 
-    private async Task ScannedBarcodeHandle(string barcode)
+    private void ScannedBarcodeHandle(string barcode)
     {
         var refKey = GuidConvert.FromNumStr(barcode);
 
-        searchParams = new() { RefKey = refKey };
+        //searchParams = new() { RefKey = refKey };
 
-        if (await Repository.ExistsAsync(refKey))
-            NavigationManager?.NavigateTo($"documentchecks/edit?RefKey={refKey}");
-        else
-            NavigationManager?.NavigateTo($"documentchecks/create?RefKey={refKey}");
+        // if (await Repository.ExistsAsync(refKey))
+        //     NavigationManager?.NavigateTo($"documentchecks/edit?RefKey={refKey}");
+        // else
+        //     NavigationManager?.NavigateTo($"documentchecks/create?RefKey={refKey}");
+
+        // createorupdate
+        NavigationManager?.NavigateTo($"documentchecks/createorupdate?RefKey={refKey}");
     }
 }
