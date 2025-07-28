@@ -1,3 +1,4 @@
+using DocCheck.Bitrix;
 using DocCheck.Components;
 using DocCheck.Components.Account;
 using DocCheck.Data;
@@ -48,7 +49,7 @@ namespace DocCheck
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
             var odataConfig = builder.Configuration.GetSection(nameof(OData)).Get<ODataConfig>()
-                ?? throw new InvalidOperationException("ODataConfig Not Found");
+                ?? throw new InvalidOperationException("OData Config Not Found");
             var authenticationString = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{odataConfig.UserName}:{odataConfig.Password}"));
             builder.Services.AddHttpClient<ODataClient>(httpClient =>
             {
@@ -56,7 +57,15 @@ namespace DocCheck
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authenticationString);
             });
 
+            var bitrixConfig = builder.Configuration.GetSection(nameof(Bitrix)).Get<BitrixConfig>()
+                ?? throw new InvalidOperationException("Bitrix Config Not Found");
+            builder.Services.AddHttpClient<BitrixClient>(HttpClient =>
+            {
+                HttpClient.BaseAddress = new Uri(bitrixConfig.BaseAddress);
+            });
+
             builder.Services.AddScoped<ODataService>();
+            builder.Services.AddScoped<BitrixService>();
             builder.Services.AddScoped<DocCheckRepository>();
             //builder.Services.AddScoped(typeof(Repository<>));
             builder.Services.AddScoped<IDocCheckService, DocCheckService>();
