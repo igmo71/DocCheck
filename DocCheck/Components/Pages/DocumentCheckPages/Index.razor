@@ -30,8 +30,18 @@
     <PropertyColumn Property="dc => dc.UserId" />
 
     <TemplateColumn Context="documentcheck">
-        <a href="@($"documentchecks/createorupdate?RefKey={documentcheck.InvoiceRefKey}")">Изменить</a> |
-        <a href="@($"documentchecks/delete?id={documentcheck.Id}")">Удалить</a>
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-outline-primary" href="@($"documentchecks/createorupdate?RefKey={documentcheck.InvoiceRefKey}")" title="Изменить">
+                    <i class="bi bi-pencil"></i>
+                </a>
+            </div>
+            <div class="col">
+                <a class="btn btn-outline-danger" href="@($"documentchecks/delete?id={documentcheck.Id}")" title="Удалить">
+                    <i class="bi bi-trash3"></i>
+                </a>
+            </div>
+        </div>
     </TemplateColumn>
 </QuickGrid>
 
