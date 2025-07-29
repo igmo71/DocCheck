@@ -1,18 +1,22 @@
 ﻿@page "/documentchecks"
 
 @using DocCheck.Common
+@using DocCheck.Components.Account
+@using DocCheck.Data
 @using DocCheck.Models
 @using DocCheck.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
 @inject NavigationManager NavigationManager
 
+@attribute [Authorize]
+
 <PageTitle>Проблемные документы</PageTitle>
 
 <h2>Проблемные документы</h2>
-
 @* <p>
     <a href="documentchecks/create">Create New</a>
 </p> *@
