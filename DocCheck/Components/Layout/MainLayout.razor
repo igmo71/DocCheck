@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using DocCheck.Data
+@using DocCheck.Services
+@inherits LayoutComponentBase
+
+@inject AuthService AuthService
 
 <div class="page">
     <div class="sidebar">
@@ -7,6 +11,7 @@
 
     <main>
         <div class="top-row px-4">
+            <span>@user?.Name</span>
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
 
@@ -21,3 +26,12 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code{
+    private ApplicationUser? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await AuthService.GetCurrentUser();
+    }
+}

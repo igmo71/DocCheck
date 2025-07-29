@@ -13,13 +13,25 @@ namespace DocCheck.Services
         IUserStore<ApplicationUser> userStore,
         ILogger<AuthService> logger)
     {
-        public async Task<string?> GetUserIdAsync()
+        public async Task<string?> GetCurrentUserIdAsync()
         {
             var authState = await authStateProvider.GetAuthenticationStateAsync();
 
             var userId = authState?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             return userId;
+        }
+
+        public async Task<ApplicationUser?> GetCurrentUser()
+        {
+            var userId = await GetCurrentUserIdAsync();
+
+            if (string.IsNullOrEmpty(userId))
+                return null;
+
+            var currentUser = await FindByIdAsync(userId);
+
+            return currentUser;
         }
 
         public async Task<ApplicationUser?> FindByEmailAsync(string email)
@@ -29,8 +41,11 @@ namespace DocCheck.Services
             return appUser;
         }
 
-        public async Task<ApplicationUser?> FindByIdAsync(string userId)
+        public async Task<ApplicationUser?> FindByIdAsync(string? userId)
         {
+            if (string.IsNullOrEmpty(userId))
+                return null;
+
             var appUser = await userManager.FindByIdAsync(userId);
 
             return appUser;
@@ -102,18 +117,6 @@ namespace DocCheck.Services
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
             return (IUserEmailStore<ApplicationUser>)userStore;
-        }
-
-        public async Task<ApplicationUser?> GetCurrentUser()
-        {
-            var userId = await GetUserIdAsync();
-
-            if (string.IsNullOrEmpty(userId))
-                return null;
-
-            var currentUser = await FindByIdAsync(userId);
-
-            return currentUser;
         }
     }
 }

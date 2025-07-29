@@ -38,7 +38,7 @@ else
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    <label for="status" class="input-group-text">Статус:</label>
+                    <label for="status" class="input-group-text">Статус</label>
                     <InputSelect id="status" class="form-control" @bind-Value="DocCheck.Status" disabled="true">
                         <option value="">Выберите статус...</option>
                         @foreach (var item in Enum.GetValues<Status>())
@@ -51,7 +51,7 @@ else
             </div>
             <div class="col">
                 <div class="input-group">
-                    <label for="handler" class="input-group-text">Позиция:</label>
+                    <label for="handler" class="input-group-text">Позиция</label>
                     <InputSelect id="handler" @bind-Value="DocCheck.Position" class="form-control">
                         <option value="">Выберите позицию...</option>
                         @foreach (var item in Enum.GetValues<Position>())
@@ -64,9 +64,8 @@ else
             </div>
             <div class="col">
                 <div class="input-group">
-                    <label for="userid" class="input-group-text">UserId:</label>
-                    <InputText id="userid" @bind-Value="DocCheck.UserId" class="form-control" disabled="true" />
-                    <ValidationMessage For="() => DocCheck.UserId" class="text-danger" />
+                    <label for="userid" class="input-group-text">Пользователь</label>
+                    <input type="text" class="form-control" id="userid" value="@DocCheck.User?.Name" disabled />
                 </div>
             </div>
             <div class="col">
@@ -114,7 +113,7 @@ else
                         </div>
                         <div class="col">
                             <div class="input-group">
-                                <label for="documentdate" class="input-group-text">Дата</label>
+                                <label for="documentdate" class="input-group-text">от</label>
                                 <InputDate id="documentdate" @bind-Value="DocCheck.InvoiceDate" class="form-control" disabled="true" />
                                 <ValidationMessage For="() => DocCheck.InvoiceDate" class="text-danger" />
                             </div>
@@ -239,7 +238,7 @@ else
         {
             operation = Operations.Update;
 
-            var documentCheck = await Repository.GetItemAsync(DocCheck.InvoiceRefKey, isIncludeErrors: true);
+            var documentCheck = await Service.GetItemAsync(DocCheck.InvoiceRefKey, isIncludeErrors: true);
 
             if (documentCheck is null)
             {
@@ -260,7 +259,7 @@ else
         DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
 
 
-        DocCheck.UserId = await AuthService.GetUserIdAsync();
+        DocCheck.UserId = await AuthService.GetCurrentUserIdAsync();
 
         if (operation == Operations.Create)
             await Repository.CreateAsync(DocCheck);

@@ -21,5 +21,7 @@ namespace DocCheck.Data
 
         [MaxLength(36)]
         public string? BitrixId { get; set; }
+
+        public string Name => $"{FirstName} {LastName}";
     }
 }

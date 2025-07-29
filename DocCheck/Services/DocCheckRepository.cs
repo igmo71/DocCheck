@@ -1,7 +1,6 @@
 ﻿using DocCheck.Data;
 using DocCheck.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace DocCheck.Services
 {

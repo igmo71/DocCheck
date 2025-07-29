@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 @inject DocCheckRepository Repository
+@inject IDocCheckService Service
 @inject NavigationManager NavigationManager
 
 <PageTitle>Проблемные документы</PageTitle>
@@ -24,10 +25,10 @@
            @ref="docCheckGrid">
     <PropertyColumn Title="Номер" Property="dc => dc.InvoiceNumber" Sortable="true" InitialSortDirection="SortDirection.Descending" />
     <PropertyColumn Title="Дата" Property="dc => dc.InvoiceDate" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" />
-    <PropertyColumn Property="dc => dc.InvoiceRefKey" />
     <PropertyColumn Title="Статус" Property="dc => dc.Status == null ? string.Empty : dc.Status.GetDescription()" />
     <PropertyColumn Title="Позиция" Property="dc => dc.Position == null ? string.Empty : dc.Position.GetDescription()" />
-    <PropertyColumn Property="dc => dc.UserId" />
+    <PropertyColumn Title="Пользователь" Property="dc => dc.User == null ? string.Empty : dc.User.Name" />
+    @* <PropertyColumn Property="dc => dc.InvoiceRefKey" /> *@
 
     <TemplateColumn Context="documentcheck">
         <div class="row">
@@ -62,7 +63,7 @@
         BuildSearchParams(request);
 
         var totalItemsCount = await Repository.GetCountAsync(searchParams);
-        var items = request.Count is null ? [] : await Repository.GetItemsAsync(searchParams);
+        var items = request.Count is null ? [] : await Service.GetItemsAsync(searchParams);
 
         var result = GridItemsProviderResult.From(items, totalItemsCount);
 
@@ -90,14 +91,6 @@
     {
         var refKey = GuidConvert.FromNumStr(barcode);
 
-        //searchParams = new() { RefKey = refKey };
-
-        // if (await Repository.ExistsAsync(refKey))
-        //     NavigationManager?.NavigateTo($"documentchecks/edit?RefKey={refKey}");
-        // else
-        //     NavigationManager?.NavigateTo($"documentchecks/create?RefKey={refKey}");
-
-        // createorupdate
         NavigationManager?.NavigateTo($"documentchecks/createorupdate?RefKey={refKey}");
     }
 }
