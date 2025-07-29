@@ -28,5 +28,26 @@ namespace DocCheck.Bitrix
 
             return result;
         }
+
+        public bool LoginAsync(string userName, string password, out BitrixUser? bitrixUser)
+        {
+            var bitrixAuthParams = new Dictionary<string, string>
+            {
+                ["USER_LOGIN"] = userName,
+                ["USER_PASSWORD"] = password,
+                ["AUTH_FORM"] = "Y",
+                ["TYPE"] = "AUTH"
+            };
+
+            HttpContent contentForm = new FormUrlEncodedContent(bitrixAuthParams);
+
+            var authUri = configuration["Bitrix:AuthUri"];
+
+            var authResponse = bitrixClient.PostDataAsync<BitrixAuthResponse>(authUri, contentForm).GetAwaiter().GetResult();
+
+            bitrixUser = authResponse?.User;
+
+            return authResponse?.Result is bool result ? result : false;
+        }
     }
 }

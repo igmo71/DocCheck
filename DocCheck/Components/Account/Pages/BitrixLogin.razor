@@ -92,6 +92,8 @@
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         //var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
+
         var result = await BitrixService.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         
 
@@ -120,7 +122,9 @@
     private sealed class InputModel
     {
         [Required]
-        [EmailAddress]
+        [MinLength(3)]
+        [MaxLength(36)]
+        //[EmailAddress]
         public string Email { get; set; } = "";
 
         [Required]

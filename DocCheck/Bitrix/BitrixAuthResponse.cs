@@ -8,10 +8,10 @@ namespace DocCheck.Bitrix
         public bool Result { get; set; }
 
         [JsonPropertyName("user")]
-        public User? User { get; set; }
+        public BitrixUser? User { get; set; }
     }
 
-    public class User
+    public class BitrixUser
     {
         public string? ID { get; set; }
         public string? TIMESTAMP_X { get; set; }
