@@ -101,7 +101,7 @@
         if (bitrixUser is not null && !string.IsNullOrEmpty(bitrixUser.EMAIL))
             Input.Email = bitrixUser.EMAIL;
 
-        // var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        //var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         var result = await BitrixService.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
         if (result.Succeeded)
