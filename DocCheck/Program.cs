@@ -66,6 +66,7 @@ namespace DocCheck
 
             builder.Services.AddScoped<ODataService>();
             builder.Services.AddScoped<BitrixService>();
+            builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<DocCheckRepository>();
             //builder.Services.AddScoped(typeof(Repository<>));
             builder.Services.AddScoped<IDocCheckService, DocCheckService>();

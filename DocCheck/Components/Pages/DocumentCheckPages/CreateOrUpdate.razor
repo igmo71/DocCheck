@@ -8,7 +8,7 @@
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthStateProvider
+@inject AuthService AuthService
 
 <PageTitle>Проблемный Документ</PageTitle>
 
@@ -250,9 +250,6 @@ else
         }
 
         await Service.LoadBaseDocuments(DocCheck);
-
-        authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        DocCheck.UserId = authState?.User?.Identity?.Name;
     }
 
     private async Task DocCheckHandle()
@@ -260,13 +257,10 @@ else
         if (DocCheck == null)
             return;
 
-        if (DocCheck.Errors != null)
-        {
-            if (DocCheck.Errors.Count == 0)
-                DocCheck.Status = Status.Draft;
-            else
-                DocCheck.Status = Status.InProcess;
-        }
+        DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
+
+
+        DocCheck.UserId = await AuthService.GetUserIdAsync();
 
         if (operation == Operations.Create)
             await Repository.CreateAsync(DocCheck);

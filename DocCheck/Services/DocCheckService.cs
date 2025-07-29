@@ -1,5 +1,6 @@
 ﻿using DocCheck.Models;
 using DocCheck.Models.OData;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace DocCheck.Services
 {
