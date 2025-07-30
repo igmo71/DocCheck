@@ -6,8 +6,7 @@ namespace DocCheck.Bitrix
     public class BitrixService(
         BitrixClient bitrixClient,
         IConfiguration configuration,
-        AuthService authService,
-        ILogger<BitrixService> logger)
+        AuthService authService)
     {
         public async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool rememberMe, bool lockoutOnFailure = false)
         {

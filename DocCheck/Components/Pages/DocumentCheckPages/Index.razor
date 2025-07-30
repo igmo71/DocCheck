@@ -1,4 +1,4 @@
-﻿@page "/documentchecks"
+@page "/documentchecks"
 
 @using DocCheck.Common
 @using DocCheck.Components.Account
@@ -31,7 +31,7 @@
 <QuickGrid Class="table table-hover table-striped" ItemsProvider="itemsProvider" OverscanCount=32 Virtualize="true" ItemKey="(x => x.Id)"
            @ref="docCheckGrid">
     <PropertyColumn Title="Номер" Property="dc => dc.InvoiceNumber" Sortable="true" InitialSortDirection="SortDirection.Descending" />
-    <PropertyColumn Title="Дата" Property="dc => dc.InvoiceDate" Sortable="true" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" />
+    <PropertyColumn Title="Дата" Property="dc => dc.InvoiceDate" Sortable="true" Format="dd.MM.yyyy" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true" />
     <PropertyColumn Title="Статус" Property="dc => dc.Status == null ? string.Empty : dc.Status.GetDescription()" />
     <PropertyColumn Title="Позиция" Property="dc => dc.Position == null ? string.Empty : dc.Position.GetDescription()" />
     <PropertyColumn Title="Пользователь" Property="dc => dc.User == null ? string.Empty : dc.User.Name" />
@@ -58,8 +58,6 @@
     private QuickGrid<DocumentCheck>? docCheckGrid;
 
     private GridItemsProvider<DocumentCheck>? itemsProvider;
-
-    private bool isInitializing;
 
     protected override void OnInitialized()
     {

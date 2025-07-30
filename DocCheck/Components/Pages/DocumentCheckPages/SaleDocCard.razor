@@ -10,22 +10,22 @@
         <div class="card-body">
             <div class="h5 card-title">
                 <div class="row">
-                    <div class="col"><div class="text-center">@Document_РеализацияТоваровУслуг.Name</div></div>
-                    <div class="col"><span>№ </span><span> @SaleDoc.Number</span></div>
-                    <div class="col"><span>от </span><span> @SaleDoc.Date</span></div>
+                    <div class="col"><div class="text-center">@Document_Р РµР°Р»РёР·Р°С†РёСЏРўРѕРІР°СЂРѕРІРЈСЃР»СѓРі.Name</div></div>
+                    <div class="col"><span>в„– </span><span> @SaleDoc.Number</span></div>
+                    <div class="col"><span>РѕС‚ </span><span> @SaleDoc.Date</span></div>
                 </div>
                 <hr />
                 <div class="row">
-                    <div class="col"><div class="text-center"><small>Контрагент: </small><span> @SaleDoc.Контрагент?.Description</span></div></div>
-                    <div class="col"><small>Менеджер: </small><span> @SaleDoc.Менеджер?.Description</span></div>
-                    <div class="col"><small>Автор: </small><span> @SaleDoc.Автор?.Description</span></div>
+                    <div class="col"><div class="text-center"><small>РљРѕРЅС‚СЂР°РіРµРЅС‚: </small><span> @SaleDoc.РљРѕРЅС‚СЂР°РіРµРЅС‚?.Description</span></div></div>
+                    <div class="col"><small>РњРµРЅРµРґР¶РµСЂ: </small><span> @SaleDoc.РњРµРЅРµРґР¶РµСЂ?.Description</span></div>
+                    <div class="col"><small>РђРІС‚РѕСЂ: </small><span> @SaleDoc.РђРІС‚РѕСЂ?.Description</span></div>
                 </div>
                 <hr />
             </div>
 
-            @if (SaleDoc.Товары is null || SaleDoc.Товары.Length == 0)
+            @if (SaleDoc.РўРѕРІР°СЂС‹ is null || SaleDoc.РўРѕРІР°СЂС‹.Length == 0)
             {
-                <div class="alert alert-warning mt-2">Товары не найдены или табличная часть пуста</div>
+                <div class="alert alert-warning mt-2">РўРѕРІР°СЂС‹ РЅРµ РЅР°Р№РґРµРЅС‹ РёР»Рё С‚Р°Р±Р»РёС‡РЅР°СЏ С‡Р°СЃС‚СЊ РїСѓСЃС‚Р°</div>
             }
             else
             {
@@ -33,21 +33,21 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Номенклатура</th>
-                            <th>Количество</th>
-                            <th>Факт Кол-во</th>
+                            <th>РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°</th>
+                            <th>РљРѕР»РёС‡РµСЃС‚РІРѕ</th>
+                            <th>Р¤Р°РєС‚ РљРѕР»-РІРѕ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in SaleDoc.Товары)
+                        @foreach (var item in SaleDoc.РўРѕРІР°СЂС‹)
                         {
                             var errorValue = Errors?.FirstOrDefault(e => e.LineNumber == item.LineNumber)?.Quantity;
                             string itemWarning = errorValue is null ? string.Empty : "table-warning";
 
                             <tr class="@itemWarning">
                                 <td>@item.LineNumber</td>
-                                <td>@item.Номенклатура?.Description</td>
-                                <td>@item.Количество</td>
+                                <td>@item.РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°?.Description</td>
+                                <td>@item.РљРѕР»РёС‡РµСЃС‚РІРѕ</td>
                                 <td>
                                     <div class="row">
                                         <div class="col">
@@ -56,7 +56,7 @@
                                         <div class="col">
                                             @if (errorValue is not null)
                                             {
-                                                <button type="button" class="btn" title="Очистить" @onclick="@(() => DeleteError(item.LineNumber))">
+                                                <button type="button" class="btn" title="РћС‡РёСЃС‚РёС‚СЊ" @onclick="@(() => DeleteError(item.LineNumber))">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                             }
@@ -75,7 +75,7 @@
 
 @code {
     [Parameter]
-    public Document_РеализацияТоваровУслуг? SaleDoc { get; set; }
+    public Document_Р РµР°Р»РёР·Р°С†РёСЏРўРѕРІР°СЂРѕРІРЈСЃР»СѓРі? SaleDoc { get; set; }
 
     [Parameter]
     public List<Error>? Errors { get; set; }

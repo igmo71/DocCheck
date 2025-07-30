@@ -9,19 +9,19 @@
         <div class="row">
             <div class="col">
                 <div class="input-group mb-2">
-                    <span class="input-group-text">№</span>
-                    <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="Номер документа..." />
+                    <span class="input-group-text">в„–</span>
+                    <InputText class="form-control" @bind-Value="SearchParams.Number" placeholder="РќРѕРјРµСЂ РґРѕРєСѓРјРµРЅС‚Р°..." />
                 </div>
             </div>
             <div class="col">
                 <div class="input-group mb-2">
-                    <span class="input-group-text">Дата с</span>
+                    <span class="input-group-text">Р”Р°С‚Р° СЃ</span>
                     <InputDate class="form-control" @bind-Value="SearchParams.DateFrom" />
                 </div>
             </div>
             <div class="col">
                 <div class="input-group mb-2">
-                    <span class="input-group-text">Дата по</span>
+                    <span class="input-group-text">Р”Р°С‚Р° РїРѕ</span>
                     <InputDate class="form-control" @bind-Value="SearchParams.DateTo" />
                 </div>
             </div>
@@ -29,7 +29,7 @@
                 @if (users != null)
                 {
                     <InputSelect id="handler" @bind-Value="SearchParams.UserId" class="form-control">
-                        <option value="">Пользователь...</option>
+                        <option value="">РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ...</option>
                         @foreach (var user in users)
                         {
                             <option value="@user.Id">@user.Name</option>
@@ -38,15 +38,15 @@
                 }
             </div>            
             <div class="col">
-                <button type="submit" class="btn btn-primary">Поиск</button>
+                <button type="submit" class="btn btn-primary">РџРѕРёСЃРє</button>
             </div>
             <div class="col">
-                <button type="button" class="btn btn-primary" @onclick="Reset">Сбросить</button>
+                <button type="button" class="btn btn-primary" @onclick="Reset">РЎР±СЂРѕСЃРёС‚СЊ</button>
             </div>
             <div class="col">
                 <div class="form-check mt-2">
                     <InputCheckbox class="form-check-input" @bind-Value="SearchParams.IsShowClosed" id="isShowClosed" @oninput="ShowClosed" />
-                    <label class="form-check-label" for="isShowClosed">Показать закрытые</label>
+                    <label class="form-check-label" for="isShowClosed">РџРѕРєР°Р·Р°С‚СЊ Р·Р°РєСЂС‹С‚С‹Рµ</label>
                 </div>
             </div>
         </div>
