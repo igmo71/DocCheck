@@ -27,10 +27,10 @@
     <span> Проблемный Документ</span>
 </h2>
 <hr />
-@if (RefKey is null)
+@if (!string.IsNullOrEmpty(pageMessage))
 {
     <div class="alert alert-warning mt-2">
-        RefKey is null
+        @pageMessage
     </div>
 }
 else
@@ -264,7 +264,7 @@ else
 
         if (operation == Operations.Create)
         {
-            DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
+            DocCheck.Status = DocCheck.Errors == null ? Status.Draft : Status.InProcess;
 
             await Repository.CreateAsync(DocCheck);
         }

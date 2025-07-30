@@ -98,5 +98,19 @@ namespace DocCheck.Services
 
             await dbContext.SaveChangesAsync();
         }
+
+        public async Task DeleteAsync(string refKey)
+        {
+            using var dbContext = dbContextFactory.CreateDbContext();
+
+            var existing = await dbContext.DocumentCheck.FirstOrDefaultAsync(e => e.InvoiceRefKey == refKey);
+
+            if (existing == null)
+                return;
+
+            dbContext.Remove(existing);
+
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

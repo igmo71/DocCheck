@@ -1,47 +1,58 @@
 ﻿@page "/documentchecks/delete"
-@using Microsoft.EntityFrameworkCore
+
 @using DocCheck.Models
-@inject IDbContextFactory<DocCheck.Data.ApplicationDbContext> DbFactory
+@using DocCheck.Services
+
+@inject DocCheckRepository Repository
+@inject IDocCheckService Service
 @inject NavigationManager NavigationManager
 
 <PageTitle>Удалить</PageTitle>
 
 <h2>Удалить</h2>
 
-<p>Вы уверены, что хотите удалить?</p>
+<p class="text-danger">Вы уверены, что хотите удалить?</p>
 
 <h3>Сведения о проблемном документе</h3>
 <hr />
+@if (!string.IsNullOrEmpty(pageMessage))
+{
+    <div class="alert alert-warning mt-2">
+        @pageMessage
+    </div>
+}
 @if (documentcheck is null)
 {
-    <p><em>Loading...</em></p>
+    <div class="spinner-grow mt-3" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+    </div>
 }
 else
 {
     <dl class="row">
-        <dt class="col-sm-2">CreatedAt</dt>
-        <dd class="col-sm-10">@documentcheck.CreatedAt</dd>
+        <dt class="col-sm-2">Счет-фактура №</dt>
+        <dd class="col-sm-10">@documentcheck.InvoiceNumber</dd>
     </dl>
     <dl class="row">
-        <dt class="col-sm-2">UpdatedAt</dt>
-        <dd class="col-sm-10">@documentcheck.UpdatedAt</dd>
+        <dt class="col-sm-2">От</dt>
+        <dd class="col-sm-10">@documentcheck.InvoiceDate</dd>
     </dl>
     <dl class="row">
-        <dt class="col-sm-2">Status</dt>
-        <dd class="col-sm-10">@documentcheck.Status</dd>
+        <dt class="col-sm-2">Статус</dt>
+        <dd class="col-sm-10">@documentcheck.Status?.GetDescription()</dd>
     </dl>
     <dl class="row">
-        <dt class="col-sm-2">Handler</dt>
-        <dd class="col-sm-10">@documentcheck.Position</dd>
+        <dt class="col-sm-2">Позиция</dt>
+        <dd class="col-sm-10">@documentcheck.Position?.GetDescription()</dd>
     </dl>
     <dl class="row">
-        <dt class="col-sm-2">UserId</dt>
-        <dd class="col-sm-10">@documentcheck.UserId</dd>
+        <dt class="col-sm-2">Пользователь</dt>
+        <dd class="col-sm-10">@documentcheck.User?.Name</dd>
     </dl>
-    <dl class="row">
+    @* <dl class="row">
         <dt class="col-sm-2">DocumentRefKey</dt>
         <dd class="col-sm-10">@documentcheck.InvoiceRefKey</dd>
-    </dl>
+    </dl> *@
     <EditForm method="post" Model="documentcheck" OnValidSubmit="DeleteDocumentCheck" FormName="delete" Enhance>
         <button type="submit" class="btn btn-danger" disabled="@(documentcheck is null)">Удалить</button> |
         <a href="/documentchecks">Назад к списку</a>
@@ -49,15 +60,21 @@ else
 }
 
 @code {
-    private DocumentCheck? documentcheck;
-
     [SupplyParameterFromQuery]
-    private Guid Id { get; set; }
+    public string? RefKey { get; set; }
+
+    private DocumentCheck? documentcheck;
+    private string? pageMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        documentcheck = await context.DocumentCheck.FirstOrDefaultAsync(m => m.Id == Id);
+        if (RefKey is null)
+        {
+            pageMessage = "Что-то пошло не так...(RefKey is null)";
+            return;
+        }
+
+        documentcheck = await Service.GetItemAsync(RefKey);
 
         if (documentcheck is null)
         {
@@ -67,9 +84,10 @@ else
 
     private async Task DeleteDocumentCheck()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.DocumentCheck.Remove(documentcheck!);
-        await context.SaveChangesAsync();
+        if (RefKey is null)
+            return;
+
+        await Repository.DeleteAsync(RefKey);
         NavigationManager.NavigateTo("/documentchecks");
     }
 }
