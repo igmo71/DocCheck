@@ -1,4 +1,6 @@
-﻿namespace DocCheck.Services
+﻿using DocCheck.Models;
+
+namespace DocCheck.Services
 {
     public class SearchParams
     {
@@ -7,6 +9,8 @@
         public DateTime? Date { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
+        public string? UserId { get; set; }
+        public bool IsShowClosed { get; set; } = false;
 
         public int Skip { get; set; }
         public int? Take { get; set; }

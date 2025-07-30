@@ -5,13 +5,29 @@ namespace DocCheck.Services
 {
     public static class DocCheckRepositoryExtensions
     {
+        public static IQueryable<DocumentCheck> HandleQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
+        {
+            query = query.HandleFilterQuery(searchParams);
+
+            query = query.ApplyOrder(searchParams);
+
+            if (searchParams.Skip > 0)
+                query = query.Skip(searchParams.Skip);
+
+            if (searchParams.Take > 0)
+                query = query.Take((int)searchParams.Take);
+
+            return query;
+        }
+
         public static IQueryable<DocumentCheck> HandleFilterQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
         {
+
             if (searchParams.RefKey is not null)
                 query = query.Where(e => e.InvoiceRefKey == searchParams.RefKey);
 
-            if (searchParams.Number is not null)
-                query = query.Where(e => e.InvoiceNumber != null && e.InvoiceNumber.ToLower().Contains(searchParams.Number.ToLower())); ;
+            if (!string.IsNullOrWhiteSpace(searchParams.Number))
+                query = query.Where(e => e.InvoiceNumber != null && e.InvoiceNumber.ToLower().Contains(searchParams.Number.ToLower()));
 
             if (searchParams.DateFrom is not null)
                 query = query.Where(e => e.InvoiceDate.Date >= searchParams.DateFrom);
@@ -19,20 +35,11 @@ namespace DocCheck.Services
             if (searchParams.DateTo is not null)
                 query = query.Where(e => e.InvoiceDate.Date < ((DateTime)searchParams.DateTo).AddDays(1));
 
-            return query;
-        }
+            if (!string.IsNullOrWhiteSpace(searchParams.UserId))
+                query = query.Where(e => e.UserId == searchParams.UserId);
 
-        public static IQueryable<DocumentCheck> HandleQuery(this IQueryable<DocumentCheck> query, SearchParams searchParams)
-        {
-            query = query.HandleFilterQuery(searchParams);
-
-            query = query.ApplyOrder(searchParams); 
-
-            if (searchParams.Skip > 0)
-                query = query.Skip(searchParams.Skip);
-
-            if (searchParams.Take > 0)
-                query = query.Take((int)searchParams.Take);
+            if (!searchParams.IsShowClosed)
+                query = query.Where(e => e.Status != Status.Closed);
 
             return query;
         }

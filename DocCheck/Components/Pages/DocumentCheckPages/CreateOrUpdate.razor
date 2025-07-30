@@ -220,21 +220,21 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        isInitializing = true;
-
-        if (RefKey is null)
-        {
-            pageMessage = "Что-то пошло не так...(RefKey is null)";
-            return;
-        }
+        isInitializing = true;        
 
         await DocCheckInitialize(RefKey);
 
         isInitializing = false;
     }
 
-    private async Task DocCheckInitialize(string refKey)
+    private async Task DocCheckInitialize(string? refKey)
     {
+        if (refKey is null)
+        {
+            pageMessage = "Что-то пошло не так...(RefKey is null)";
+            return;
+        }
+
         DocCheck.InvoiceRefKey = refKey;
 
         if (await Repository.ExistsAsync(DocCheck.InvoiceRefKey))
@@ -248,6 +248,7 @@ else
                 pageMessage = "Что-то пошло не так...(DocumentCheck is null)";
                 return;
             }
+
             DocCheck = documentCheck;
         }
 
@@ -269,7 +270,9 @@ else
         }
 
         if (operation == Operations.Update)
+        {
             await Repository.UpdateAsync(DocCheck);
+        }
 
         NavigationManager.NavigateTo("/documentchecks");
     }

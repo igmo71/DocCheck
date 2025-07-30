@@ -118,5 +118,12 @@ namespace DocCheck.Services
             }
             return (IUserEmailStore<ApplicationUser>)userStore;
         }
+
+        public List<ApplicationUser> GetUsers()
+        {
+            var users = userManager.Users.ToList();
+
+            return users;
+        }
     }
 }

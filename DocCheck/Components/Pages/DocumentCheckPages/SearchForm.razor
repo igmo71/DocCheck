@@ -1,7 +1,7 @@
-@using DocCheck.Common
-@using DocCheck.Models
+@using DocCheck.Data
 @using DocCheck.Services
-@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject AuthService AuthService
 
 <EditForm Model="SearchParams" FormName="SearchForm" OnSubmit="Search">
     @if (SearchParams is not null)
@@ -26,6 +26,24 @@
                 </div>
             </div>
             <div class="col">
+                @if (users != null)
+                {
+                    <InputSelect id="handler" @bind-Value="SearchParams.UserId" class="form-control">
+                        <option value="">Пользователь...</option>
+                        @foreach (var user in users)
+                        {
+                            <option value="@user.Id">@user.Name</option>
+                        }
+                    </InputSelect>
+                }
+            </div>
+            <div class="col">
+                <div class="form-check mt-2">
+                    <InputCheckbox class="form-check-input" @bind-Value="SearchParams.IsShowClosed" id="isShowClosed" />
+                    <label class="form-check-label" for="isShowClosed">Показать закрытые</label>
+                </div>
+            </div>
+            <div class="col">
                 <button type="submit" class="btn btn-primary">Поиск</button>
             </div>
             <div class="col">
@@ -42,6 +60,12 @@
     [Parameter]
     public EventCallback<SearchParams> OnSubmit { get; set; }
 
+    private List<ApplicationUser>? users;
+
+    protected override void OnInitialized()
+    {
+        users = AuthService.GetUsers();
+    }
 
     private async Task Search(EditContext args)
     {
