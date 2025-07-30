@@ -61,11 +61,18 @@
 
     private bool isInitializing;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await LoadSearchParams();
-
         itemsProvider = ItemsProviderDelegate;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadSearchParams();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadSearchParams()

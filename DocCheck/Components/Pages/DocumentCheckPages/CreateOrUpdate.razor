@@ -157,6 +157,7 @@ else
         }
 
         DocCheck.InvoiceRefKey = refKey;
+        DocCheck.Errors = new();
 
         if (await Repository.ExistsAsync(DocCheck.InvoiceRefKey))
         {
@@ -185,7 +186,7 @@ else
 
         if (operation == Operations.Create)
         {
-            DocCheck.Status = DocCheck.Errors == null ? Status.Draft : Status.InProcess;
+            DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
 
             await Repository.CreateAsync(DocCheck);
         }
