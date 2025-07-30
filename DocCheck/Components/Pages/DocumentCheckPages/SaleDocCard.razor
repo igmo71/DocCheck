@@ -1,0 +1,115 @@
+@using DocCheck.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Models
+@using Models.OData
+
+@if (SaleDoc != null)
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="h5 card-title">
+                <div class="row">
+                    <div class="col"><div class="text-center">@Document_РеализацияТоваровУслуг.Name</div></div>
+                    <div class="col"><span>№ </span><span> @SaleDoc.Number</span></div>
+                    <div class="col"><span>от </span><span> @SaleDoc.Date</span></div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col"><div class="text-center"><small>Контрагент: </small><span> @SaleDoc.Контрагент?.Description</span></div></div>
+                    <div class="col"><small>Менеджер: </small><span> @SaleDoc.Менеджер?.Description</span></div>
+                    <div class="col"><small>Автор: </small><span> @SaleDoc.Автор?.Description</span></div>
+                </div>
+                <hr />
+            </div>
+
+            @if (SaleDoc.Товары is null || SaleDoc.Товары.Length == 0)
+            {
+                <div class="alert alert-warning mt-2">Товары не найдены или табличная часть пуста</div>
+            }
+            else
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Номенклатура</th>
+                            <th>Количество</th>
+                            <th>Факт Кол-во</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in SaleDoc.Товары)
+                        {
+                            var errorValue = Errors?.FirstOrDefault(e => e.LineNumber == item.LineNumber)?.Quantity;
+                            string itemWarning = errorValue is null ? string.Empty : "table-warning";
+
+                            <tr class="@itemWarning">
+                                <td>@item.LineNumber</td>
+                                <td>@item.Номенклатура?.Description</td>
+                                <td>@item.Количество</td>
+                                <td>
+                                    <div class="row">
+                                        <div class="col">
+                                            <input type="text" value="@errorValue" @onchange="@((args) => CreateOrUpdateError(args, item.LineNumber))" />
+                                        </div>
+                                        <div class="col">
+                                            @if (errorValue is not null)
+                                            {
+                                                <button type="button" class="btn" title="Очистить" @onclick="@(() => DeleteError(item.LineNumber))">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Document_РеализацияТоваровУслуг? SaleDoc { get; set; }
+
+    [Parameter]
+    public List<Error>? Errors { get; set; }
+
+    [Parameter]
+    public Guid DocCheckId { get; set; }
+
+    private void CreateOrUpdateError(ChangeEventArgs args, int lineNumber)
+    {
+        if (!double.TryParse(args.Value?.ToString(), out double quantity))
+            return;
+
+        Errors ??= [];
+
+        var error = Errors.FirstOrDefault(e => e.LineNumber == lineNumber);
+
+        if (error is null)
+        {
+            error = new Error() { DocumentCheckId = DocCheckId };
+
+            Errors.Add(error);
+        }
+
+        error.LineNumber = lineNumber;
+        error.Quantity = quantity;
+    }
+
+    private void DeleteError(int lineNumber)
+    {
+        var error = Errors?.FirstOrDefault(e => e.LineNumber == lineNumber);
+
+        if (error == null)
+            return;
+
+        Errors?.Remove(error);
+    }
+}
