@@ -36,18 +36,18 @@
                         }
                     </InputSelect>
                 }
-            </div>
-            <div class="col">
-                <div class="form-check mt-2">
-                    <InputCheckbox class="form-check-input" @bind-Value="SearchParams.IsShowClosed" id="isShowClosed" />
-                    <label class="form-check-label" for="isShowClosed">Показать закрытые</label>
-                </div>
-            </div>
+            </div>            
             <div class="col">
                 <button type="submit" class="btn btn-primary">Поиск</button>
             </div>
             <div class="col">
                 <button type="button" class="btn btn-primary" @onclick="Reset">Сбросить</button>
+            </div>
+            <div class="col">
+                <div class="form-check mt-2">
+                    <InputCheckbox class="form-check-input" @bind-Value="SearchParams.IsShowClosed" id="isShowClosed" @oninput="ShowClosed" />
+                    <label class="form-check-label" for="isShowClosed">Показать закрытые</label>
+                </div>
             </div>
         </div>
     }
@@ -77,5 +77,15 @@
         SearchParams = new();
 
         await OnSubmit.InvokeAsync(SearchParams);
+    }
+
+    private async Task ShowClosed(ChangeEventArgs args)
+    {
+        if (SearchParams != null && args.Value != null)
+        {
+            SearchParams.IsShowClosed = (bool)args.Value;
+
+            await OnSubmit.InvokeAsync(SearchParams);
+        }
     }
 }

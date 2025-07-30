@@ -7,7 +7,9 @@
 @using DocCheck.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
+@inject ProtectedSessionStorage ProtectedSessionStore
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
 @inject NavigationManager NavigationManager
@@ -17,6 +19,7 @@
 <PageTitle>Проблемные документы</PageTitle>
 
 <h2>Проблемные документы</h2>
+
 @* <p>
     <a href="documentchecks/create">Create New</a>
 </p> *@
@@ -32,7 +35,6 @@
     <PropertyColumn Title="Статус" Property="dc => dc.Status == null ? string.Empty : dc.Status.GetDescription()" />
     <PropertyColumn Title="Позиция" Property="dc => dc.Position == null ? string.Empty : dc.Position.GetDescription()" />
     <PropertyColumn Title="Пользователь" Property="dc => dc.User == null ? string.Empty : dc.User.Name" />
-    @* <PropertyColumn Property="dc => dc.InvoiceRefKey" /> *@
 
     <TemplateColumn Context="documentcheck">
         <div class="row">
@@ -55,11 +57,23 @@
 
     private QuickGrid<DocumentCheck>? docCheckGrid;
 
-    GridItemsProvider<DocumentCheck>? itemsProvider;
+    private GridItemsProvider<DocumentCheck>? itemsProvider;
 
-    protected override void OnInitialized()
+    private bool isInitializing;
+
+    protected override async Task OnInitializedAsync()
     {
+        await LoadSearchParams();
+
         itemsProvider = ItemsProviderDelegate;
+    }
+
+    private async Task LoadSearchParams()
+    {
+        var result = await ProtectedSessionStore.GetAsync<SearchParams>(nameof(SearchParams));
+
+        if (result.Success && result.Value != null)
+            searchParams = result.Value;
     }
 
     private async ValueTask<GridItemsProviderResult<DocumentCheck>> ItemsProviderDelegate(GridItemsProviderRequest<DocumentCheck> request)
@@ -89,6 +103,8 @@
 
         if (docCheckGrid is not null)
             await docCheckGrid.RefreshDataAsync();
+
+        await ProtectedSessionStore.SetAsync(nameof(SearchParams), searchParams);
     }
 
     private void ScannedBarcodeHandle(string barcode)

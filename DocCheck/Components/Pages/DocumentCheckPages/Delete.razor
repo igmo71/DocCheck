@@ -2,10 +2,13 @@
 
 @using DocCheck.Models
 @using DocCheck.Services
+@using Microsoft.AspNetCore.Authorization
 
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize]
 
 <PageTitle>Удалить</PageTitle>
 
@@ -49,10 +52,6 @@ else
         <dt class="col-sm-2">Пользователь</dt>
         <dd class="col-sm-10">@documentcheck.User?.Name</dd>
     </dl>
-    @* <dl class="row">
-        <dt class="col-sm-2">DocumentRefKey</dt>
-        <dd class="col-sm-10">@documentcheck.InvoiceRefKey</dd>
-    </dl> *@
     <EditForm method="post" Model="documentcheck" OnValidSubmit="DeleteDocumentCheck" FormName="delete" Enhance>
         <button type="submit" class="btn btn-danger" disabled="@(documentcheck is null)">Удалить</button> |
         <a href="/documentchecks">Назад к списку</a>
