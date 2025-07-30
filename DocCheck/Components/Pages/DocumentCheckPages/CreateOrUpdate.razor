@@ -42,7 +42,7 @@ else
             <div class="col">
                 <div class="input-group">
                     <label for="status" class="input-group-text">Статус</label>
-                    <InputSelect id="status" class="form-control" @bind-Value="DocCheck.Status" disabled="true">
+                    <InputSelect id="status" class="form-control" @bind-Value="DocCheck.Status">
                         <option value="">Выберите статус...</option>
                         @foreach (var item in Enum.GetValues<Status>())
                         {
@@ -259,13 +259,14 @@ else
         if (DocCheck == null)
             return;
 
-        DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
-
-
         DocCheck.UserId = await AuthService.GetCurrentUserIdAsync();
 
         if (operation == Operations.Create)
+        {
+            DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
+
             await Repository.CreateAsync(DocCheck);
+        }
 
         if (operation == Operations.Update)
             await Repository.UpdateAsync(DocCheck);
