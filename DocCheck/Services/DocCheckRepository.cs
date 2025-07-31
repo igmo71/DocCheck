@@ -76,6 +76,8 @@ namespace DocCheck.Services
             if (existing == null)
                 return;
 
+            AddLog(dbContext, existing);
+
             dbContext.Entry(existing).CurrentValues.SetValues(item);
 
             existing.Errors = item.Errors;
@@ -94,9 +96,17 @@ namespace DocCheck.Services
             if (existing == null)
                 return;
 
+            AddLog(dbContext, existing);
+
             dbContext.Remove(existing);
 
             await dbContext.SaveChangesAsync();
+        }
+
+        private static void AddLog(ApplicationDbContext dbContext, DocumentCheck existing)
+        {
+            var log = new DocumentCheckLog(existing);
+            dbContext.DocumentCheckLog.Add(log);
         }
 
         public async Task DeleteAsync(string refKey)

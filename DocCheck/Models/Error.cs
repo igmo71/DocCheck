@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DocCheck.Models
 {
@@ -8,6 +9,8 @@ namespace DocCheck.Models
         public Guid Id { get; set; }
 
         public Guid DocumentCheckId { get; set; }
+
+        [JsonIgnore]
         public DocumentCheck? DocumentCheck { get; set; }
 
         [MaxLength(AppSettings.GUID_LENGTH)]

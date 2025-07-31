@@ -13,7 +13,7 @@ namespace DocCheck.Models
         {
             DateTime = DateTime.Now;
             DocumentCheckId = documentCheck.Id;
-            Log = JsonSerializer.Serialize(documentCheck);
+            Log = JsonSerializer.Serialize(documentCheck, AppSettings.JsonSerializerOptions);
         }
 
         [Key]

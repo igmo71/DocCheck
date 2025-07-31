@@ -22,6 +22,8 @@ namespace DocCheck.Models
         public Position? Position { get; set; } = Models.Position.Operator;
                 
         public string? UserId { get; set; }
+
+        [JsonIgnore]
         public ApplicationUser? User { get; set; }
 
         public List<Error>? Errors { get; set; }
