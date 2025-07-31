@@ -41,7 +41,7 @@
                     <tbody>
                         @foreach (var item in SaleDoc.Товары)
                         {
-                            var errorValue = Errors?.FirstOrDefault(e => e.LineNumber == item.LineNumber)?.Quantity;
+                            var errorValue = Errors?.FirstOrDefault(e => e.RefKey == item.Ref_Key && e.LineNumber == item.LineNumber)?.Quantity;
                             string itemWarning = errorValue is null ? string.Empty : "table-warning";
 
                             <tr class="@itemWarning">
@@ -51,12 +51,12 @@
                                 <td>
                                     <div class="row">
                                         <div class="col">
-                                            <input type="text" value="@errorValue" @onchange="@((args) => CreateOrUpdateError(args, item.LineNumber))" />
+                                            <input type="text" value="@errorValue" @onchange="@((args) => CreateOrUpdateError(args, item))" />
                                         </div>
                                         <div class="col">
                                             @if (errorValue is not null)
                                             {
-                                                <button type="button" class="btn" title="Очистить" @onclick="@(() => DeleteError(item.LineNumber))">
+                                                <button type="button" class="btn" title="Очистить" @onclick="@(() => DeleteError(item))">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                             }
@@ -83,14 +83,14 @@
     [Parameter]
     public Guid DocCheckId { get; set; }
 
-    private void CreateOrUpdateError(ChangeEventArgs args, int lineNumber)
+    private void CreateOrUpdateError(ChangeEventArgs args, Document_РеализацияТоваровУслуг_Товары product)
     {
         if (!double.TryParse(args.Value?.ToString(), out double quantity))
             return;
 
         Errors ??= [];
 
-        var error = Errors.FirstOrDefault(e => e.LineNumber == lineNumber);
+        var error = Errors.FirstOrDefault(e => e.RefKey == product.Ref_Key && e.LineNumber == product.LineNumber);
 
         if (error is null)
         {
@@ -99,13 +99,14 @@
             Errors.Add(error);
         }
 
-        error.LineNumber = lineNumber;
+        error.RefKey = product.Ref_Key;
+        error.LineNumber = product.LineNumber;
         error.Quantity = quantity;
     }
 
-    private void DeleteError(int lineNumber)
+    private void DeleteError(Document_РеализацияТоваровУслуг_Товары product)
     {
-        var error = Errors?.FirstOrDefault(e => e.LineNumber == lineNumber);
+        var error = Errors?.FirstOrDefault(e => e.RefKey == product.Ref_Key && e.LineNumber == product.LineNumber);
 
         if (error == null)
             return;

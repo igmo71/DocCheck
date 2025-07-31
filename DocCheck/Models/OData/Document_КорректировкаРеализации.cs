@@ -127,6 +127,7 @@ namespace DocCheck.Models.OData
 
     public class Document_КорректировкаРеализации_Товары
     {
+        public string? Ref_Key { get; set; }
         public int LineNumber { get; set; }
         public double Количество { get; set; }
 
@@ -136,11 +137,11 @@ namespace DocCheck.Models.OData
         public static ODataParams ODataParams => new()
         {
             Expand = "Номенклатура",
-            Select = "LineNumber,Количество,Номенклатура_Key,Номенклатура/Description",
+            Select = "Ref_Key,LineNumber,Количество,Номенклатура_Key,Номенклатура/Description",
             OrderBy = "LineNumber"
         };
 
-        //public string Ref_Key { get; set; }
+        
         //public string Характеристика_Key { get; set; }
         //public string Назначение_Key { get; set; }
         //public string Содержание { get; set; }
