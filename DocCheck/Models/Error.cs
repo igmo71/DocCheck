@@ -14,6 +14,7 @@ namespace DocCheck.Models
         public string? RefKey { get; set; }
         public int LineNumber { get; set; }
         public double Quantity { get; set; }
+        public TypicalError TypicalError { get; set; }
         public string? Message { get; set; }
     }
 }

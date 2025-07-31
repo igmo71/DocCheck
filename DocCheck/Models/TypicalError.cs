@@ -4,13 +4,13 @@ namespace DocCheck.Models
 {
     public enum TypicalError
     {
-        [Description("Неопределено")]
-        Undefined,
+        [Description("Прочее")]
+        Other = -1,
 
         [Description("Нет печати")]
-        NoStamp,
+        NoStamp = 1,
 
         [Description("Нет подписи")]
-        NoSignature
+        NoSignature = 2
     }
 }

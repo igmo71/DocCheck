@@ -23,6 +23,21 @@
                 <hr />
             </div>
 
+            <div class="row">
+                <div class="col"><h4>Типичные проблемы:</h4> </div>
+                @foreach (var key in TypicalErrors.Keys)
+                {
+                    <div class="col">
+                        <div class="form-check mt-2">
+                            <InputCheckbox class="form-check-input" @bind-Value="TypicalErrors[key]" id="@($"typicalError_{key}")"
+                                           @oninput="@((args) => UpdateTypicalErrors(args, key))" />
+                            <label class="form-check-label" for="@($"typicalError_{key}")">@(Enum.Parse<TypicalError>(key).GetDescription())</label>
+                        </div>
+                    </div>
+                }
+            </div>
+            <hr />
+
             @if (SaleDoc.Товары is null || SaleDoc.Товары.Length == 0)
             {
                 <div class="alert alert-warning mt-2">Товары не найдены или табличная часть пуста</div>
@@ -83,6 +98,14 @@
     [Parameter]
     public Guid DocCheckId { get; set; }
 
+    private Dictionary<string, bool> TypicalErrors = Enum.GetValues<TypicalError>()
+        .ToDictionary(e => e.ToString(), e => false);
+
+    protected override void OnInitialized()
+    {
+        LoadTypicalErrors();
+    }
+
     private void CreateOrUpdateError(ChangeEventArgs args, Document_РеализацияТоваровУслуг_Товары product)
     {
         if (!double.TryParse(args.Value?.ToString(), out double quantity))
@@ -94,13 +117,11 @@
 
         if (error is null)
         {
-            error = new Error() { DocumentCheckId = DocCheckId };
+            error = new Error() { DocumentCheckId = DocCheckId, RefKey = product.Ref_Key, LineNumber = product.LineNumber };
 
             Errors.Add(error);
         }
 
-        error.RefKey = product.Ref_Key;
-        error.LineNumber = product.LineNumber;
         error.Quantity = quantity;
     }
 
@@ -112,5 +133,40 @@
             return;
 
         Errors?.Remove(error);
+    }
+
+    private void LoadTypicalErrors()
+    {
+        if (Errors is null)
+            return;
+
+        foreach (var item in Errors.Where(e => e.LineNumber == 0).ToArray())
+            TypicalErrors[item.TypicalError.ToString()] = true;
+    }
+
+    private void UpdateTypicalErrors(ChangeEventArgs args, string key)
+    {
+        if (args.Value is null)
+            return;
+
+        Errors ??= [];
+
+        TypicalErrors[key] = (bool)args.Value;
+
+        var typicalError = Enum.Parse<TypicalError>(key);
+
+        var error = Errors.FirstOrDefault(e => e.TypicalError == typicalError);
+
+        if (error is null && (bool)args.Value)
+        {
+            error = new Error() { DocumentCheckId = DocCheckId, RefKey = SaleDoc?.Ref_Key, TypicalError = typicalError };
+
+            Errors.Add(error);
+        }
+        if (error is not null && !(bool)args.Value)
+        {
+            Errors.Remove(error);
+        }
+
     }
 }
