@@ -7,6 +7,10 @@ using DocCheck.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -16,7 +20,33 @@ namespace DocCheck
     {
         public static void Main(string[] args)
         {
+
             var builder = WebApplication.CreateBuilder(args);
+
+            if (builder.Configuration.GetValue<bool>("IsUseSeq", defaultValue: false))
+            {
+                Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .CreateLogger();
+
+                builder.Host.UseSerilog();
+
+                builder.Services.AddOpenTelemetry()
+                    .ConfigureResource(r => r.AddService("DockCheck Service"))
+                    .WithTracing(t =>
+                    {
+                        t.AddSource("DocCheck.Source");
+                        t.AddAspNetCoreInstrumentation();
+                        t.AddHttpClientInstrumentation();
+                        t.AddSqlClientInstrumentation();
+                        t.AddConsoleExporter();
+                        t.AddOtlpExporter(e =>
+                        {
+                            e.Endpoint = new Uri($"{builder.Configuration["OpenTelemetry:OtlpExporter"]}/traces");
+                            e.Protocol = OtlpExportProtocol.HttpProtobuf;
+                        });
+                    });
+            }
 
             // Add services to the container.
             builder.Services.AddRazorComponents()

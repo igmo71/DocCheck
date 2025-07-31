@@ -2,7 +2,7 @@
 
 namespace DocCheck.Bitrix
 {
-    public class BitrixClient(HttpClient httpClient)
+    public class BitrixClient(HttpClient httpClient, ILogger<BitrixClient> logger)
     {
         public async Task<TResponse?> PostDataAsync<TResponse>(string? uri, HttpContent httpContent)
         {
@@ -11,6 +11,8 @@ namespace DocCheck.Bitrix
             var content = await response.Content.ReadAsStringAsync();
 
             var result = JsonSerializer.Deserialize<TResponse>(content);
+
+            logger.LogDebug("{Source} {Uri} {@Result}", nameof(PostDataAsync), uri, result);
 
             return result;
         }
