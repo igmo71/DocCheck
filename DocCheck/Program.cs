@@ -39,7 +39,7 @@ namespace DocCheck
                         t.AddAspNetCoreInstrumentation();
                         t.AddHttpClientInstrumentation();
                         t.AddSqlClientInstrumentation();
-                        t.AddConsoleExporter();
+                        //t.AddConsoleExporter();
                         t.AddOtlpExporter(e =>
                         {
                             e.Endpoint = new Uri($"{builder.Configuration["OpenTelemetry:OtlpExporter"]}/traces");
