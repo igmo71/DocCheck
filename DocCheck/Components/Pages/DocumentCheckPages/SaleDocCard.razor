@@ -8,15 +8,22 @@
 {
     <div class="card">
         <div class="card-body">
-            <div class="h5 card-title">
-                <div class="row">
+            <div class="card-title h5">
+                @*  <div class="row">
                     <div class="col"><div class="text-center">@Document_РеализацияТоваровУслуг.Name</div></div>
                     <div class="col"><span>№ </span><span> @SaleDoc.Number</span></div>
                     <div class="col"><span>от </span><span> @SaleDoc.Date</span></div>
+                </div> *@
+                <div>
+                    <span> @Document_РеализацияТоваровУслуг.Name </span>
+                    <span> № </span><span> @SaleDoc.Number </span>
+                    <span> от </span><span> @SaleDoc.Date </span>
                 </div>
-                <hr />
+                <hr />                
+            </div>
+            <div class="card-subtitle h6">
                 <div class="row">
-                    <div class="col"><div class="text-center"><small>Контрагент: </small><span> @SaleDoc.Контрагент?.Description</span></div></div>
+                    <div class="col"><small>Контрагент: </small><span> @SaleDoc.Контрагент?.Description</span></div>
                     <div class="col"><small>Менеджер: </small><span> @SaleDoc.Менеджер?.Description</span></div>
                     <div class="col"><small>Автор: </small><span> @SaleDoc.Автор?.Description</span></div>
                 </div>
@@ -24,10 +31,10 @@
             </div>
 
             <div class="row">
-                <div class="col"><h4>Типичные проблемы:</h4> </div>
+                <div class="col h5">Типичные проблемы:</div>
                 @foreach (var key in TypicalErrors.Keys)
                 {
-                    <div class="col">
+                    <div class="col h5">
                         <div class="form-check mt-2">
                             <InputCheckbox class="form-check-input" @bind-Value="TypicalErrors[key]" id="@($"typicalError_{key}")"
                                            @oninput="@((args) => UpdateTypicalErrors(args, key))" />
@@ -36,6 +43,15 @@
                     </div>
                 }
             </div>
+            @if (Errors?.FirstOrDefault(e => e.TypicalError == TypicalError.Other) != null)
+            {
+                <div class="row mt-2">
+                    <div class="col-2 h5">Прочее: </div>
+                    <div class="col-10">
+                        <input type="text" class="form-control" @onchange="UpdateOtherError" value="@(Errors?.FirstOrDefault(e => e.TypicalError == TypicalError.Other)?.Message)" />
+                    </div>
+                </div>
+            }
             <hr />
 
             @if (SaleDoc.Товары is null || SaleDoc.Товары.Length == 0)
@@ -100,6 +116,8 @@
 
     private Dictionary<string, bool> TypicalErrors = Enum.GetValues<TypicalError>()
         .ToDictionary(e => e.ToString(), e => false);
+
+    private bool isOtherError;
 
     protected override void OnInitialized()
     {
@@ -168,5 +186,17 @@
             Errors.Remove(error);
         }
 
+    }
+    private void UpdateOtherError(ChangeEventArgs args)
+    {
+        if (Errors is null || args.Value is null)
+            return;
+
+        var message = args.Value.ToString();
+
+        var error = Errors.FirstOrDefault(e => e.TypicalError == TypicalError.Other);
+
+        if (error is not null)
+            error.Message = message;
     }
 }

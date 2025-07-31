@@ -12,7 +12,8 @@ namespace DocCheck.Models.OData
         public Document_СчетФактураВыданный_ДокументыОснования[]? ДокументыОснования { get; set; }
 
 
-        public static string Name => nameof(Document_СчетФактураВыданный).Substring(9);
+        //public static string Name => nameof(Document_СчетФактураВыданный).Substring(9);
+        public static string Name => "Счет-фактура выданный";
 
         public static ODataParams ODataParams => new()
         {

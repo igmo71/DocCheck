@@ -104,11 +104,16 @@ else
         {
             <div class="card mt-3">
                 <div class="card-header">
-                    <div class="row">
+                    @* <div class="row">
                         <div class="col"><div class="text-center">@Document_СчетФактураВыданный.Name</div></div>
                         <div class="col"><span>№ </span><span> @DocCheck.InvoiceNumber</span></div>
                         <div class="col"><span>от </span><span> @DocCheck.InvoiceDate</span></div>
-                    </div>                    
+                    </div> *@    
+                    <div>
+                        <span> @Document_СчетФактураВыданный.Name </span>
+                        <span> № </span><span> @DocCheck.InvoiceNumber </span>
+                        <span> от </span><span> @DocCheck.InvoiceDate </span>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if (DocCheck.SaleDocuments is null || DocCheck.SaleDocuments.Count == 0)
@@ -141,7 +146,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        isInitializing = true;        
+        isInitializing = true;
 
         await DocCheckInitialize(RefKey);
 
@@ -184,10 +189,11 @@ else
 
         DocCheck.UserId = await AuthService.GetCurrentUserIdAsync();
 
-        if (operation == Operations.Create)
-        {
+        if (DocCheck.Status != Status.Closed)
             DocCheck.Status = DocCheck.Errors?.Count == 0 ? Status.Draft : Status.InProcess;
 
+        if (operation == Operations.Create)
+        {
             await Repository.CreateAsync(DocCheck);
         }
 

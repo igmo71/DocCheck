@@ -19,7 +19,8 @@ namespace DocCheck.Models.OData
         public string? Контрагент_Key { get; set; }
         public Catalog_Контрагенты? Контрагент { get; set; }
 
-        public static string Name => nameof(Document_РеализацияТоваровУслуг).Substring(9);
+        //public static string Name => nameof(Document_РеализацияТоваровУслуг).Substring(9);
+        public static string Name => "Реализация Товаров Услуг";
 
         public static ODataParams ODataParams => new()
         {
