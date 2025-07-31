@@ -18,8 +18,8 @@ namespace DocCheck.Services
 
             var saleDoc = rootobject?.Value?.FirstOrDefault();
 
-            if(saleDoc == null) 
-                return null;    
+            if (saleDoc == null)
+                return null;
 
             saleDoc.Товары = await GetProducts(saleDoc.Ref_Key);
 

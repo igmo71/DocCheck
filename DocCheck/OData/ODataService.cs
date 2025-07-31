@@ -35,7 +35,7 @@ namespace DocCheck.OData
         {
             var query = $"{typeof(TGridItem).Name}?$format=json";
 
-            if(!string.IsNullOrEmpty(oDataParams.Inlinecount)) 
+            if (!string.IsNullOrEmpty(oDataParams.Inlinecount))
                 query += $"&$inlinecount={oDataParams.Inlinecount}";
 
             if (!string.IsNullOrEmpty(oDataParams.Select))

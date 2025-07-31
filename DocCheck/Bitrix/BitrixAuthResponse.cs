@@ -76,6 +76,6 @@ namespace DocCheck.Bitrix
         public string? LANGUAGE_ID { get; set; }
         public string? BLOCKED { get; set; }
         public string? PASSWORD_EXPIRED { get; set; }
-        public string? IS_ONLINE { get; set; }        
+        public string? IS_ONLINE { get; set; }
     }
 }

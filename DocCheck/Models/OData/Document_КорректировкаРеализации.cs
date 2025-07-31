@@ -141,7 +141,7 @@ namespace DocCheck.Models.OData
             OrderBy = "LineNumber"
         };
 
-        
+
         //public string Характеристика_Key { get; set; }
         //public string Назначение_Key { get; set; }
         //public string Содержание { get; set; }

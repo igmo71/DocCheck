@@ -20,7 +20,7 @@ namespace DocCheck.Models
         public Status? Status { get; set; } = Models.Status.Draft;
 
         public Position? Position { get; set; } = Models.Position.Operator;
-                
+
         public string? UserId { get; set; }
 
         [JsonIgnore]
@@ -28,7 +28,7 @@ namespace DocCheck.Models
 
         public List<Error>? Errors { get; set; }
 
-        
+
         [MaxLength(AppSettings.GUID_LENGTH)]
         public string? InvoiceRefKey { get; set; } // Счет-фактура выданный Ref_Key
 

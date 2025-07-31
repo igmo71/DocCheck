@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using System.Text.Json;
 using DocCheck.Components.Account.Pages;
 using DocCheck.Components.Account.Pages.Manage;
 using DocCheck.Data;
@@ -9,6 +7,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Routing
 {

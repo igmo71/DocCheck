@@ -29,8 +29,9 @@ namespace DocCheck.Models
         public string DocumentCheckIdString
         {
             get => DocumentCheckId.ToString();
-            set { 
-                if(Guid.TryParse(value, out Guid id))
+            set
+            {
+                if (Guid.TryParse(value, out Guid id))
                     DocumentCheckId = id;
             }
         }

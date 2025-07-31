@@ -1,6 +1,4 @@
-﻿using DocCheck.Models;
-
-namespace DocCheck.Services
+﻿namespace DocCheck.Services
 {
     public class SearchParams
     {
@@ -17,9 +15,9 @@ namespace DocCheck.Services
         public string? OrderBy { get; set; }
         public bool IsOrderAsc { get; set; }
 
-        public bool HasFilterValue => 
-            RefKey is not null || 
-            Number is not null || 
+        public bool HasFilterValue =>
+            RefKey is not null ||
+            Number is not null ||
             Date is not null;
     }
 }
