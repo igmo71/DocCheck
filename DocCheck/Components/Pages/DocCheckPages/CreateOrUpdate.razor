@@ -76,16 +76,29 @@ else
                 <div class="row">
                     <div class="col">
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">
-                                @if (operation == Operations.Create)
+                            @if (operation == Operations.Create)
+                            {
+                                <button type="submit" class="btn btn-primary">Создать</button>
+                            }
+                            @if (operation == Operations.Update)
+                            {
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            }
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="text-center">
+                            @if (operation == Operations.Update)
+                            {
+                                if (DocCheck.Status == Status.Draft)
                                 {
-                                    <div>Создать</div>
+                                    <a class="btn btn-danger" href="@($"documentchecks/delete?RefKey={DocCheck.InvoiceRefKey}&ReturnUrl={NavigationManager.Uri}")" title="Удалить">Удалить</a>
                                 }
-                                @if (operation == Operations.Update)
+                                if (DocCheck.Status == Status.InProcess)
                                 {
-                                    <div>Сохранить</div>
+                                    <button type="button" class="btn btn-success" @onclick="DocCheckClose">Закрыть</button>
                                 }
-                            </button>
+                            }
                         </div>
                     </div>
                     <div class="col">
@@ -109,7 +122,7 @@ else
                         <div class="col"><span>№ </span><span> @DocCheck.InvoiceNumber</span></div>
                         <div class="col"><span>от </span><span> @DocCheck.InvoiceDate</span></div>
                     </div> *@    
-                    <div>
+                                                            <div>
                         <span> @Document_СчетФактураВыданный.Name </span>
                         <span> № </span><span> @DocCheck.InvoiceNumber </span>
                         <span> от </span><span> @DocCheck.InvoiceDate </span>
@@ -204,6 +217,18 @@ else
 
         NavigationManager.NavigateTo("/documentchecks");
     }
+
+    private async Task DocCheckClose()
+    {
+        if (DocCheck == null)
+            return;
+
+        DocCheck.Status = Status.Closed;
+
+        await Repository.UpdateAsync(DocCheck);
+
+        NavigationManager.NavigateTo("/documentchecks");
+    }    
 
     private enum Operations
     {

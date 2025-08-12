@@ -54,13 +54,16 @@ else
     </dl>
     <EditForm method="post" Model="documentcheck" OnValidSubmit="DeleteDocumentCheck" FormName="delete" Enhance>
         <button type="submit" class="btn btn-danger" disabled="@(documentcheck is null)">Удалить</button> |
-        <a href="/documentchecks">Назад к списку</a>
+        <a href="@(ReturnUrl ?? "/documentchecks")">Назад</a>
     </EditForm>
 }
 
 @code {
     [SupplyParameterFromQuery]
     public string? RefKey { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
 
     private DocumentCheck? documentcheck;
     private string? pageMessage;
@@ -87,6 +90,7 @@ else
             return;
 
         await Repository.DeleteAsync(RefKey);
+
         NavigationManager.NavigateTo("/documentchecks");
     }
 }

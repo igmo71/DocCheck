@@ -116,9 +116,7 @@
 
     private Dictionary<string, bool> TypicalErrors = Enum.GetValues<TypicalError>()
         .ToDictionary(e => e.ToString(), e => false);
-
-    private bool isOtherError;
-
+    
     protected override void OnInitialized()
     {
         LoadTypicalErrors();
