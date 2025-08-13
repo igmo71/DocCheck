@@ -1,0 +1,49 @@
+﻿@page "/kanban"
+
+<h3>Документы</h3>
+
+<div class="container-fluid py-3">
+    <div class="d-flex overflow-auto">
+        <!-- Горизонтальный скролл колонок -->
+        <!-- Колонка 1 -->
+        <div class="border rounded-3 p-3 me-2" style="min-width: 300px;">
+            <h5 class="text-center mb-3">К отправке</h5>
+            <div class="kanban-items">
+                <!-- Карточка задачи -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Задача 1</h6>
+                        <p class="card-text small">Описание задачи</p>
+                        <span class="badge bg-warning text-dark">В работе</span>
+                    </div>
+                </div>
+                <!-- Еще карточки... -->
+            </div>
+        </div>
+
+        <!-- Колонка 2 -->
+        <div class="border rounded-3 p-3 me-2" style="min-width: 300px;">
+            <h5 class="text-center mb-3">Оператор РЦ</h5>
+            <!-- Карточки... -->
+        </div>
+
+        <!-- Колонка 3 -->
+        <div class="border rounded-3 p-3 me-2" style="min-width: 300px;">
+            <h5 class="text-center mb-3">Менеджер</h5>
+            <!-- Карточки... -->
+        </div>
+        <div class="border rounded-3 p-3 me-2" style="min-width: 300px;">
+            <h5 class="text-center mb-3">Бухгалтерия</h5>
+            <!-- Карточки... -->
+        </div>
+        <div class="border rounded-3 p-3 me-2" style="min-width: 300px;">
+            <h5 class="text-center mb-3">Закрыто</h5>
+            <!-- Карточки... -->
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+}
