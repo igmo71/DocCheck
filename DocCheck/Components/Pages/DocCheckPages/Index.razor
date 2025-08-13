@@ -4,6 +4,8 @@
 @using DocCheck.Components.Account
 @using DocCheck.Data
 @using DocCheck.Models
+@using DocCheck.Models.OData
+@using DocCheck.OData
 @using DocCheck.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.QuickGrid
@@ -13,6 +15,7 @@
 @inject DocCheckRepository Repository
 @inject IDocCheckService Service
 @inject NavigationManager NavigationManager
+@inject ODataService ODataService
 
 @attribute [Authorize]
 
@@ -52,12 +55,75 @@
     </TemplateColumn>
 </QuickGrid>
 
+@if (totalItemsCount == 0)
+{
+    <button type="button" class="btn btn-primary" @onclick="SearchOData">
+        Здесь ничего не найдено, загрузить из 1С
+    </button>
+}
+@if (rootobject != null)
+{
+    if (rootobject.ODataCount == 0)
+    {
+        <div class="alert alert-warning">В 1С тоже ничего не найдено</div>
+    }
+    else if (rootobject.ODataCount > 25)
+    {
+        <div class="alert alert-warning">В 1С найдено слишком много результатов, детализируйте поиск</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Дата</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (rootobject.Value != null)
+                {
+                    foreach (var item in rootobject.Value)
+                    {
+                        <tr>
+                            <td>
+                                @item.Number
+                            </td>
+                            <td>
+                                @item.Date
+                            </td>
+                            <td>
+                                <div class="row">
+                                    <div class="col">
+                                        <a class="btn btn-warning" href="@($"documentchecks/createorupdate?RefKey={item.Ref_Key}&ReturnUrl={NavigationManager.Uri}")" title="Завести проблемный документ">
+                                            <i class="bi bi-file-earmark-excel me-2"></i><span>Завести проблемный документ</span>
+                                        </a>
+                                    </div>
+                                    <div class="col">
+                                        <a class="btn btn-outline-primary" href="@($"/invoices/details?Ref_Key={item.Ref_Key}")" title="Детали">
+                                            <i class="bi bi-info-lg"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+}
+
 @code {
     private SearchParams searchParams { get; set; } = new();
 
     private QuickGrid<DocumentCheck>? docCheckGrid;
 
     private GridItemsProvider<DocumentCheck>? itemsProvider;
+    private int totalItemsCount;
+
+    private Rootobject<Document_СчетФактураВыданный>? rootobject;
 
     protected override void OnInitialized()
     {
@@ -85,7 +151,7 @@
     {
         BuildSearchParams(request);
 
-        var totalItemsCount = await Repository.GetCountAsync(searchParams);
+        totalItemsCount = await Repository.GetCountAsync(searchParams);
         var items = request.Count is null ? [] : await Service.GetItemsAsync(searchParams);
 
         var result = GridItemsProviderResult.From(items, totalItemsCount);
@@ -105,6 +171,7 @@
     private async Task SearchDocumentCheck(SearchParams searchParams)
     {
         this.searchParams = searchParams;
+        rootobject = null;
 
         if (docCheckGrid is not null)
             await docCheckGrid.RefreshDataAsync();
@@ -117,5 +184,11 @@
         var refKey = GuidConvert.FromNumStr(barcode);
 
         NavigationManager?.NavigateTo($"documentchecks/createorupdate?RefKey={refKey}");
+    }
+
+    private async Task SearchOData()
+    {
+        ODataParams oDataParams = Document_СчетФактураВыданный.ODataParams;
+        rootobject = await ODataService.GetDataAsync<Document_СчетФактураВыданный>(searchParams, oDataParams);
     }
 }
