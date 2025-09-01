@@ -2,6 +2,7 @@
 using DocCheck.Infrastructure.OData.Models;
 using DocCheck.Infrastructure.Whs.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace DocCheck.Domain
@@ -41,7 +42,9 @@ namespace DocCheck.Domain
 
         public PaperworkError? GetError(PaperworkErrorType errorType) => PaperworkErrors?.FirstOrDefault(e => e.Type == errorType);
 
-        public string ShortDate => Date is null ? string.Empty : ((DateTime)Date).ToShortDateString();
+        public string DateString => Date is null ? string.Empty : ((DateTime)Date).ToString(new CultureInfo("ru-RU"));
+
+        public string ShortDateString => Date is null ? string.Empty : ((DateTime)Date).ToString("d", new CultureInfo("ru-RU"));
 
         public bool IsOverdue => (int)(DateTime.Today - (Date ?? new DateTime()).Date).TotalDays > 5;
 
