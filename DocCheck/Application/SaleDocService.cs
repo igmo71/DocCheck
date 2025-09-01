@@ -40,14 +40,18 @@ namespace DocCheck.Application
 
             foreach (var doc in saleDocs)
             {
-                if (!dbContext.SaleDocs.Any(e => e.Id == doc.Id))
+                if (dbContext.SaleDocs.Any(e => e.Id == doc.Id))
+                {
+                    logger.LogDebug("{Source} Exists {@SaleDoc}", nameof(CreateAsync), doc);
+                }
+                else
+                {
                     await dbContext.SaleDocs.AddAsync(doc);
+                    logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateAsync), doc);
+                }
             }
 
             await dbContext.SaveChangesAsync();
-
-            logger.LogDebug("{Source} {@SaleDocs}", nameof(CreateAsync), saleDocs);
-
         }
 
         public async Task UpdateAsync(SaleDoc item, bool isUpdatePosition = true)
