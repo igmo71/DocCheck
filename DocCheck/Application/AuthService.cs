@@ -123,7 +123,7 @@ namespace DocCheck.Application
             {
                 "Отдел продаж" => await userManager.AddToRoleAsync(user, "Managers"),
                 "Бухгалтерия" => await userManager.AddToRoleAsync(user, "Accounting"),
-                _ => await userManager.AddToRoleAsync(user, "Operators"),
+                _ => await userManager.AddToRolesAsync(user, ["Operators", "ForDispatch"])
             };
 
             if (!identityResult.Succeeded)
