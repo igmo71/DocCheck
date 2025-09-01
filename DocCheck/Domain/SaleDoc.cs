@@ -61,8 +61,9 @@ namespace DocCheck.Domain
 
             if (DateTime.TryParse(mngrOrder.Распоряжение_Name?[42..], out DateTime dateTime))
                 saleDoc.Date = dateTime;
+            else throw new InvalidOperationException($"Can't parse Date from :{mngrOrder.Распоряжение_Name}");
 
-            return saleDoc;
+                return saleDoc;
         }
 
         public static SaleDoc From(Document_РеализацияТоваровУслуг document)

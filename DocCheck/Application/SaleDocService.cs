@@ -33,20 +33,27 @@ namespace DocCheck.Application
                 return;
             }
 
-            var saleDocs = mngrDocuments
-                .Where(e => e.Распоряжение_Name != null &&
-                            e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName))
-                .Select(e => SaleDoc.From(e));
-
-            foreach (var doc in saleDocs)
+            try
             {
-                if (!dbContext.SaleDocs.Any(e => e.Id == doc.Id))
-                    await dbContext.SaleDocs.AddAsync(doc);
+                var saleDocs = mngrDocuments
+                    .Where(e => e.Распоряжение_Name != null &&
+                                e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName))
+                    .Select(e => SaleDoc.From(e));
+
+                foreach (var doc in saleDocs)
+                {
+                    if (!dbContext.SaleDocs.Any(e => e.Id == doc.Id))
+                        await dbContext.SaleDocs.AddAsync(doc);
+                }
+
+                await dbContext.SaveChangesAsync();
+
+                logger.LogDebug("{Source} {@SaleDocs}", nameof(CreateAsync), saleDocs);
             }
-
-            await dbContext.SaveChangesAsync();
-
-            logger.LogDebug("{Source} {@SaleDocs}", nameof(CreateAsync), saleDocs);
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "{Source} {mngrOrderString}", nameof(CreateAsync), mngrOrderString);
+            }
         }
 
         public async Task UpdateAsync(SaleDoc item, bool isUpdatePosition = true)
