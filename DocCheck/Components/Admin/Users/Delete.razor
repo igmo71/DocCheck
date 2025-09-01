@@ -1,0 +1,55 @@
+﻿@page "/users/delete"
+
+@using Microsoft.AspNetCore.Identity
+@using DocCheck.Application
+@using DocCheck.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject ISaleDocService SaleDocService
+@inject NavigationManager NavigationManager
+
+<h3>Delete User</h3>
+
+<StatusMessage Message="@Message" />
+
+<div class="row">
+    <div class="col-auto"><h4>@user?.Name</h4></div>
+    <div class="col-auto"> <button class="btn btn-danger" @onclick="DeleteUser">Delete</button></div>
+</div>
+
+<div>
+    <a href="/users">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromQuery]
+    public string? UserId { get; set; }
+
+    private ApplicationUser? user;
+    private IEnumerable<IdentityError>? identityErrors;
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override void OnInitialized()
+    {
+        user = UserManager.Users.FirstOrDefault(user => user.Id == UserId);
+    }
+
+    private async Task DeleteUser(MouseEventArgs args)
+    {
+        if (user is null)
+            return;
+
+        await SaleDocService.DeleteUserAsync(user.Id);
+
+        var result = await UserManager.DeleteAsync(user);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        NavigationManager.NavigateTo("users");
+    }
+}

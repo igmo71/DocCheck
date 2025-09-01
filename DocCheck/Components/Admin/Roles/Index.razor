@@ -1,0 +1,60 @@
+﻿@page "/roles"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@inject RoleManager<IdentityRole> RoleManager
+
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+<h3>Roles</h3>
+
+<p>
+    <a href="roles/create">Create New</a>
+</p>
+
+<div class="row">
+    <div class="col-lg-6">
+        <StatusMessage Message="@Message" />
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var role in roles)
+                {
+                    <tr>
+                        <td>@role.Name</td>
+                        <td><button class="btn" @onclick="() => RemoveRole(role)"><i class="bi bi-x-lg"></i></button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<IdentityRole> roles = [];
+    private IEnumerable<IdentityError>? identityErrors;
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override void OnInitialized()
+    {
+        roles = RoleManager.Roles.ToList();
+    }
+
+    private async Task RemoveRole(IdentityRole role)
+    {
+        var result = await RoleManager.DeleteAsync(role);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        roles = RoleManager.Roles.ToList();
+    }
+}

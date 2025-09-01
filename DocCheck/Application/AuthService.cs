@@ -63,9 +63,15 @@ namespace DocCheck.Application
             var appUser = await FindByEmailAsync(bitrixUser.EMAIL);
 
             if (appUser == null)
-                await RegisterUserAsync(bitrixUser, password);
+            {
+                appUser = await RegisterUserAsync(bitrixUser, password);
 
-            if (appUser == null || appUser.UserName == null)
+                await AddToRoleAsync(appUser, bitrixUser);
+
+                //await signInManager.SignInAsync(appUser, isPersistent: false);
+            }
+
+            if (string.IsNullOrEmpty(appUser.UserName))
                 return SignInResult.Failed;
 
             var result = await signInManager.PasswordSignInAsync(appUser.UserName, password, isPersistent, lockoutOnFailure);
@@ -73,7 +79,7 @@ namespace DocCheck.Application
             return result;
         }
 
-        public async Task RegisterUserAsync(BitrixUser bitrixUser, string password)
+        public async Task<ApplicationUser> RegisterUserAsync(BitrixUser bitrixUser, string password)
         {
             var user = CreateUser();
 
@@ -108,9 +114,7 @@ namespace DocCheck.Application
                         nameof(RegisterUserAsync), nameof(userManager.ConfirmEmailAsync), result.Errors);
             }
 
-            await AddToRoleAsync(user, bitrixUser);
-
-            await signInManager.SignInAsync(user, isPersistent: false);
+            return user;
         }
 
         private async Task AddToRoleAsync(ApplicationUser user, BitrixUser bitrixUser)

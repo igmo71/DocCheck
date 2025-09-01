@@ -1,0 +1,54 @@
+﻿@page "/users"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using DocCheck.Data
+
+@inject UserManager<ApplicationUser> UserManager
+
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+<h3>Users</h3>
+<div class="row">
+    <div class="col-lg-6">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Roles</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.Name</td>
+                        <td>
+                            @if (userRoles.Count > 0)
+                            {
+                                @(string.Join(' ', userRoles[user.Id]))
+                            }
+                        </td>
+                        <td><a href="users/edit?userId=@user.Id">Edit</a></td>
+                        <td><a href="users/delete?userId=@user.Id">Delete</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<ApplicationUser> users = [];
+    private Dictionary<string, IList<string>> userRoles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = UserManager.Users.ToList();
+
+        foreach (var user in users)
+        {
+            userRoles.Add(user.Id, await UserManager.GetRolesAsync(user));
+        }
+    }
+}

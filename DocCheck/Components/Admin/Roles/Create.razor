@@ -1,0 +1,62 @@
+﻿@page "/roles/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+<h3>Create Role</h3>
+
+<div class="row">
+    <div class="col-lg-6">
+        <StatusMessage Message="@Message" />
+        <EditForm method="post" Model="Input" OnValidSubmit="AddRole" FormName="CreateRole" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="Input.RoleName" class="form-label">Role Name:</label>
+                <InputText id="Input.RoleName" @bind-Value="Input.RoleName" class="form-control" />
+                <ValidationMessage For="() => Input.RoleName" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/roles">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private IEnumerable<IdentityError>? identityErrors;
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    private async Task AddRole(EditContext args)
+    {
+        var result = await RoleManager.CreateAsync(new IdentityRole(Input.RoleName));
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        NavigationManager.NavigateTo("/roles");
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [MinLength(3)]
+        [MaxLength(36)]
+        public string RoleName { get; set; } = "";
+    }
+}

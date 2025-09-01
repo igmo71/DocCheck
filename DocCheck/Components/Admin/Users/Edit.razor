@@ -1,0 +1,114 @@
+﻿@page "/users/edit"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using DocCheck.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+<h3>Edit User</h3>
+
+<h4>@user?.Name</h4>
+
+<h5>Roles</h5>
+
+<ul>
+    @foreach (var userRole in userRoles)
+    {
+        <li>
+            <span>@userRole</span>
+            <span><button class="btn" @onclick="() => RemoveUserFromRole(userRole)"><i class="bi bi-x-lg"></i></button></span>
+        </li>
+    }
+</ul>
+
+<div class="row mb-2">
+    <div class="col-lg-6">
+        <StatusMessage Message="@Message" />
+        <div class="row">
+            <div class="col-auto">
+                <select class="form-select" @bind="newUserRole">
+                    <option value="">Select role...</option>
+                    @foreach (var role in roles)
+                    {
+                        <option value="@role.Name">@role.Name</option>
+                    }
+
+                </select>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-success" @onclick="AddNewRole">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a href="/users">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? UserId { get; set; }
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private ApplicationUser? user;
+    private IList<string> userRoles = [];
+    private List<IdentityRole> roles = [];
+    private string? newUserRole;
+    private IEnumerable<IdentityError>? identityErrors;
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = UserManager.Users.FirstOrDefault(user => user.Id == UserId);
+
+        if (user is null)
+            return;
+
+        userRoles = await UserManager.GetRolesAsync(user);
+
+        roles = RoleManager.Roles.ToList();
+    }
+
+    private async Task AddNewRole(MouseEventArgs args)
+    {
+        if (user is null || string.IsNullOrEmpty(newUserRole))
+            return;
+
+        var result = await UserManager.AddToRoleAsync(user, newUserRole);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        userRoles = await UserManager.GetRolesAsync(user);
+    }
+
+    private async Task RemoveUserFromRole(string userRole)
+    {
+        if (user is null)
+            return;
+        var result = await UserManager.RemoveFromRoleAsync(user, userRole);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        userRoles = await UserManager.GetRolesAsync(user);
+    }
+
+    private sealed class InputModel
+    {
+    }
+}
