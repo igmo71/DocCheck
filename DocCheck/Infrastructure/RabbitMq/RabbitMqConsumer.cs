@@ -76,11 +76,20 @@ namespace DocCheck.Infrastructure.RabbitMq
                         byte[] body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
 
-                        _logger.LogDebug("RabbitMq Consumer received {Message}", message);
+                        _logger.LogDebug("RabbitMq Consumer Received {DeliveryTag}", ea.DeliveryTag);
 
-                        await CreateSaleDoc(message);
+                        try
+                        {
+                            await CreateSaleDoc(message);
 
-                        await channel.BasicAckAsync(ea.DeliveryTag, false);
+                            await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                            _logger.LogDebug("RabbitMq Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
+                        }
+                        catch (Exception)
+                        {
+                            await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
+                            _logger.LogWarning("RabbitMq Consumer BasicNackAsync {DeliveryTag}", ea.DeliveryTag);
+                        }
                     };
 
                     await channel.BasicConsumeAsync(
@@ -93,7 +102,7 @@ namespace DocCheck.Infrastructure.RabbitMq
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "RabbitMq Consumer Error Connection");
+                    _logger.LogError(ex, "RabbitMq Consumer Error");
                     await Task.Delay(5000, stoppingToken);
                 }
             }

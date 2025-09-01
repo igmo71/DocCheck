@@ -49,22 +49,31 @@ namespace DocCheck.Domain
         public bool IsOverdue => (int)(DateTime.Today - (Date ?? new DateTime()).Date).TotalDays > 5;
 
         public static SaleDoc From(MngrOrder? mngrOrder)
-        {// Реализация товаров и услуг КСУТ-006288 от 16.04.2025 10:46:59
-            if (mngrOrder == null)
-                throw new ArgumentNullException(nameof(mngrOrder));
+        {
+            ArgumentNullException.ThrowIfNull(mngrOrder);
 
-            var saleDoc = new SaleDoc
+            var name = mngrOrder.Распоряжение_Name
+                       ?? throw new ArgumentNullException(nameof(mngrOrder.Распоряжение_Name));
+
+            var idx = name.LastIndexOf(" от ", StringComparison.Ordinal);
+            if (idx == -1)
+                throw new InvalidOperationException($"Can't find 'от' in: {name}");
+
+            var numberPart = name.Substring(0, idx).Split(' ').Last();
+
+            var datePart = name.Substring(idx + 4);
+
+            if (!DateTime.TryParseExact(datePart, "dd.MM.yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
+                throw new InvalidOperationException($"Can't parse Date from: {name}");
+
+            return new SaleDoc
             {
                 Id = Guid.Parse(mngrOrder.Распоряжение_Id),
-                Number = mngrOrder.Распоряжение_Name?.Substring(27, 11)
+                Number = numberPart,
+                Date = dateTime
             };
-
-            if (DateTime.TryParse(mngrOrder.Распоряжение_Name?[42..], out DateTime dateTime))
-                saleDoc.Date = dateTime;
-            else throw new InvalidOperationException($"Can't parse Date from :{mngrOrder.Распоряжение_Name}");
-
-                return saleDoc;
         }
+
 
         public static SaleDoc From(Document_РеализацияТоваровУслуг document)
         {
