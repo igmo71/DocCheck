@@ -1,5 +1,6 @@
 ﻿@page "/users/delete"
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using DocCheck.Application
 @using DocCheck.Data
@@ -7,6 +8,8 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject ISaleDocService SaleDocService
 @inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Admin")]
 
 <h3>Delete User</h3>
 
