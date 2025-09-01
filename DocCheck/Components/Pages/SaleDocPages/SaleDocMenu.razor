@@ -1,0 +1,47 @@
+﻿@using DocCheck.Domain
+
+@if (SaleDoc is not null)
+{
+    <div class="row">
+        @if (SaleDoc.IsCorrect)
+        {
+            <div class="col"><div class="alert alert-success h5 p-1"><i class="bi bi-check2-all me-2"></i><span> Корректен</span></div></div>
+
+            <div class="col"><button type="submit" class="btn btn-success">@SaleDoc.CorrectButtomLabel</button></div>
+        }
+        else
+        {
+            <div class="col"><div class="alert alert-danger h5 p-1"><i class="bi bi-printer me-2"></i><span> Требуется перепечатка</span></div></div>
+            <div class="col">
+                @if (SaleDoc.Position == Position.Managers)
+                {
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" value="" id="fixedPaperworkErrors"
+                               checked="@(!SaleDoc.HasPaperworkErrors)"
+                               @oninput="RemovePaperworkErrors" />
+                        <label class="form-check-label" for="fixedPaperworkErrors">Документ Перепечатан</label>
+                    </div>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-danger">Менеджерам на доработку</button>
+                }
+            </div>
+        }
+        <div class="col pt-2">
+            <a href="/saledoclogs?SaleDocId=@SaleDoc.Id">
+                <i class="bi bi-info-circle"></i>
+                <span>История</span>
+            </a>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public SaleDoc? SaleDoc { get; set; }
+
+    [Parameter]
+    public EventCallback RemovePaperworkErrors { get; set; }
+}

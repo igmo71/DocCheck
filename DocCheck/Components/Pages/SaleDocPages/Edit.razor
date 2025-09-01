@@ -1,0 +1,155 @@
+﻿@page "/saledocs/edit"
+
+@using Microsoft.AspNetCore.Authorization
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+@using DocCheck.Infrastructure.OData
+@using DocCheck.Infrastructure.OData.Models
+@using static DocCheck.Components.Pages.SaleDocPages.PaperworkErrorCheckBox
+@using static DocCheck.Components.Pages.SaleDocPages.QuantityErrors
+
+@inject ISaleDocService SaleDocService
+@inject IODataService ODataService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+@if (SaleDoc is null)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-grow" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <SaleDocHeader SaleDoc="SaleDoc" />
+
+    <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
+
+        <input type="text" @ref="hiddenInput" class="visually-hidden" />
+
+        <SaleDocMenu SaleDoc="SaleDoc" RemovePaperworkErrors="ClearPaperworkErrors" />
+
+        <PaperworkErrors SaleDoc="SaleDoc" OnCreateOrUpdateError="CreateOrUpdatePaperworkError" />
+
+        @* <QuantityErrors SaleDoc="SaleDoc" Products="products" OnCreateOrUpdateError="CreateOrUpdateQuantityError" OnRemoveError="RemoveQuantityError" /> *@
+
+    </EditForm>
+}
+
+@code {
+    private ElementReference hiddenInput;
+
+    [SupplyParameterFromQuery]
+    public Guid Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private SaleDoc? SaleDoc { get; set; }
+
+    private Document_РеализацияТоваровУслуг_Товары[]? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSaleDoc();
+        //await LoadProducts();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && SaleDoc is not null && SaleDoc.Position == Position.Accounting)
+        {
+            await hiddenInput.FocusAsync();
+        }
+    }
+
+    private async Task LoadSaleDoc()
+    {
+        SaleDoc = await SaleDocService.Get(Id);
+
+        if (SaleDoc is null)
+            NavigationManager.NavigateTo("saledocs");
+    }
+
+    private async Task LoadProducts()
+    {
+        products = await ODataService.GetDocument_РеализацияТоваровУслуг_Товары(Id.ToString());
+    }
+
+    private async Task UpdateSaleDoc(EditContext args)
+    {
+        await SaleDocService.UpdateAsync((SaleDoc)args.Model);
+
+        NavigationManager.NavigateTo("saledocs");
+    }
+
+    private void CreateOrUpdatePaperworkError(ErrorCheckBoxParams errorCheckBoxParams)
+    {
+        if (SaleDoc is null)
+            return;
+
+        SaleDoc.PaperworkErrors ??= [];
+
+        var paperworkError = SaleDoc.GetError(errorCheckBoxParams.ErrorType);
+
+        if (paperworkError is null && errorCheckBoxParams.IsChecked)
+        {
+            paperworkError = new()
+            {
+                SaleDocId = SaleDoc.Id,
+                Type = errorCheckBoxParams.ErrorType
+            };
+
+            SaleDoc.PaperworkErrors.Add(paperworkError);
+        }
+        if (paperworkError is not null && errorCheckBoxParams.IsChecked)
+        {
+            paperworkError.Message = errorCheckBoxParams.OtherErrorMessage;
+        }
+        if (paperworkError is not null && !errorCheckBoxParams.IsChecked)
+        {
+            SaleDoc.PaperworkErrors.Remove(paperworkError);
+        }
+    }
+
+    private void ClearPaperworkErrors()
+    {
+        SaleDoc?.PaperworkErrors?.Clear();
+    }
+
+    private void CreateOrUpdateQuantityError(QuantityErrorParams errorParams)
+    {
+        if (SaleDoc is null)
+            return;
+
+        SaleDoc.QuantityErrors ??= [];
+
+        var error = SaleDoc.QuantityErrors.FirstOrDefault(e => e.LineNumber == errorParams.Product.LineNumber);
+
+        if (error is null)
+        {
+            error = new QuantityError() { SaleDocId = SaleDoc.Id, LineNumber = errorParams.Product.LineNumber };
+
+            SaleDoc.QuantityErrors.Add(error);
+        }
+
+        error.Quantity = errorParams.Quantity;
+    }
+
+    private void RemoveQuantityError(Document_РеализацияТоваровУслуг_Товары product)
+    {
+        var error = SaleDoc?.QuantityErrors?.FirstOrDefault(e => e.LineNumber == product.LineNumber);
+
+        if (error == null)
+            return;
+
+        SaleDoc?.QuantityErrors?.Remove(error);
+    }
+
+    private void ClearQuantityErrors()
+    {
+        SaleDoc?.QuantityErrors?.Clear();
+    }
+}

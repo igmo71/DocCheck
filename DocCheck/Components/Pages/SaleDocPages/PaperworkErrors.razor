@@ -1,0 +1,87 @@
+﻿@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+@using DocCheck.Infrastructure.OData.Models
+@using static DocCheck.Components.Pages.SaleDocPages.PaperworkErrorCheckBox
+
+@if (SaleDoc is not null)
+{
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.NoDocument" OnInput="OnCreateOrUpdateError" />
+        </div>
+    </div>
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <div class="card-title mb-0"><i><small>Шапка</small></i></div>
+            <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ReceiptAddress" OnInput="OnCreateOrUpdateError" />
+        </div>
+    </div>
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <div class="card-title mb-0"><i><small>Грузополучатель (строка 1)</small></i></div>
+            <div class="row">
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ConsigneeJobTitle" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ConsigneeSignature" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ConsigneeFullName" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ReceiptCargoDate" OnInput="OnCreateOrUpdateError" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <div class="card-title mb-0"><i><small>Ответственный за правильность оформления (строка 2)</small></i></div>
+            <div class="row">
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ResponsibleJobTitle" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ResponsibleSignature" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ResponsibleFullName" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <div class="row">
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.NoStamp" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.WrongStamp" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card rounded-0 border-bottom-0">
+        <div class="card-body p-1">
+            <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.Other" OnInput="OnCreateOrUpdateError" HasErrorMessage="true" />
+        </div>
+    </div>
+    <div class="card rounded-0">
+        <div class="card-body p-1">
+            <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.QuantityError" OnInput="OnCreateOrUpdateError" HasErrorMessage="true" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SaleDoc? SaleDoc { get; set; }
+
+    [Parameter]
+    public EventCallback<ErrorCheckBoxParams> OnCreateOrUpdateError { get; set; }
+}

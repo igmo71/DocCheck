@@ -1,0 +1,80 @@
+﻿@page "/saledocs"
+
+@using Microsoft.AspNetCore.Authorization
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+
+@inject ISaleDocService SaleDocService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+
+<ScanBarcode OnScannedBarcode="ScannedBarcodeHandle"></ScanBarcode>
+
+@if (saleDocs is null)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-grow" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="d-flex overflow-auto">
+            <SaleDocColumn SaleDocs="saleDocsForDispatch" Name="@Position.ForDispatch.Description()" />
+            <SaleDocColumn SaleDocs="saleDocsOperators" Name="@Position.Operators.Description()" />
+            <SaleDocColumn SaleDocs="saleDocsManagers" Name="@Position.Managers.Description()" />
+            <SaleDocColumn SaleDocs="saleDocsAccounting" Name="@Position.Accounting.Description()" />
+        </div>
+    </div>
+}
+@code {
+    private List<SaleDoc>? saleDocs;
+    private List<SaleDoc>? saleDocsForDispatch;
+    private List<SaleDoc>? saleDocsOperators;
+    private List<SaleDoc>? saleDocsManagers;
+    private List<SaleDoc>? saleDocsAccounting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSaleDocs();
+    }
+
+    private async Task LoadSaleDocs()
+    {
+        saleDocs = await SaleDocService.GetList();
+        SplitSaleDocsByPosition();
+    }
+
+    private async Task ScannedBarcodeHandle(string barcode)
+    {
+        var invoiceRefKey = GuidConvert.FromNumStr(barcode);
+
+        var saleDocs = await SaleDocService.GetList(invoiceRefKey);
+        if (saleDocs is null)
+            return;
+
+        if (saleDocs.Count == 1)
+            NavigationManager?.NavigateTo($"/saledocs/edit?Id={saleDocs[0].Id}");
+
+        if (saleDocs.Count > 1)
+        {
+            this.saleDocs = saleDocs;
+            SplitSaleDocsByPosition();
+        }
+    }
+
+    private void SplitSaleDocsByPosition()
+    {
+        if (saleDocs is null)
+            return;
+
+        saleDocsForDispatch = saleDocs.Where(e => e.Position == Position.ForDispatch).ToList();
+        saleDocsOperators = saleDocs.Where(e => e.Position == Position.Operators).ToList();
+        saleDocsManagers = saleDocs.Where(e => e.Position == Position.Managers).ToList();
+        saleDocsAccounting = saleDocs.Where(e => e.Position == Position.Accounting).ToList();
+    }
+}

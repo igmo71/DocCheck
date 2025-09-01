@@ -1,0 +1,85 @@
+﻿@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+@using DocCheck.Infrastructure.OData
+@using DocCheck.Infrastructure.OData.Models
+
+@if (Products is not null)
+{
+    <div class="card mt-2">
+        <div class="card-header">
+            <div class="h5 text-center">Укажите ошибки состава товаров, при наличии: </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Номенклатура</th>
+                        <th>Количество</th>
+                        <th>Факт Кол-во</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Products)
+                    {
+                        var errorValue = GetErrorValue(product);
+                        string itemWarning = errorValue is null ? string.Empty : "table-warning";
+
+                        <tr class="@itemWarning">
+                            <td>@product.LineNumber</td>
+                            <td>@product.Номенклатура?.Description</td>
+                            <td>@product.Количество</td>
+                            <td>
+                                <div class="row">
+                                    <div class="col">
+                                        <input type="text" value="@errorValue" @oninput="@((args) => CreateOrUpdateError(args, product))" />
+                                    </div>
+                                    <div class="col">
+                                        @if (errorValue is not null)
+                                        {
+                                            <button type="button" class="btn" title="Очистить" @onclick="@(() => RemoveError(product))">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SaleDoc? SaleDoc { get; set; }
+
+    [Parameter]
+    public Document_РеализацияТоваровУслуг_Товары[]? Products { get; set; }
+
+    [Parameter]
+    public EventCallback<QuantityErrorParams> OnCreateOrUpdateError { get; set; }
+
+    [Parameter]
+    public EventCallback<Document_РеализацияТоваровУслуг_Товары> OnRemoveError { get; set; }
+
+    private async Task CreateOrUpdateError(ChangeEventArgs args, Document_РеализацияТоваровУслуг_Товары product)
+    {
+        if (!double.TryParse(args.Value?.ToString(), out double quantity))
+            return;
+
+        await OnCreateOrUpdateError.InvokeAsync(new QuantityErrorParams(quantity, product));
+    }
+
+    private async Task RemoveError(Document_РеализацияТоваровУслуг_Товары product) =>
+        await OnRemoveError.InvokeAsync(product);
+
+    private double? GetErrorValue(Document_РеализацияТоваровУслуг_Товары product) =>
+        SaleDoc?.QuantityErrors?.FirstOrDefault(e => e.LineNumber == product.LineNumber)?.Quantity;
+
+
+    public record QuantityErrorParams(double Quantity, Document_РеализацияТоваровУслуг_Товары Product);
+}

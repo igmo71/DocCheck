@@ -1,0 +1,15 @@
+﻿<input type="hidden" id="barcode" value="@barcode" @onchange="@OnChange" />
+
+@code {
+    [Parameter] public EventCallback<string> OnScannedBarcode { get; set; }
+
+    private string? barcode;
+
+    private async Task OnChange(ChangeEventArgs args)
+    {
+        barcode = args.Value?.ToString();
+        if (barcode is null) return;
+
+        await OnScannedBarcode.InvokeAsync(barcode);
+    }
+}

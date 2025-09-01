@@ -1,0 +1,76 @@
+﻿@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+@using DocCheck.Infrastructure.OData.Models
+
+@if (SaleDoc is not null)
+{
+    <div class="row">
+        <div class="col-auto py-1">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="@ErrorType.ToString()" value="" checked=@SaleDoc.ContainsError(ErrorType) @oninput="@UpdateError">
+                <label class="form-check-label" for="@ErrorType.ToString()">@(ErrorType.Description())</label>
+            </div>
+        </div>
+        @if (SaleDoc.ContainsError(ErrorType) && HasErrorMessage)
+        {
+            <div class="col-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" value="@errorMessage" @onchange="UpdateErrorMessage" title="Прочее" placeholder="Подробности ошибки" />
+                    <button type="button" class="btn" title="Очистить" @onclick="ClearErrorMessage">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+        }
+
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SaleDoc? SaleDoc { get; set; }
+
+    [Parameter]
+    public PaperworkErrorType ErrorType { get; set; }
+
+    [Parameter]
+    public EventCallback<ErrorCheckBoxParams> OnInput { get; set; }
+
+    [Parameter]
+    public bool HasErrorMessage { get; set; }
+
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        errorMessage = SaleDoc?.GetError(ErrorType)?.Message;
+    }
+
+    private async Task UpdateError(ChangeEventArgs args)
+    {
+        if (SaleDoc is null || args.Value is null)
+            return;
+
+        await OnInput.InvokeAsync(new ErrorCheckBoxParams(ErrorType, (bool)args.Value, errorMessage));
+    }
+
+    private async Task UpdateErrorMessage(ChangeEventArgs args)
+    {
+        errorMessage = args.Value?.ToString();
+
+        if (string.IsNullOrEmpty(errorMessage))
+            await OnInput.InvokeAsync(new ErrorCheckBoxParams(ErrorType, false, errorMessage));
+        else
+            await OnInput.InvokeAsync(new ErrorCheckBoxParams(ErrorType, true, errorMessage));
+    }
+
+    private async Task ClearErrorMessage(MouseEventArgs args)
+    {
+        errorMessage = null;
+
+        await OnInput.InvokeAsync(new ErrorCheckBoxParams(ErrorType, false, errorMessage));
+    }
+
+    public record ErrorCheckBoxParams(PaperworkErrorType ErrorType, bool IsChecked, string? OtherErrorMessage);
+}

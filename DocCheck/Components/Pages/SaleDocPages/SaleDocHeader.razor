@@ -1,0 +1,29 @@
+﻿@using DocCheck.Common
+@using DocCheck.Domain
+@using DocCheck.Infrastructure.OData.Models
+
+@if (SaleDoc is not null)
+{
+    <div class="row">
+        <div class="col-auto">
+            <div class="h4 mt-1">
+                <span>@Document_РеализацияТоваровУслуг.DocumentName</span>
+                <span>@SaleDoc.Number</span>
+                <span> от </span>
+                <span>@SaleDoc.Date</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-around">
+                <div class="alert alert-info m-0 p-1 h5">@SaleDoc.Position.Description()</div>
+                <div><i class="bi bi-arrow-counterclockwise me-1"></i>Количество переотправок: <span>@SaleDoc.Redispatch</span></div>
+            </div>
+        </div>
+    </div>
+    <hr class="mt-1" />
+}
+
+@code {
+    [Parameter]
+    public SaleDoc? SaleDoc { get; set; }
+}
