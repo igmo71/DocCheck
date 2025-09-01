@@ -1,0 +1,70 @@
+﻿@page "/saledoclogs/details"
+
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Components.Pages.SaleDocPages
+@using DocCheck.Domain
+
+@inject ISaleDocLogService SaleDocLogService
+@inject ISaleDocService SaleDocService
+@inject NavigationManager NavigationManager
+
+
+<SaleDocHeader SaleDoc="saleDoc" />
+
+@if (log is not null)
+{
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">Имя</dt>
+                <dd class="col-sm-10">@log.User?.Name</dd>
+                <dt class="col-sm-2">Дата</dt>
+                <dd class="col-sm-10">@log.DateTime</dd>
+                <dt class="col-sm-2">Статус</dt>
+                <dd class="col-sm-10">@log.Description</dd>
+                @if (!log.IsCorrect && log.SaleDoc is not null)
+                {
+                    <dt class="col-sm-2">Ошибки</dt>
+                    <dd class="col-sm-10">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Наименование</th>
+                                    <th>Подробности</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var error in log.SaleDoc.PaperworkErrors)
+                                {
+                                    <tr>
+                                        <td>@error.Type.Description()</td>
+                                        <td>@error.Message</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </dd>
+                }
+            </dl>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public Guid Id { get; set; }
+
+    private SaleDoc? saleDoc;
+    private SaleDocLog? log;
+
+    protected override async Task OnInitializedAsync()
+    {
+        log = await SaleDocLogService.Get(Id);
+
+        if (log is not null)
+            saleDoc = await SaleDocService.Get(log.SaleDocId);
+
+        //await JSRuntime.InvokeVoidAsync("window.history.back");
+    }
+}

@@ -1,0 +1,68 @@
+﻿@page "/saledoclogs"
+
+@using DocCheck.Application
+@using DocCheck.Components.Pages.SaleDocPages
+@using DocCheck.Domain
+
+@inject ISaleDocLogService SaleDocLogService
+@inject ISaleDocService SaleDocService
+@inject NavigationManager NavigationManager
+
+
+<SaleDocHeader SaleDoc="saleDoc" />
+
+@if (logs is null)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-grow" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Дата/время</th>
+                <th>Пользователь</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var log in logs)
+            {
+                <tr>
+                    <td>@log.DateTime</td>
+                    <td>@log.User?.Name</td>
+                    <td>@log.Description</td>
+                    <td><a href="/saledoclogs/details?Id=@log.Id">Детали</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public Guid SaleDocId { get; set; }
+
+    private SaleDoc? saleDoc;
+    private List<SaleDocLog>? logs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSaleDoc();
+
+        logs = await SaleDocLogService.GetList(SaleDocId);
+    }
+
+    private async Task LoadSaleDoc()
+    {
+        saleDoc = await SaleDocService.Get(SaleDocId);
+
+        if (saleDoc is null)
+            NavigationManager.NavigateTo($"/saledocs/edit?Id={SaleDocId}");
+    }
+}
+
