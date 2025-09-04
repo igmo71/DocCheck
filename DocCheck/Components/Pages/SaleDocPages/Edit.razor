@@ -17,31 +17,38 @@
 
 @attribute [Authorize]
 
-@if (SaleDoc is null)
+@if (!string.IsNullOrEmpty(message))
 {
-    <div class="d-flex justify-content-center">
-        <div class="spinner-grow" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
+    <div class="alert alert-danger" role="alert">@message</div>
 }
 else
 {
-    <SaleDocHeader SaleDoc="SaleDoc" />
+    @if (SaleDoc is null)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-grow" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <SaleDocHeader SaleDoc="SaleDoc" />
+        @if (SaleDoc.Position != Position.ForDispatch)
+        {
+            <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
 
-    <StatusMessage Message="@message" />
+                <input type="text" @ref="hiddenInput" class="visually-hidden" />
 
-    <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
+                <SaleDocMenu SaleDoc="SaleDoc" RemovePaperworkErrors="ClearPaperworkErrors" />
 
-        <input type="text" @ref="hiddenInput" class="visually-hidden" />
+                <PaperworkErrors SaleDoc="SaleDoc" OnCreateOrUpdateError="CreateOrUpdatePaperworkError" />
 
-        <SaleDocMenu SaleDoc="SaleDoc" RemovePaperworkErrors="ClearPaperworkErrors" />
+                @* <QuantityErrors SaleDoc="SaleDoc" Products="products" OnCreateOrUpdateError="CreateOrUpdateQuantityError" OnRemoveError="RemoveQuantityError" /> *@
 
-        <PaperworkErrors SaleDoc="SaleDoc" OnCreateOrUpdateError="CreateOrUpdatePaperworkError" />
-
-        @* <QuantityErrors SaleDoc="SaleDoc" Products="products" OnCreateOrUpdateError="CreateOrUpdateQuantityError" OnRemoveError="RemoveQuantityError" /> *@
-
-    </EditForm>
+            </EditForm>
+        }
+    }
 }
 
 @code {

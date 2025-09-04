@@ -62,13 +62,19 @@
     {
         log = await SaleDocLogService.Get(Id);
 
-        if (log is not null)
+        await LoadSaleDoc();
+    }
 
-        {
-            var serviceResult = await SaleDocService.GetAsync(log.SaleDocId);
-            saleDoc = serviceResult.Value;
-        }
+    private async Task LoadSaleDoc()
+    {
+        if (log is null)
+            return;
 
-        //await JSRuntime.InvokeVoidAsync("window.history.back");
+        var serviceResult = await SaleDocService.LoadAsync(log.SaleDocId, isOpenByBarcode: false);
+
+        saleDoc = serviceResult.Value;
+
+        if (saleDoc is null)
+            NavigationManager.NavigateTo($"/saledocs/edit?Id={log.SaleDocId}");
     }
 }

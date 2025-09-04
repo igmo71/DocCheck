@@ -111,6 +111,8 @@ namespace DocCheck.Application
         public async Task<ServiceResult<SaleDoc>> LoadAsync(Guid id, bool isOpenByBarcode)
         {
             var item = await GetAsync(id);
+            if (item is null)
+                return Error.NotFound;
 
             if (isOpenByBarcode)
                 await UpdatePositionWhenOpenByBarcodeAsync(item);
@@ -130,8 +132,10 @@ namespace DocCheck.Application
         {
             if (await authService.IsCurrentUserInRole(Position.Operators.Role))
                 item.PositionId = Position.Operators.Id;
+
             if (await authService.IsCurrentUserInRole(Position.Managers.Role))
                 item.PositionId = Position.Managers.Id;
+            
             if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
                 item.PositionId = Position.Accounting.Id;
         }
