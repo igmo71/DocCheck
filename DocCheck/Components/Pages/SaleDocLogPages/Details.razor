@@ -63,7 +63,11 @@
         log = await SaleDocLogService.Get(Id);
 
         if (log is not null)
-            saleDoc = await SaleDocService.Get(log.SaleDocId);
+
+        {
+            var serviceResult = await SaleDocService.GetAsync(log.SaleDocId);
+            saleDoc = serviceResult.Value;
+        }
 
         //await JSRuntime.InvokeVoidAsync("window.history.back");
     }

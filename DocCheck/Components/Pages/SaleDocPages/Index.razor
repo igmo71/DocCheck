@@ -24,10 +24,10 @@ else
 {
     <div class="container-fluid">
         <div class="d-flex overflow-auto">
-            <SaleDocColumn SaleDocs="saleDocsForDispatch" Name="@Position.ForDispatch.Description()" />
-            <SaleDocColumn SaleDocs="saleDocsOperators" Name="@Position.Operators.Description()" />
-            <SaleDocColumn SaleDocs="saleDocsManagers" Name="@Position.Managers.Description()" />
-            <SaleDocColumn SaleDocs="saleDocsAccounting" Name="@Position.Accounting.Description()" />
+            <SaleDocColumn SaleDocs="saleDocsForDispatch" Name="@Position.ForDispatch.Description" />
+            <SaleDocColumn SaleDocs="saleDocsOperators" Name="@Position.Operators.Description" />
+            <SaleDocColumn SaleDocs="saleDocsManagers" Name="@Position.Managers.Description" />
+            <SaleDocColumn SaleDocs="saleDocsAccounting" Name="@Position.Accounting.Description" />
         </div>
     </div>
 }
@@ -45,24 +45,24 @@ else
 
     private async Task LoadSaleDocs()
     {
-        saleDocs = await SaleDocService.GetList();
+        saleDocs = await SaleDocService.GetListAsync();
+
         SplitSaleDocsByPosition();
     }
 
     private async Task ScannedBarcodeHandle(string barcode)
     {
-        var invoiceRefKey = GuidConvert.FromNumStr(barcode);
-
-        var saleDocs = await SaleDocService.GetList(invoiceRefKey);
+        var saleDocs = await SaleDocService.GetListByBarcodeAsync(barcode);
         if (saleDocs is null)
             return;
 
         if (saleDocs.Count == 1)
-            NavigationManager?.NavigateTo($"/saledocs/edit?Id={saleDocs[0].Id}");
+            NavigationManager?.NavigateTo($"/saledocs/edit?Id={saleDocs[0].Id}&IsOpenByBarcode={true}");
 
         if (saleDocs.Count > 1)
         {
             this.saleDocs = saleDocs;
+
             SplitSaleDocsByPosition();
         }
     }

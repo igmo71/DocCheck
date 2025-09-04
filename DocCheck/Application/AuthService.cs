@@ -165,9 +165,27 @@ namespace DocCheck.Application
 
         public async Task<bool> IsUserInRole(ApplicationUser user, string role)
         {
-            var isUserInRole = await userManager.IsInRoleAsync(user, role);
-            var isUserAdmin = await userManager.IsInRoleAsync(user, "Admin");
-            return isUserInRole || isUserAdmin;
+            return await userManager.IsInRoleAsync(user, role);
+        }
+
+        public async Task<bool> IsCurrentUserInRole(string role)
+        {
+            var user = await GetCurrentUser();
+            if (user is null)
+                return false;
+
+            return await IsUserInRole(user, role);
+        }
+
+        internal async Task<IList<string>?> GetCurrentUserRoles()
+        {
+            var user = await GetCurrentUser();
+            if (user is null)
+                return null;
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            return roles;
         }
     }
 }

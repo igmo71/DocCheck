@@ -1,4 +1,5 @@
-﻿using DocCheck.Data;
+﻿using DocCheck.Common;
+using DocCheck.Data;
 using DocCheck.Infrastructure.OData.Models;
 using DocCheck.Infrastructure.Whs.Models;
 using System.ComponentModel.DataAnnotations;
@@ -22,7 +23,10 @@ namespace DocCheck.Domain
         [JsonIgnore]
         public ApplicationUser? User { get; set; }
 
-        public Position Position { get; set; } = Position.ForDispatch;
+
+        public int PositionId { get; set; }
+
+        public Position Position => Position.GetById(PositionId);
 
         public int Redispatch { get; set; } // Повторная отправка
 
@@ -85,15 +89,6 @@ namespace DocCheck.Domain
             };
 
             return saleDoc;
-        }
-
-        public string CorrectButtomLabel => Position switch
-        {
-            Position.Operators => "В Бухгалтерию к приемке",
-            Position.Managers => "К повторной отправке",
-            Position.Accounting => "Принять",
-            Position.Closed => "К повторной отправке",
-            _ => string.Empty
-        };
+        }        
     }
 }

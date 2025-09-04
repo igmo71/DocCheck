@@ -1,5 +1,7 @@
 ﻿@page "/saledocs/edit"
 
+@using DocCheck.Common
+@using DocCheck.Components.Admin
 @using Microsoft.AspNetCore.Authorization
 @using DocCheck.Application
 
@@ -27,6 +29,8 @@ else
 {
     <SaleDocHeader SaleDoc="SaleDoc" />
 
+    <StatusMessage Message="@message" />
+
     <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
 
         <input type="text" @ref="hiddenInput" class="visually-hidden" />
@@ -46,10 +50,15 @@ else
     [SupplyParameterFromQuery]
     public Guid Id { get; set; }
 
+    [SupplyParameterFromQuery]
+    public bool IsOpenByBarcode { get; set; }
+
     [SupplyParameterFromForm]
     private SaleDoc? SaleDoc { get; set; }
 
     private Document_РеализацияТоваровУслуг_Товары[]? products;
+
+    private string? message;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,10 +76,19 @@ else
 
     private async Task LoadSaleDoc()
     {
-        SaleDoc = await SaleDocService.Get(Id);
+        var serviceResult = await SaleDocService.LoadAsync(Id, IsOpenByBarcode);
 
-        if (SaleDoc is null)
+        if (!serviceResult.IsSuccess)
+        {
+            message = serviceResult.Error.Description;
+            return;
+        }
+
+        if (serviceResult.Value is null)
             NavigationManager.NavigateTo("saledocs");
+
+        SaleDoc = serviceResult.Value;
+
     }
 
     private async Task LoadProducts()

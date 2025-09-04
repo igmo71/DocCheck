@@ -52,17 +52,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSaleDoc();
+        //await LoadSaleDoc();
 
         logs = await SaleDocLogService.GetList(SaleDocId);
     }
 
-    private async Task LoadSaleDoc()
-    {
-        saleDoc = await SaleDocService.Get(SaleDocId);
+    // private async Task LoadSaleDoc()
+    // {
+    //     saleDoc = await SaleDocService.Get(SaleDocId);
 
-        if (saleDoc is null)
-            NavigationManager.NavigateTo($"/saledocs/edit?Id={SaleDocId}");
-    }
+    //     if (saleDoc is null)
+    //         NavigationManager.NavigateTo($"/saledocs/edit?Id={SaleDocId}");
+    // }
 }
 

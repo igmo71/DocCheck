@@ -1,4 +1,5 @@
-﻿using DocCheck.Data;
+﻿using DocCheck.Common;
+using DocCheck.Data;
 using DocCheck.Domain;
 using DocCheck.Infrastructure.OData;
 using DocCheck.Infrastructure.OData.Models;
@@ -10,10 +11,11 @@ namespace DocCheck.Application
     public interface ISaleDocService
     {
         Task CreateAsync(string mngrOrderString);
-        Task UpdateAsync(SaleDoc saleDoc, bool isUpdatePosition = true);
-        Task<List<SaleDoc>> GetList();
-        Task<List<SaleDoc>?> GetList(string invoiceRefKey);
-        Task<SaleDoc?> Get(Guid id);
+        Task UpdateAsync(SaleDoc saleDoc);
+        Task<List<SaleDoc>> GetListAsync();
+        Task<List<SaleDoc>?> GetListByBarcodeAsync(string barcode);
+        Task<SaleDoc?> GetAsync(Guid id);
+        Task<ServiceResult<SaleDoc>> LoadAsync(Guid id, bool isOpenByBarcode);
         Task DeleteUserAsync(string userId);
     }
 
@@ -46,6 +48,7 @@ namespace DocCheck.Application
                 }
                 else
                 {
+                    doc.PositionId = Position.ForDispatch.Id;
                     await dbContext.SaleDocs.AddAsync(doc);
                     logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateAsync), doc);
                 }
@@ -54,103 +57,101 @@ namespace DocCheck.Application
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(SaleDoc item, bool isUpdatePosition = true)
+        public async Task UpdateAsync(SaleDoc item)
         {
             item.UserId = await authService.GetCurrentUserIdAsync();
 
-            if (isUpdatePosition)
-            {
-                UpdatePosition(item);
-                dbContext.SaleDocLogs.Add(new SaleDocLog(item));
-            }
+            UpdatePositionWhenSubmit(item);
+
+            dbContext.SaleDocLogs.Add(new SaleDocLog(item));
 
             dbContext.Update(item);
 
             await dbContext.SaveChangesAsync();
         }
 
-        private static void UpdatePosition(SaleDoc saleDoc)
+        private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
         {
             if (saleDoc.IsCorrect)
             {
-                switch (saleDoc.Position)
+                if (saleDoc.Position == Position.Operators)
+                    saleDoc.PositionId = Position.Accounting.Id;
+
+                if (saleDoc.Position == Position.Managers)
                 {
-                    case Position.Operators:
-                        saleDoc.Position = Position.Accounting;
-                        break;
-                    case Position.Managers:
-                        saleDoc.Position = Position.ForDispatch;
-                        saleDoc.Redispatch++;
-                        break;
-                    case Position.Accounting:
-                        saleDoc.Position = Position.Closed;
-                        break;
-                    case Position.Closed:
-                        saleDoc.Position = Position.ForDispatch;
-                        break;
+                    saleDoc.PositionId = Position.ForDispatch.Id;
+                    saleDoc.Redispatch++;
                 }
+
+                if (saleDoc.Position == Position.Accounting)
+                    saleDoc.PositionId = Position.Closed.Id;
+
+                if (saleDoc.Position == Position.Closed)
+                    saleDoc.PositionId = Position.ForDispatch.Id;
             }
             else
             {
-                saleDoc.Position = Position.Managers;
+                saleDoc.PositionId = Position.Managers.Id;
             }
         }
 
-        public async Task<List<SaleDoc>> GetList()
-        {
-            var result = await dbContext.SaleDocs
-                .AsNoTracking()
-                .OrderByDescending(e => e.Date)
-                .ToListAsync();
-
-            return result;
-        }
-
-        public async Task<SaleDoc?> Get(Guid id)
+        public async Task<SaleDoc?> GetAsync(Guid id)
         {
             var item = await dbContext.SaleDocs
                 .Include(e => e.PaperworkErrors)
                 .Include(e => e.QuantityErrors)
                 .FirstOrDefaultAsync(e => e.Id == id);
+
             if (item is null)
                 return null;
-
-            var ifRoleMatchesPosition = await IfRoleMatchesPosition(item);
-            if (!ifRoleMatchesPosition)
-                return null;
-
-            item.User = await authService.FindByIdAsync(item.UserId);
-
-            await SetPositionIfNew(item);
 
             return item;
         }
 
-        private async Task SetPositionIfNew(SaleDoc saleDoc)
+        public async Task<ServiceResult<SaleDoc>> LoadAsync(Guid id, bool isOpenByBarcode)
         {
-            if (saleDoc.Position == Position.ForDispatch)
-            {
-                saleDoc.Position = Position.Operators;
+            var item = await GetAsync(id);
 
-                await UpdateAsync(saleDoc, isUpdatePosition: false);
+            if (isOpenByBarcode)
+                await UpdatePositionWhenOpenByBarcodeAsync(item);
+            else
+            {
+                if (!await authService.IsCurrentUserInRole(item.Position.Role))
+                    return Error.MismatchedRole;
             }
+
+            item.User = await authService.FindByIdAsync(item.UserId);
+
+            return item;
         }
 
-        private async Task<bool> IfRoleMatchesPosition(SaleDoc saleDoc)
+
+        private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
         {
-            var user = await authService.GetCurrentUser();
+            if (await authService.IsCurrentUserInRole(Position.Operators.Role))
+                item.PositionId = Position.Operators.Id;
+            if (await authService.IsCurrentUserInRole(Position.Managers.Role))
+                item.PositionId = Position.Managers.Id;
+            if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
+                item.PositionId = Position.Accounting.Id;
+        }
 
-            if (user is null || saleDoc is null)
-                return false;
-
-            var result = await authService.IsUserInRole(user, saleDoc.Position.ToString());
+        public async Task<List<SaleDoc>> GetListAsync()
+        {
+            var result = await dbContext.SaleDocs
+                .AsNoTracking()
+                .Where(e => e.PositionId != Position.Closed.Id)
+                .OrderByDescending(e => e.Date)
+                .Take(1000)
+                .ToListAsync();
 
             return result;
-        }
+        }        
 
-
-        public async Task<List<SaleDoc>?> GetList(string invoiceRefKey)
+        public async Task<List<SaleDoc>?> GetListByBarcodeAsync(string barcode)
         {
+            var invoiceRefKey = GuidConvert.FromNumStr(barcode);
+
             var baseDocuments = await oDataService.GetDocument_СчетФактураВыданный_ДокументыОснования(invoiceRefKey);
 
             if (baseDocuments is null)
@@ -164,12 +165,12 @@ namespace DocCheck.Application
                  .ToListAsync();
 
             if (saleDocs is null || saleDocs.Count == 0)
-                saleDocs = await TryLoadAndCreate(baseDocuments, saleDocs);
+                saleDocs = await TryLoadAndCreateAsync(baseDocuments, saleDocs);
 
             return saleDocs;
         }
 
-        private async Task<List<SaleDoc>?> TryLoadAndCreate(Document_СчетФактураВыданный_ДокументыОснования[] baseDocuments, List<SaleDoc>? saleDocs)
+        private async Task<List<SaleDoc>?> TryLoadAndCreateAsync(Document_СчетФактураВыданный_ДокументыОснования[] baseDocuments, List<SaleDoc>? saleDocs)
         {
             saleDocs ??= [];
 
