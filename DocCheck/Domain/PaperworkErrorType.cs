@@ -55,6 +55,9 @@ namespace DocCheck.Domain
 
 
         [Description("Ошибки состава товаров")]
-        QuantityError
+        QuantityError,
+
+        [Description("Ошибка по сумме документа")]
+        ErrorByAmount
     }
 }

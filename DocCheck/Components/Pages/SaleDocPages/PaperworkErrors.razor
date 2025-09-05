@@ -5,7 +5,14 @@
 {
     <div class="card rounded-0 border-bottom-0">
         <div class="card-body p-1">
-            <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.NoDocument" OnInput="OnCreateOrUpdateError" />
+            <div class="row">
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.NoDocument" OnInput="OnCreateOrUpdateError" />
+                </div>
+                <div class="col">
+                    <PaperworkErrorCheckBox SaleDoc="SaleDoc" ErrorType="PaperworkErrorType.ErrorByAmount" OnInput="OnCreateOrUpdateError" />
+                </div>
+            </div>
         </div>
     </div>
     <div class="card rounded-0 border-bottom-0">
