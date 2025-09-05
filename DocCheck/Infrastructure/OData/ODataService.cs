@@ -8,6 +8,10 @@ namespace DocCheck.Infrastructure.OData
         Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey);
         Task<Document_РеализацияТоваровУслуг?> GetDocument_РеализацияТоваровУслуг(string refKey);
         Task<Document_РеализацияТоваровУслуг_Товары[]?> GetDocument_РеализацияТоваровУслуг_Товары(string refKey);
+
+        Task<InformationRegister_КОД_ПолученОригиналДокумента?> GetInformationRegister_КОД_ПолученОригиналДокумента(string docRefKey);
+        Task<bool> PostInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value);
+        Task<bool> PatchInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value);
     }
 
     public class ODataService(ODataClient oDataClient) : IODataService
@@ -53,6 +57,41 @@ namespace DocCheck.Infrastructure.OData
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_РеализацияТоваровУслуг_Товары>>(uri);
 
             var result = rootobject?.Value;
+
+            return result;
+        }
+
+        public async Task<InformationRegister_КОД_ПолученОригиналДокумента?> GetInformationRegister_КОД_ПолученОригиналДокумента(string docRefKey)
+        {
+            var uri = InformationRegister_КОД_ПолученОригиналДокумента.GetUri(docRefKey);
+
+            var rootobject = await oDataClient.GetDataAsync<Rootobject<InformationRegister_КОД_ПолученОригиналДокумента>>(uri);
+
+            var result = rootobject?.Value?.FirstOrDefault();
+
+            return result;
+        }
+
+        public async Task<bool> PostInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value)
+        {
+            if (string.IsNullOrEmpty(value.Документ_Key))
+                return false;
+
+            var uri = InformationRegister_КОД_ПолученОригиналДокумента.PostUri();
+
+            var result = await oDataClient.PostDataAsPostmanAsync(uri, value);
+
+            return result;
+        }
+
+        public async Task<bool> PatchInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value)
+        {
+            if (string.IsNullOrEmpty(value.Документ_Key))
+                return false;
+
+            var uri = InformationRegister_КОД_ПолученОригиналДокумента.PatchUri(value.Документ_Key);
+
+            var result = await oDataClient.PatchDataAsPostmanAsync(uri, value);
 
             return result;
         }

@@ -70,7 +70,7 @@
         if (log is null)
             return;
 
-        var saleDoc = await SaleDocService.GetAsync(log.SaleDocId);
+        saleDoc = await SaleDocService.GetAsync(log.SaleDocId);
 
         if (saleDoc is null)
             NavigationManager.NavigateTo($"/saledocs/edit?Id={log.SaleDocId}");

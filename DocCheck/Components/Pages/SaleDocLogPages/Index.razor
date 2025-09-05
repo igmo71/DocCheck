@@ -59,7 +59,7 @@ else
 
     private async Task LoadSaleDoc()
     {
-        var saleDoc = await SaleDocService.GetAsync(SaleDocId);
+        saleDoc = await SaleDocService.GetAsync(SaleDocId);
 
         if (saleDoc is null)
             NavigationManager.NavigateTo($"/saledocs/edit?Id={SaleDocId}");

@@ -90,6 +90,8 @@ namespace DocCheck.Application
             dbContext.SaleDocLogs.Add(new SaleDocLog(item));
 
             await UpdateAsync(item);
+
+            await CreateOrUpdate1cOriginalDocumentReceivedRecord(item);
         }
 
         private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
@@ -116,6 +118,27 @@ namespace DocCheck.Application
             else
             {
                 saleDoc.PositionId = Position.Managers.Id;
+            }
+        }
+
+        private async Task CreateOrUpdate1cOriginalDocumentReceivedRecord(SaleDoc item)
+        {
+            if (item.Position != Position.Closed || string.IsNullOrEmpty(item.BaseDocId))
+                return;
+
+            var record = await oDataService.GetInformationRegister_КОД_ПолученОригиналДокумента(item.BaseDocId);
+
+            if (record == null)
+            {
+                record = new InformationRegister_КОД_ПолученОригиналДокумента() { Документ_Key = item.BaseDocId, ЕстьДокументы = true };
+
+                await oDataService.PostInformationRegister_КОД_ПолученОригиналДокумента(record);
+            }
+            else
+            {
+                record.ЕстьДокументы = true;
+
+                await oDataService.PatchInformationRegister_КОД_ПолученОригиналДокумента(record);
             }
         }
 
@@ -175,7 +198,7 @@ namespace DocCheck.Application
 
             if (!string.IsNullOrEmpty(item.BaseDocId))
                 item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
-            
+
             return item;
         }
 
