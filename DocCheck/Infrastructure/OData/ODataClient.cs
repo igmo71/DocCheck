@@ -53,7 +53,6 @@ namespace DocCheck.Infrastructure.OData
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine(responseContent);
 
             logger.LogDebug("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", nameof(PatchDataAsPostmanAsync), response.StatusCode, uri, value, responseContent);
 
@@ -72,8 +71,7 @@ namespace DocCheck.Infrastructure.OData
             var response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
-            
-            Console.WriteLine(responseContent);
+
 
             logger.LogDebug("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", nameof(PatchDataAsPostmanAsync), response.StatusCode, uri, value, responseContent);
 
