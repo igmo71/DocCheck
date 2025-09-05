@@ -74,7 +74,7 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && SaleDoc is not null && SaleDoc.Position == Position.Accounting)
+        if (SaleDoc is not null && SaleDoc.Position == Position.Accounting)
         {
             await hiddenInput.FocusAsync();
         }
@@ -82,7 +82,7 @@ else
 
     private async Task LoadSaleDoc()
     {
-        ServiceResult<SaleDoc> serviceResult = default;
+        ServiceResult<SaleDoc> serviceResult = Error.None;
 
         if (Barcode is not null)
             serviceResult = await SaleDocService.GetByBarcodeAsync(Barcode);
@@ -96,7 +96,10 @@ else
         }
 
         if (serviceResult.Value is null)
-            NavigationManager.NavigateTo("saledocs");
+        {
+            message = "Не удалось загрузить документ";
+            return;
+        }
 
         SaleDoc = serviceResult.Value;
     }

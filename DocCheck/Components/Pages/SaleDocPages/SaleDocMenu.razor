@@ -17,8 +17,7 @@
                 @if (SaleDoc.Position == Position.Managers)
                 {
                     <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" value="" id="fixedPaperworkErrors"
-                               checked="@(!SaleDoc.HasPaperworkErrors)"
+                        <input class="form-check-input" type="checkbox" value="" id="fixedPaperworkErrors" checked="@(!SaleDoc.HasPaperworkErrors)"
                                @oninput="RemovePaperworkErrors" />
                         <label class="form-check-label" for="fixedPaperworkErrors">Документ Перепечатан</label>
                     </div>

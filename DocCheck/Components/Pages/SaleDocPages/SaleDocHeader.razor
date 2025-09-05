@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-auto">
             <div class="h4 mt-1">
-                <span>@Document_РеализацияТоваровУслуг.DocumentName</span>
+                <span>Счет-фактура №</span>
                 <span>@SaleDoc.Number</span>
                 <span> от </span>
                 <span>@SaleDoc.DateString</span>
@@ -20,6 +20,23 @@
                 <div><i class="bi bi-arrow-counterclockwise me-1"></i>Количество переотправок: <span>@SaleDoc.Redispatch</span></div>
             </div>
         </div>
+    </div>
+    <div class="row">
+        <div class="col-auto">
+            <div class="h5 mt-1">
+                <span>Реализация №</span>
+                <span>@SaleDoc.BaseDoc?.Number</span>
+                <span> от </span>
+                <span>@SaleDoc.BaseDoc?.Date</span>
+            </div>
+        </div>
+        <div class="col">
+            <div><i class="bi bi-cash-stack me-1"></i>Сумма документа: <span class="h5">@SaleDoc.BaseDoc?.DocumentAmount</span></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-auto"><i class="bi bi-person-circle me-1"></i>Менеджер: <span class="h6">@SaleDoc.BaseDoc?.Менеджер?.Description</span></div>
+        <div class="col"><i class="bi bi-person-vcard me-1"></i>Контрагент: <span class="h6">@SaleDoc.BaseDoc?.Контрагент?.Description</span></div>
     </div>
     <hr class="mt-1" />
 }

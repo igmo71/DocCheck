@@ -54,8 +54,8 @@ namespace DocCheck.Application
                 return;
             }
 
-            var baseDocs = mngrOrders.Where(e => 
-                e.Распоряжение_Name != null && 
+            var baseDocs = mngrOrders.Where(e =>
+                e.Распоряжение_Name != null &&
                 e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName));
 
             foreach (var baseDoc in baseDocs)
@@ -96,20 +96,22 @@ namespace DocCheck.Application
         {
             if (saleDoc.IsCorrect)
             {
-                if (saleDoc.Position == Position.Operators)
-                    saleDoc.PositionId = Position.Accounting.Id;
-
-                if (saleDoc.Position == Position.Managers)
+                switch (saleDoc.Position.Id)
                 {
-                    saleDoc.PositionId = Position.ForDispatch.Id;
-                    saleDoc.Redispatch++;
+                    case 1: // Operators
+                        saleDoc.PositionId = Position.Accounting.Id;
+                        break;
+                    case 2: // Managers
+                        saleDoc.PositionId = Position.ForDispatch.Id;
+                        saleDoc.Redispatch++;
+                        break;
+                    case 3: // Accounting
+                        saleDoc.PositionId = Position.Closed.Id;
+                        break;
+                    case 4: // Closed
+                        saleDoc.PositionId = Position.ForDispatch.Id;
+                        break;
                 }
-
-                if (saleDoc.Position == Position.Accounting)
-                    saleDoc.PositionId = Position.Closed.Id;
-
-                if (saleDoc.Position == Position.Closed)
-                    saleDoc.PositionId = Position.ForDispatch.Id;
             }
             else
             {
@@ -146,8 +148,11 @@ namespace DocCheck.Application
             if (item is null)
                 return Error.NotFound;
 
-            if (!await authService.IsCurrentUserInRole(item.Position.Role))
+            if (item.Position != Position.ForDispatch && !await authService.IsCurrentUserInRole(item.Position.Role))
                 return Error.AccessDenied;
+
+            if (!string.IsNullOrEmpty(item.BaseDocId))
+                item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
 
             return item;
         }
@@ -168,6 +173,9 @@ namespace DocCheck.Application
 
             await UpdateAsync(item);
 
+            if (!string.IsNullOrEmpty(item.BaseDocId))
+                item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
+            
             return item;
         }
 

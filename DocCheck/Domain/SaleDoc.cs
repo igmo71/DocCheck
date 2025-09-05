@@ -2,6 +2,7 @@
 using DocCheck.Data;
 using DocCheck.Infrastructure.OData.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
@@ -20,6 +21,9 @@ namespace DocCheck.Domain
         public string? BaseDocId { get; set; }
         public string? BaseDocType { get; set; }
 
+        [NotMapped]
+        public Document_РеализацияТоваровУслуг? BaseDoc { get; set; }
+
         public string? UserId { get; set; }
 
         [JsonIgnore]
@@ -35,6 +39,8 @@ namespace DocCheck.Domain
         public List<PaperworkError> PaperworkErrors { get; set; } = [];
 
         public List<QuantityError> QuantityErrors { get; set; } = [];
+
+        ///
 
         public bool HasPaperworkErrors => PaperworkErrors.Count > 0;
 

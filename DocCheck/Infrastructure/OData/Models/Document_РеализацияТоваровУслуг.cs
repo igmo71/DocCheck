@@ -1,4 +1,6 @@
-﻿namespace DocCheck.Infrastructure.OData.Models
+﻿using System.Globalization;
+
+namespace DocCheck.Infrastructure.OData.Models
 {
 
     public class Document_РеализацияТоваровУслуг
@@ -6,6 +8,7 @@
         public string? Ref_Key { get; set; }
         public string? Number { get; set; }
         public DateTime Date { get; set; }
+        public float СуммаДокумента { get; set; }
 
         public Document_РеализацияТоваровУслуг_Товары[]? Товары { get; set; }
 
@@ -18,13 +21,15 @@
         public string? Контрагент_Key { get; set; }
         public Catalog_Контрагенты? Контрагент { get; set; }
 
+        public string DocumentAmount => СуммаДокумента.ToString("N2", new CultureInfo("ru-RU"));
+
         public static string DocumentName => "Реализация товаров и услуг";
 
         public static string GetUri(string refKey) =>
             $"Document_РеализацияТоваровУслуг" +
             $"?$format=json" +
             $"&$expand=Менеджер,Автор,Контрагент" +
-            $"&$select=Ref_Key,Number,Date,Менеджер/Description,Автор/Description,Контрагент/Description" +
+            $"&$select=Ref_Key,Number,Date,СуммаДокумента,Менеджер/Description,Автор/Description,Контрагент/Description" +
             $"&$filter=Ref_Key eq guid'{refKey}'";
 
         //public string DataVersion { get; set; }
@@ -47,7 +52,6 @@
         //public string ЗаказКлиента_Type { get; set; }
         //public string Организация_Key { get; set; }
         //public string НалогообложениеНДС { get; set; }
-        //public float СуммаДокумента { get; set; }
         //public string Партнер_Key { get; set; }
         //public string Подразделение_Key { get; set; }
         //public string Сделка_Key { get; set; }
