@@ -5,17 +5,20 @@ using DocCheck.Infrastructure.OData;
 using DocCheck.Infrastructure.OData.Models;
 using DocCheck.Infrastructure.Whs.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace DocCheck.Application
 {
     public interface ISaleDocService
     {
-        Task CreateAsync(string mngrOrderString);
-        Task UpdateAsync(SaleDoc saleDoc);
-        Task<List<SaleDoc>> GetListAsync();
-        Task<List<SaleDoc>?> GetListByBarcodeAsync(string barcode);
+        Task CreateIfNotExistsAsync(SaleDoc saleDoc);
+        Task CreateByBaseDocAsync(string mngrOrderString);
+        Task UpdateAsync(SaleDoc item);
+        Task UpdateBySubmitAsync(SaleDoc saleDoc);
+        Task<List<SaleDoc>> GetListUnclosedAsync();
         Task<SaleDoc?> GetAsync(Guid id);
-        Task<ServiceResult<SaleDoc>> LoadAsync(Guid id, bool isOpenByBarcode);
+        Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
+        Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
         Task DeleteUserAsync(string userId);
     }
 
@@ -25,49 +28,68 @@ namespace DocCheck.Application
        AuthService authService,
        ILogger<SaleDocService> logger) : ISaleDocService
     {
-        public async Task CreateAsync(string mngrOrderString)
+        public async Task CreateIfNotExistsAsync(SaleDoc saleDoc)
         {
-            var mngrDocuments = MngrOrder.From(mngrOrderString);
-
-            if (mngrDocuments is null)
+            if (dbContext.SaleDocs.Any(e => e.Id == saleDoc.Id))
             {
-                logger.LogWarning("{Source} baseDocuments is null", nameof(CreateAsync));
-                return;
+                logger.LogDebug("{Source} Exists {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
             }
-
-            var saleDocs = mngrDocuments
-                .Where(e => e.Распоряжение_Name != null &&
-                            e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName))
-                .Select(e => SaleDoc.From(e));
-
-            foreach (var doc in saleDocs)
+            else
             {
-                if (dbContext.SaleDocs.Any(e => e.Id == doc.Id))
-                {
-                    logger.LogDebug("{Source} Exists {@SaleDoc}", nameof(CreateAsync), doc);
-                }
-                else
-                {
-                    doc.PositionId = Position.ForDispatch.Id;
-                    await dbContext.SaleDocs.AddAsync(doc);
-                    logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateAsync), doc);
-                }
+                saleDoc.PositionId = Position.ForDispatch.Id;
+                await dbContext.SaleDocs.AddAsync(saleDoc);
+                logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
             }
 
             await dbContext.SaveChangesAsync();
+        }
+
+        public async Task CreateByBaseDocAsync(string mngrOrderString)
+        {
+            var mngrOrders = JsonSerializer.Deserialize<MngrOrder[]>(mngrOrderString);
+
+            if (mngrOrders is null)
+            {
+                logger.LogError("{Source} Mngr Orders is null", nameof(CreateByBaseDocAsync));
+                return;
+            }
+
+            var baseDocs = mngrOrders.Where(e => 
+                e.Распоряжение_Name != null && 
+                e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName));
+
+            foreach (var baseDoc in baseDocs)
+            {
+                var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный_ByBaseDoc(baseDoc.Распоряжение_Id);
+
+                if (documentInvoice is null)
+                {
+                    logger.LogError("{Source} Document_СчетФактураВыданный is null", nameof(CreateByBaseDocAsync));
+                    return;
+                }
+
+                var saleDoc = SaleDoc.From(documentInvoice);
+
+                await CreateIfNotExistsAsync(saleDoc);
+            }
         }
 
         public async Task UpdateAsync(SaleDoc item)
         {
             item.UserId = await authService.GetCurrentUserIdAsync();
 
+            dbContext.Update(item);
+
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateBySubmitAsync(SaleDoc item)
+        {
             UpdatePositionWhenSubmit(item);
 
             dbContext.SaleDocLogs.Add(new SaleDocLog(item));
 
-            dbContext.Update(item);
-
-            await dbContext.SaveChangesAsync();
+            await UpdateAsync(item);
         }
 
         private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
@@ -95,52 +117,7 @@ namespace DocCheck.Application
             }
         }
 
-        public async Task<SaleDoc?> GetAsync(Guid id)
-        {
-            var item = await dbContext.SaleDocs
-                .Include(e => e.PaperworkErrors)
-                .Include(e => e.QuantityErrors)
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-            if (item is null)
-                return null;
-
-            return item;
-        }
-
-        public async Task<ServiceResult<SaleDoc>> LoadAsync(Guid id, bool isOpenByBarcode)
-        {
-            var item = await GetAsync(id);
-            if (item is null)
-                return Error.NotFound;
-
-            if (isOpenByBarcode)
-                await UpdatePositionWhenOpenByBarcodeAsync(item);
-            else
-            {
-                if (!await authService.IsCurrentUserInRole(item.Position.Role))
-                    return Error.MismatchedRole;
-            }
-
-            item.User = await authService.FindByIdAsync(item.UserId);
-
-            return item;
-        }
-
-
-        private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
-        {
-            if (await authService.IsCurrentUserInRole(Position.Operators.Role))
-                item.PositionId = Position.Operators.Id;
-
-            if (await authService.IsCurrentUserInRole(Position.Managers.Role))
-                item.PositionId = Position.Managers.Id;
-            
-            if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
-                item.PositionId = Position.Accounting.Id;
-        }
-
-        public async Task<List<SaleDoc>> GetListAsync()
+        public async Task<List<SaleDoc>> GetListUnclosedAsync()
         {
             var result = await dbContext.SaleDocs
                 .AsNoTracking()
@@ -150,51 +127,73 @@ namespace DocCheck.Application
                 .ToListAsync();
 
             return result;
-        }        
+        }
 
-        public async Task<List<SaleDoc>?> GetListByBarcodeAsync(string barcode)
+        public async Task<SaleDoc?> GetAsync(Guid id)
+        {
+            var item = await dbContext.SaleDocs
+                .Include(e => e.PaperworkErrors)
+                .Include(e => e.QuantityErrors)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            return item;
+        }
+
+        public async Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id)
+        {
+            var item = await GetAsync(id);
+
+            if (item is null)
+                return Error.NotFound;
+
+            if (!await authService.IsCurrentUserInRole(item.Position.Role))
+                return Error.AccessDenied;
+
+            return item;
+        }
+
+        public async Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode)
         {
             var invoiceRefKey = GuidConvert.FromNumStr(barcode);
 
-            var baseDocuments = await oDataService.GetDocument_СчетФактураВыданный_ДокументыОснования(invoiceRefKey);
+            if (!Guid.TryParse(invoiceRefKey, out var id))
+                return Error.GuidParseFail;
 
-            if (baseDocuments is null)
-                return null;
+            var item = await GetAsync(id) ?? await CreateByInvoiceAsync(invoiceRefKey);
 
-            var baseDocumentsStr = string.Join(" ", baseDocuments.Select(d => d.ДокументОснование));
+            if (item is null)
+                return Error.NotFound;
 
-            var saleDocs = await dbContext.SaleDocs
-                 .AsNoTracking()
-                 .Where(saleDoc => baseDocumentsStr.Contains(saleDoc.Id.ToString()))
-                 .ToListAsync();
+            await UpdatePositionWhenOpenByBarcodeAsync(item);
 
-            if (saleDocs is null || saleDocs.Count == 0)
-                saleDocs = await TryLoadAndCreateAsync(baseDocuments, saleDocs);
+            await UpdateAsync(item);
 
-            return saleDocs;
+            return item;
         }
 
-        private async Task<List<SaleDoc>?> TryLoadAndCreateAsync(Document_СчетФактураВыданный_ДокументыОснования[] baseDocuments, List<SaleDoc>? saleDocs)
+        private async Task<SaleDoc?> CreateByInvoiceAsync(string invoiceRefKey)
         {
-            saleDocs ??= [];
+            var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(invoiceRefKey);
+            if (documentInvoice is null)
+                return null;
 
-            foreach (var baseDocument in baseDocuments)
-            {
-                var document = await oDataService.GetDocument_РеализацияТоваровУслуг(baseDocument.ДокументОснование);
-                if (document is null)
-                    continue;
+            var saleDoc = SaleDoc.From(documentInvoice);
 
-                saleDocs.Add(SaleDoc.From(document));
-            }
+            await CreateIfNotExistsAsync(saleDoc);
 
-            if (saleDocs is not null && saleDocs.Count > 0)
-            {
-                await dbContext.SaleDocs.AddRangeAsync(saleDocs);
+            return saleDoc;
+        }
 
-                await dbContext.SaveChangesAsync();
-            }
+        private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
+        {
+            if (await authService.IsCurrentUserInRole(Position.Operators.Role))
+                item.PositionId = Position.Operators.Id;
 
-            return saleDocs;
+            if (await authService.IsCurrentUserInRole(Position.Managers.Role))
+                item.PositionId = Position.Managers.Id;
+
+            if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
+                item.PositionId = Position.Accounting.Id;
         }
 
         public async Task DeleteUserAsync(string userId)

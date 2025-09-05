@@ -70,9 +70,7 @@
         if (log is null)
             return;
 
-        var serviceResult = await SaleDocService.LoadAsync(log.SaleDocId, isOpenByBarcode: false);
-
-        saleDoc = serviceResult.Value;
+        var saleDoc = await SaleDocService.GetAsync(log.SaleDocId);
 
         if (saleDoc is null)
             NavigationManager.NavigateTo($"/saledocs/edit?Id={log.SaleDocId}");

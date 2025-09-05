@@ -58,7 +58,7 @@ else
     public Guid Id { get; set; }
 
     [SupplyParameterFromQuery]
-    public bool IsOpenByBarcode { get; set; }
+    public string? Barcode { get; set; }
 
     [SupplyParameterFromForm]
     private SaleDoc? SaleDoc { get; set; }
@@ -70,7 +70,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadSaleDoc();
-        //await LoadProducts();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -83,7 +82,12 @@ else
 
     private async Task LoadSaleDoc()
     {
-        var serviceResult = await SaleDocService.LoadAsync(Id, IsOpenByBarcode);
+        ServiceResult<SaleDoc> serviceResult = default;
+
+        if (Barcode is not null)
+            serviceResult = await SaleDocService.GetByBarcodeAsync(Barcode);
+        else if (Id != Guid.Empty)
+            serviceResult = await SaleDocService.GetByAccessRightsAsync(Id);
 
         if (!serviceResult.IsSuccess)
         {
@@ -95,17 +99,11 @@ else
             NavigationManager.NavigateTo("saledocs");
 
         SaleDoc = serviceResult.Value;
-
-    }
-
-    private async Task LoadProducts()
-    {
-        products = await ODataService.GetDocument_РеализацияТоваровУслуг_Товары(Id.ToString());
     }
 
     private async Task UpdateSaleDoc(EditContext args)
     {
-        await SaleDocService.UpdateAsync((SaleDoc)args.Model);
+        await SaleDocService.UpdateBySubmitAsync((SaleDoc)args.Model);
 
         NavigationManager.NavigateTo("saledocs");
     }

@@ -8,10 +8,5 @@ namespace DocCheck.Infrastructure.Whs.Models
         public string? Документ_Name { get; set; }
         public string Распоряжение_Id { get; set; } = null!;
         public string? Распоряжение_Name { get; set; }
-
-        public static MngrOrder[]? From(string mngrOrderStr)
-        {
-            return JsonSerializer.Deserialize<MngrOrder[]>(mngrOrderStr);
-        }
     }
 }

@@ -13,7 +13,7 @@
             {
                 var overdueClass = item.IsOverdue ? "danger" : "success";
                 <div class="alert alert-@overdueClass p-1 mb-1">
-                    <a class="btn" href=@($"/saledocs/edit?Id={item.Id}&IsOpenByBarcode={false}")>
+                    <a class="btn" href=@($"/saledocs/edit?Id={item.Id}")>
                         <div class="row">
                             <div class="col">@item.Number</div>
                             <div class="col">@item.ShortDateString</div>

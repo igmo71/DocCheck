@@ -45,26 +45,14 @@ else
 
     private async Task LoadSaleDocs()
     {
-        saleDocs = await SaleDocService.GetListAsync();
+        saleDocs = await SaleDocService.GetListUnclosedAsync();
 
         SplitSaleDocsByPosition();
     }
 
-    private async Task ScannedBarcodeHandle(string barcode)
+    private void ScannedBarcodeHandle(string barcode)
     {
-        var saleDocs = await SaleDocService.GetListByBarcodeAsync(barcode);
-        if (saleDocs is null)
-            return;
-
-        if (saleDocs.Count == 1)
-            NavigationManager?.NavigateTo($"/saledocs/edit?Id={saleDocs[0].Id}&IsOpenByBarcode={true}");
-
-        if (saleDocs.Count > 1)
-        {
-            this.saleDocs = saleDocs;
-
-            SplitSaleDocsByPosition();
-        }
+        NavigationManager?.NavigateTo($"/saledocs/edit?Barcode={barcode}");
     }
 
     private void SplitSaleDocsByPosition()

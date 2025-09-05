@@ -115,7 +115,7 @@ namespace DocCheck.Infrastructure.RabbitMq
             var saleDocService = serviceScope.ServiceProvider.GetService<ISaleDocService>()
                 ?? throw new InvalidOperationException("SaleDocService is null");
 
-            await saleDocService.CreateAsync(message);
+            await saleDocService.CreateByBaseDocAsync(message);
         }
     }
 }

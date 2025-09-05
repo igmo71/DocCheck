@@ -1,14 +1,13 @@
 ﻿using DocCheck.Common;
 using DocCheck.Data;
 using DocCheck.Infrastructure.OData.Models;
-using DocCheck.Infrastructure.Whs.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace DocCheck.Domain
 {
-    public class SaleDoc //Document_РеализацияТоваровУслуг
+    public class SaleDoc //Счет-Фактура (Invoice)
     {
         [Key]
         public Guid Id { get; set; } // Ref_Key
@@ -17,6 +16,9 @@ namespace DocCheck.Domain
         public string? Number { get; set; }
 
         public DateTime? Date { get; set; }
+
+        public string? BaseDocId { get; set; }
+        public string? BaseDocType { get; set; }
 
         public string? UserId { get; set; }
 
@@ -52,43 +54,18 @@ namespace DocCheck.Domain
 
         public bool IsOverdue => (int)(DateTime.Today - (Date ?? new DateTime()).Date).TotalDays > 5;
 
-        public static SaleDoc From(MngrOrder? mngrOrder)
-        {
-            ArgumentNullException.ThrowIfNull(mngrOrder);
-
-            var name = mngrOrder.Распоряжение_Name
-                       ?? throw new ArgumentNullException(nameof(mngrOrder.Распоряжение_Name));
-
-            var idx = name.LastIndexOf(" от ", StringComparison.Ordinal);
-            if (idx == -1)
-                throw new InvalidOperationException($"Can't find 'от' in: {name}");
-
-            var numberPart = name.Substring(0, idx).Split(' ').Last();
-
-            var datePart = name.Substring(idx + 4);
-
-            if (!DateTime.TryParseExact(datePart, "dd.MM.yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
-                throw new InvalidOperationException($"Can't parse Date from: {name}");
-
-            return new SaleDoc
-            {
-                Id = Guid.Parse(mngrOrder.Распоряжение_Id),
-                Number = numberPart,
-                Date = dateTime
-            };
-        }
-
-
-        public static SaleDoc From(Document_РеализацияТоваровУслуг document)
+        public static SaleDoc From(Document_СчетФактураВыданный documentInvoice)
         {
             var saleDoc = new SaleDoc
             {
-                Id = Guid.Parse(document.Ref_Key ?? throw new InvalidOperationException("Document_РеализацияТоваровУслуг Ref_Key is null")),
-                Number = document.Number,
-                Date = document.Date
+                Id = Guid.Parse(documentInvoice.Ref_Key ?? throw new InvalidOperationException("Document_СчетФактураВыданный Ref_Key is null")),
+                Number = documentInvoice.Number,
+                Date = documentInvoice.Date,
+                BaseDocId = documentInvoice.ДокументОснование,
+                BaseDocType = documentInvoice.ДокументОснование_Type
             };
 
             return saleDoc;
-        }        
+        }
     }
 }
