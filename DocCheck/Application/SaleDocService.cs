@@ -161,6 +161,13 @@ namespace DocCheck.Application
                 .Include(e => e.QuantityErrors)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
+            if (item?.BaseDocId is null)
+                return item;
+
+            var record = await oDataService.GetInformationRegister_КОД_ПолученОригиналДокумента(item.BaseDocId);
+
+            item.IsOriginalDocumentReceived = record is not null && record.ЕстьДокументы;
+
             return item;
         }
 
@@ -171,7 +178,7 @@ namespace DocCheck.Application
             if (item is null)
                 return Error.NotFound;
 
-            if (item.Position != Position.ForDispatch && !await authService.IsCurrentUserInRole(item.Position.Role))
+            if (!(item.Position == Position.ForDispatch || item.Position == Position.Closed) && !await authService.IsCurrentUserInRole(item.Position.Role))
                 return Error.AccessDenied;
 
             if (!string.IsNullOrEmpty(item.BaseDocId))
@@ -217,6 +224,9 @@ namespace DocCheck.Application
 
         private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
         {
+            if (item.Position == Position.Closed)
+                return;
+
             if (await authService.IsCurrentUserInRole(Position.Operators.Role))
                 item.PositionId = Position.Operators.Id;
 

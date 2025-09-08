@@ -40,6 +40,8 @@ namespace DocCheck.Domain
 
         public List<QuantityError> QuantityErrors { get; set; } = [];
 
+        public bool IsOriginalDocumentReceived { get; set; }
+
         ///
 
         public bool HasPaperworkErrors => PaperworkErrors.Count > 0;
