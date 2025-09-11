@@ -1,0 +1,92 @@
+﻿@page "/saledocs/delete"
+@using DocCheck.Application
+@using Microsoft.EntityFrameworkCore
+@using DocCheck.Domain
+@inject ISaleDocService SaleDocService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Удалить</PageTitle>
+
+<h2>Удалить</h2>
+
+<p class="text-danger">Вы уверенны, что хотите удалить?</p>
+<div>
+    <h3>УПД (Счет-фактура выданный)</h3>
+    <hr />
+    @if (saledoc is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">№</dt>
+            <dd class="col-sm-10">@saledoc.Number</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Дата</dt>
+            <dd class="col-sm-10">@saledoc.Date</dd>
+        </dl>
+       @*  <dl class="row">
+            <dt class="col-sm-2">BaseDocId</dt>
+            <dd class="col-sm-10">@saledoc.BaseDocId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">BaseDocType</dt>
+            <dd class="col-sm-10">@saledoc.BaseDocType</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">UserId</dt>
+            <dd class="col-sm-10">@saledoc.UserId</dd>
+        </dl> *@
+        <dl class="row">
+            <dt class="col-sm-2">Колонка</dt>
+            <dd class="col-sm-10">@saledoc.Position.Description</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Переотправок</dt>
+            <dd class="col-sm-10">@saledoc.Redispatch</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Получен оригинал</dt>
+            <dd class="col-sm-10">
+                @if (saledoc.IsOriginalDocumentReceived)
+                {
+                    <i class="bi bi-check-circle"></i>
+                }
+                else
+                {
+                    <span>Нет</span>
+                }
+            </dd>
+            
+        </dl>
+        <EditForm method="post" Model="saledoc" OnValidSubmit="DeleteSaleDoc" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(saledoc is null)">Удалить</button> |
+            <a href="/saledocs">Назад к списку</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private SaleDoc? saledoc;
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        saledoc = await SaleDocService.GetAsync(Id);
+
+        if (saledoc is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteSaleDoc()
+    {
+        await SaleDocService.DeleteAsync(Id);
+        NavigationManager.NavigateTo("/saledocs");
+    }
+}

@@ -35,6 +35,14 @@
                 <span>История</span>
             </a>
         </div>
+        <AuthorizeView Roles="Admin">
+        <div class="col pt-2">
+            <a href="/saledocs/delete?Id=@SaleDoc.Id" class="text-danger">
+                <i class="bi bi-x-circle"></i>
+                <span>Удалить</span>
+            </a>
+        </div>
+        </AuthorizeView>
     </div>
 }
 

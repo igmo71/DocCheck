@@ -12,6 +12,8 @@ namespace DocCheck.Infrastructure.OData
         Task<InformationRegister_КОД_ПолученОригиналДокумента?> GetInformationRegister_КОД_ПолученОригиналДокумента(string docRefKey);
         Task<bool> PostInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value);
         Task<bool> PatchInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value);
+
+        Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи();
     }
 
     public class ODataService(ODataClient oDataClient) : IODataService
@@ -92,6 +94,17 @@ namespace DocCheck.Infrastructure.OData
             var uri = InformationRegister_КОД_ПолученОригиналДокумента.PatchUri(value.Документ_Key);
 
             var result = await oDataClient.PatchDataAsPostmanAsync(uri, value);
+
+            return result;
+        }
+
+        public async Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи()
+        {
+            var uri = Catalog_Пользователи.GetSalesDepartmentUri();
+
+            var rootobject = await oDataClient.GetDataAsync<Rootobject<Catalog_Пользователи>>(uri);
+
+            var result = rootobject?.Value;
 
             return result;
         }

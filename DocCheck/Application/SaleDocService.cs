@@ -4,6 +4,7 @@ using DocCheck.Domain;
 using DocCheck.Infrastructure.OData;
 using DocCheck.Infrastructure.OData.Models;
 using DocCheck.Infrastructure.Whs.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -20,6 +21,7 @@ namespace DocCheck.Application
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
         Task DeleteUserAsync(string userId);
+        Task DeleteAsync(Guid id);
     }
 
     public class SaleDocService(
@@ -242,6 +244,17 @@ namespace DocCheck.Application
             await dbContext.SaleDocs
                 .Where(e => e.UserId == userId)
                 .ExecuteDeleteAsync();
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var saledoc = await dbContext.SaleDocs.FindAsync(id);
+            if (saledoc is null)
+                return;
+
+            dbContext.SaleDocs.Remove(saledoc!);
+
+            await dbContext.SaveChangesAsync();
         }
     }
 }

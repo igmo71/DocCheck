@@ -1,5 +1,7 @@
 ﻿@page "/saledocs"
 
+@using DocCheck.Infrastructure.OData
+@using DocCheck.Infrastructure.OData.Models
 @using Microsoft.AspNetCore.Authorization
 @using DocCheck.Application
 @using DocCheck.Common
@@ -7,6 +9,7 @@
 
 @inject ISaleDocService SaleDocService
 @inject NavigationManager NavigationManager
+@inject IODataService ODataService
 
 @attribute [Authorize]
 
@@ -38,8 +41,11 @@ else
     private List<SaleDoc>? saleDocsManagers;
     private List<SaleDoc>? saleDocsAccounting;
 
+    private Catalog_Пользователи[]? salesDepartmentUsers;
+
     protected override async Task OnInitializedAsync()
     {
+        salesDepartmentUsers = await ODataService.GetSalesDepartment_Catalog_Пользователи();
         await LoadSaleDocs();
     }
 
