@@ -8,7 +8,7 @@ namespace DocCheck.Infrastructure.OData.Models
         public string? Ref_Key { get; set; }
         public string? Number { get; set; }
         public DateTime Date { get; set; }
-        public float СуммаДокумента { get; set; }
+        public decimal СуммаДокумента { get; set; }
 
         public Document_РеализацияТоваровУслуг_Товары[]? Товары { get; set; }
 
