@@ -61,15 +61,25 @@ else
 
     private SearchParams searchParams = new();
 
-    protected override async Task OnInitializedAsync()
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await LoadSaleDocs(searchParams);
+    // }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
+        if (firstRender)
+        {
 
-        if (storageResult.Success && storageResult.Value is not null)
-            searchParams = storageResult.Value;
+            var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
 
-        await LoadSaleDocs(searchParams);
+            if (storageResult.Success && storageResult.Value is not null)
+                searchParams = storageResult.Value;
 
+            await LoadSaleDocs(searchParams);
+
+            StateHasChanged();
+        }
     }
 
     private async Task LoadSaleDocs(SearchParams searchParams)
