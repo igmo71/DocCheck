@@ -14,6 +14,8 @@ namespace DocCheck.Infrastructure.OData
         Task<bool> PatchInformationRegister_КОД_ПолученОригиналДокумента(InformationRegister_КОД_ПолученОригиналДокумента value);
 
         Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи();
+        Task<Catalog_Контрагенты?> GetCatalog_Контрагенты(string refKey);
+        Task<Catalog_Контрагенты[]?> GetCatalog_Контрагенты_BySearchTerm(string searchTerm);
     }
 
     public class ODataService(ODataClient oDataClient) : IODataService
@@ -32,7 +34,7 @@ namespace DocCheck.Infrastructure.OData
 
         public async Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey)
         {
-            var uri = Document_СчетФактураВыданный.GetUriByDocumentSale(documentSaleRefKey);
+            var uri = Document_СчетФактураВыданный.GetUriByBaseDoc(documentSaleRefKey);
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_СчетФактураВыданный>>(uri);
 
@@ -103,6 +105,28 @@ namespace DocCheck.Infrastructure.OData
             var uri = Catalog_Пользователи.GetSalesDepartmentUri();
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Catalog_Пользователи>>(uri);
+
+            var result = rootobject?.Value;
+
+            return result;
+        }
+
+        public async Task<Catalog_Контрагенты?> GetCatalog_Контрагенты(string refKey)
+        {
+            var uri = Catalog_Контрагенты.GetUri(refKey);
+
+            var rootobject = await oDataClient.GetDataAsync<Rootobject<Catalog_Контрагенты>>(uri);
+
+            var result = rootobject?.Value?.FirstOrDefault();
+
+            return result;
+        }
+
+        public async Task<Catalog_Контрагенты[]?> GetCatalog_Контрагенты_BySearchTerm(string searchTerm)
+        {
+            var uri = Catalog_Контрагенты.GetUriBySearchTerm(searchTerm);
+
+            var rootobject = await oDataClient.GetDataAsync<Rootobject<Catalog_Контрагенты>>(uri);
 
             var result = rootobject?.Value;
 

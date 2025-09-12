@@ -10,6 +10,7 @@
 @inject ISaleDocService SaleDocService
 @inject NavigationManager NavigationManager
 @inject IODataService ODataService
+@inject ProtectedSessionStorage ProtectedSessionStore
 
 @attribute [Authorize]
 
@@ -25,6 +26,23 @@
 }
 else
 {
+    <div class="row">
+        <div class="col input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Контрагент</span>
+            <input type="text" class="form-control" @bind="searchParams.Customer" placeholder="Несколько букв" aria-label="searchCustomer" aria-describedby="basic-addon1">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="Filter"><i class="bi bi-search me-2"></i>Поиск</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="ResetFilter"><i class="bi bi-x-circle me-2"></i>Сбросить фильтр</button>
+        </div>
+        <AuthorizeView Roles="Admin">
+            <div class="col">
+                <button class="btn btn-primary" @onclick="Actualize">Актуализировать</button>
+            </div>
+        </AuthorizeView>
+    </div>
     <div class="container-fluid">
         <div class="d-flex overflow-auto">
             <SaleDocColumn SaleDocs="saleDocsForDispatch" Name="@Position.ForDispatch.Description" />
@@ -41,17 +59,22 @@ else
     private List<SaleDoc>? saleDocsManagers;
     private List<SaleDoc>? saleDocsAccounting;
 
-    private Catalog_Пользователи[]? salesDepartmentUsers;
+    private SearchParams searchParams = new();
 
     protected override async Task OnInitializedAsync()
     {
-        salesDepartmentUsers = await ODataService.GetSalesDepartment_Catalog_Пользователи();
-        await LoadSaleDocs();
+        var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
+
+        if (storageResult.Success && storageResult.Value is not null)
+            searchParams = storageResult.Value;
+
+        await LoadSaleDocs(searchParams);
+
     }
 
-    private async Task LoadSaleDocs()
+    private async Task LoadSaleDocs(SearchParams searchParams)
     {
-        saleDocs = await SaleDocService.GetListUnclosedAsync();
+        saleDocs = await SaleDocService.GetListUnclosedAsync(searchParams);
 
         SplitSaleDocsByPosition();
     }
@@ -70,5 +93,26 @@ else
         saleDocsOperators = saleDocs.Where(e => e.Position == Position.Operators).ToList();
         saleDocsManagers = saleDocs.Where(e => e.Position == Position.Managers).ToList();
         saleDocsAccounting = saleDocs.Where(e => e.Position == Position.Accounting).ToList();
+    }
+
+    private async Task Actualize(MouseEventArgs args)
+    {
+        await SaleDocService.ActualizeAsync();
+    }
+
+    private async Task Filter()
+    {
+        await LoadSaleDocs(searchParams);
+
+        await ProtectedSessionStore.SetAsync("searchParams", searchParams);
+    }
+
+    private async Task ResetFilter(MouseEventArgs args)
+    {
+        searchParams = searchParams = new();
+
+        await LoadSaleDocs(searchParams);
+
+        await ProtectedSessionStore.DeleteAsync("searchParams");
     }
 }

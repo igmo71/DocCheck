@@ -7,21 +7,21 @@
         public DateTime Date { get; set; }
         public string? ДокументОснование { get; set; }
         public string? ДокументОснование_Type { get; set; }
+        public string? Контрагент { get; set; }
 
         internal static string GetUri(string refKey) =>
             $"Document_СчетФактураВыданный" +
             $"?$format=json" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type" +
+            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент" +
             $"&$filter=Ref_Key eq guid'{refKey}'";
 
-        internal static string GetUriByDocumentSale(string baseDocRefKey) =>
+        internal static string GetUriByBaseDoc(string baseDocRefKey) =>
             $"Document_СчетФактураВыданный" +
             $"?$format=json" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type" +
+            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент" +
             $"&$filter=ДокументОснование eq cast(guid'{baseDocRefKey}', 'Document_РеализацияТоваровУслуг')";
 
         //public bool Корректировочный { get; set; }
-        //public string Контрагент { get; set; }
         //public string Ответственный_Key { get; set; }
         //public string Автор_Key { get; set; }
         //public Document_СчетФактураВыданный_ДокументыОснования[] ДокументыОснования { get; set; }

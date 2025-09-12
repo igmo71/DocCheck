@@ -42,6 +42,9 @@ namespace DocCheck.Domain
 
         public bool IsOriginalDocumentReceived { get; set; }
 
+        public string? CustomerId { get; set; }
+        public string? CustomerName { get; set; }
+
         ///
 
         public bool HasPaperworkErrors => PaperworkErrors.Count > 0;
@@ -70,7 +73,8 @@ namespace DocCheck.Domain
                 Number = documentInvoice.Number,
                 Date = documentInvoice.Date,
                 BaseDocId = documentInvoice.ДокументОснование,
-                BaseDocType = documentInvoice.ДокументОснование_Type
+                BaseDocType = documentInvoice.ДокументОснование_Type,
+                CustomerId = documentInvoice.Контрагент
             };
 
             return saleDoc;
