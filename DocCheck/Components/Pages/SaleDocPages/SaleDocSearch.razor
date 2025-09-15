@@ -11,22 +11,22 @@
 {
     <div class="row">
         <div class="col input-group mb-3">
-            <span class="input-group-text" id="SearchParams.Customer">Контрагент</span>
-            <input type="text" class="form-control" @bind="SearchParams.Customer" placeholder="Несколько символов" aria-label="SearchParams.Customer" aria-describedby="SearchParams.Customer">
+            <span class="input-group-text" id="SearchParams.Customer">РљРѕРЅС‚СЂР°РіРµРЅС‚</span>
+            <input type="text" class="form-control" @bind="SearchParams.Customer" placeholder="РќРµСЃРєРѕР»СЊРєРѕ СЃРёРјРІРѕР»РѕРІ" aria-label="SearchParams.Customer" aria-describedby="SearchParams.Customer">
         </div>
         <div class="col input-group mb-3">
-            <span class="input-group-text" id="SearchParams.SaleDocNumber">УПД №</span>
-            <input type="text" class="form-control" @bind="SearchParams.SaleDocNumber" placeholder="Несколько символов" aria-label="SearchParams.SaleDocNumber" aria-describedby="SearchParams.SaleDocNumber">
+            <span class="input-group-text" id="SearchParams.SaleDocNumber">РЈРџР” в„–</span>
+            <input type="text" class="form-control" @bind="SearchParams.SaleDocNumber" placeholder="РќРµСЃРєРѕР»СЊРєРѕ СЃРёРјРІРѕР»РѕРІ" aria-label="SearchParams.SaleDocNumber" aria-describedby="SearchParams.SaleDocNumber">
         </div>
         <div class="col-auto">
-            <button class="btn btn-primary" @onclick="@(() => Filter.InvokeAsync(SearchParams))"><i class="bi bi-search me-2"></i>Поиск</button>
+            <button class="btn btn-primary" @onclick="@(() => Filter.InvokeAsync(SearchParams))"><i class="bi bi-search me-2"></i>РџРѕРёСЃРє</button>
         </div>
         <div class="col-auto">
-            <button class="btn btn-primary" @onclick="ResetFilter"><i class="bi bi-x-circle me-2"></i>Сбросить фильтр</button>
+            <button class="btn btn-primary" @onclick="ResetFilter"><i class="bi bi-x-circle me-2"></i>РЎР±СЂРѕСЃРёС‚СЊ С„РёР»СЊС‚СЂ</button>
         </div>
         <AuthorizeView Roles="Admin">
             <div class="col">
-                <button class="btn btn-primary" @onclick="Actualize">Актуализировать</button>
+                <button class="btn btn-primary" @onclick="Actualize">РђРєС‚СѓР°Р»РёР·РёСЂРѕРІР°С‚СЊ</button>
             </div>
         </AuthorizeView>
     </div>
