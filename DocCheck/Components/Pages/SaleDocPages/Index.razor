@@ -61,26 +61,36 @@ else
 
     private SearchParams searchParams = new();
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     await LoadSaleDocs(searchParams);
-    // }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
+        await GetSearchParams();
 
-            var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
-
-            if (storageResult.Success && storageResult.Value is not null)
-                searchParams = storageResult.Value;
-
-            await LoadSaleDocs(searchParams);
-
-            StateHasChanged();
-        }
+        await LoadSaleDocs(searchParams);
     }
+
+    protected async Task GetSearchParams()
+    {
+        var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
+
+        if (storageResult.Success && storageResult.Value is not null)
+            searchParams = storageResult.Value;
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+
+    //         var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
+
+    //         if (storageResult.Success && storageResult.Value is not null)
+    //             searchParams = storageResult.Value;
+
+    //         //await LoadSaleDocs(searchParams);
+
+    //         StateHasChanged();
+    //     }
+    // }
 
     private async Task LoadSaleDocs(SearchParams searchParams)
     {
