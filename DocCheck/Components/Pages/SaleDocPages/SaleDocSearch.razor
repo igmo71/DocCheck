@@ -1,0 +1,49 @@
+@using DocCheck.Infrastructure.OData
+@using DocCheck.Infrastructure.OData.Models
+@using Microsoft.AspNetCore.Authorization
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+
+@inject ISaleDocService SaleDocService
+
+@if (SearchParams is not null)
+{
+    <div class="row">
+        <div class="col input-group mb-3">
+            <span class="input-group-text" id="SearchParams.Customer">Контрагент</span>
+            <input type="text" class="form-control" @bind="SearchParams.Customer" placeholder="Несколько символов" aria-label="SearchParams.Customer" aria-describedby="SearchParams.Customer">
+        </div>
+        <div class="col input-group mb-3">
+            <span class="input-group-text" id="SearchParams.SaleDocNumber">УПД №</span>
+            <input type="text" class="form-control" @bind="SearchParams.SaleDocNumber" placeholder="Несколько символов" aria-label="SearchParams.SaleDocNumber" aria-describedby="SearchParams.SaleDocNumber">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="@(() => Filter.InvokeAsync(SearchParams))"><i class="bi bi-search me-2"></i>Поиск</button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" @onclick="ResetFilter"><i class="bi bi-x-circle me-2"></i>Сбросить фильтр</button>
+        </div>
+        <AuthorizeView Roles="Admin">
+            <div class="col">
+                <button class="btn btn-primary" @onclick="Actualize">Актуализировать</button>
+            </div>
+        </AuthorizeView>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SearchParams? SearchParams { get; set; }
+
+    [Parameter]
+    public EventCallback<SearchParams> Filter { get; set; }
+
+    [Parameter]
+    public EventCallback ResetFilter { get; set; }
+
+    private async Task Actualize(MouseEventArgs args)
+    {
+        await SaleDocService.ActualizeAsync();
+    }
+}

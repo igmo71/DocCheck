@@ -16,7 +16,7 @@ namespace DocCheck.Application
         Task CreateByBaseDocAsync(string mngrOrderString);
         Task UpdateAsync(SaleDoc item);
         Task UpdateBySubmitAsync(SaleDoc saleDoc);
-        Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams? searchParams = null);
+        Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams);
         Task<SaleDoc?> GetAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
