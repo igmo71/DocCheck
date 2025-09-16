@@ -12,9 +12,9 @@
         </div>
         @if (SaleDoc.ContainsError(ErrorType) && HasErrorMessage)
         {
-            <div class="col-8">
+            <div class="col">
                 <div class="input-group">
-                    <input type="text" class="form-control" value="@errorMessage" @onchange="UpdateErrorMessage" title="Прочее" placeholder="Подробности ошибки" />
+                    <input type="text" class="form-control" value="@errorMessage" @onchange="UpdateErrorMessage" title="@ErrorType.Description" placeholder="Подробности ошибки" />
                     <button type="button" class="btn" title="Очистить" @onclick="ClearErrorMessage">
                         <i class="bi bi-x-lg"></i>
                     </button>

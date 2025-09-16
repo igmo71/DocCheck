@@ -34,20 +34,18 @@ else
     else
     {
         <SaleDocHeader SaleDoc="SaleDoc" />
-        @if (SaleDoc.Position != Position.ForDispatch)
-        {
-            <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
 
-                <input type="text" @ref="hiddenInput" class="visually-hidden" />
+        <EditForm method="post" Model="SaleDoc" OnSubmit="UpdateSaleDoc" FormName="updateSaleDoc" Enhance>
 
-                <SaleDocMenu SaleDoc="SaleDoc" RemovePaperworkErrors="ClearPaperworkErrors" />
+            <input type="text" @ref="hiddenInput" class="visually-hidden" />
 
-                <PaperworkErrors SaleDoc="SaleDoc" OnCreateOrUpdateError="CreateOrUpdatePaperworkError" />
+            <SaleDocMenu SaleDoc="SaleDoc" RemovePaperworkErrors="ClearPaperworkErrors" />
 
-                @* <QuantityErrors SaleDoc="SaleDoc" Products="products" OnCreateOrUpdateError="CreateOrUpdateQuantityError" OnRemoveError="RemoveQuantityError" /> *@
+            <PaperworkErrors SaleDoc="SaleDoc" OnCreateOrUpdateError="CreateOrUpdatePaperworkError" />
 
-            </EditForm>
-        }
+            @* <QuantityErrors SaleDoc="SaleDoc" Products="products" OnCreateOrUpdateError="CreateOrUpdateQuantityError" OnRemoveError="RemoveQuantityError" /> *@
+
+        </EditForm>
     }
 }
 

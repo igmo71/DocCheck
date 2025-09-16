@@ -8,11 +8,19 @@
         {
             <div class="col"><div class="alert alert-success h5 p-1"><i class="bi bi-check2-all me-2"></i><span> Корректен</span></div></div>
 
-            <div class="col"><button type="submit" class="btn btn-success">@SaleDoc.Position.SubmitLabel</button></div>
+            @if (@SaleDoc.Position != Position.ForDispatch)
+            {
+                <div class="col"><button type="submit" class="btn btn-success">@SaleDoc.Position.SubmitLabel</button></div>
+            }
+            else
+            {
+                <div class="col"></div>
+            }
         }
         else
         {
             <div class="col"><div class="alert alert-danger h5 p-1"><i class="bi bi-printer me-2"></i><span> Требуется перепечатка</span></div></div>
+
             <div class="col">
                 @if (SaleDoc.Position == Position.Managers)
                 {
@@ -36,12 +44,12 @@
             </a>
         </div>
         <AuthorizeView Roles="Admin">
-        <div class="col pt-2">
-            <a href="/saledocs/delete?Id=@SaleDoc.Id" class="text-danger">
-                <i class="bi bi-x-circle"></i>
-                <span>Удалить</span>
-            </a>
-        </div>
+            <div class="col pt-2">
+                <a href="/saledocs/delete?Id=@SaleDoc.Id" class="text-danger">
+                    <i class="bi bi-x-circle"></i>
+                    <span>Удалить</span>
+                </a>
+            </div>
         </AuthorizeView>
     </div>
 }

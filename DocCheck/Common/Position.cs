@@ -3,8 +3,8 @@ namespace DocCheck.Common
 {
     public record Position(int Id, string Role, string Description, string SubmitLabel)
     {
-        public static Position Undefine { get; } = new(-1, "Undefine", "Не опркеделен", "");
-        public static Position ForDispatch { get; } = new(0, "ForDispatch", "К отправке", "");
+        public static Position Undefine { get; } = new(-1, "Undefine", "Не определен", "");
+        public static Position ForDispatch { get; } = new(0, "ForDispatch", "К отправке", "Сохранить");
         public static Position Operators { get; } = new(1, "Operators", "Операторы РЦ", "В Бухгалтерию к приемке");
         public static Position Managers { get; } = new(2, "Managers", "Менеджеры", "К повторной отправке");
         public static Position Accounting { get; } = new(3, "Accounting", "Бухгалтерия к приемке", "Принять");
