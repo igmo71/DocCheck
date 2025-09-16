@@ -22,24 +22,6 @@ namespace DocCheck.Infrastructure.OData
             return result;
         }
 
-        //public async Task<bool> PostDataAsync<TData>(string uri, TData value)
-        //{
-        //    var response = await httpClient.PostAsJsonAsync<TData>(uri, value);
-
-        //    logger.LogDebug("{Source} {StatusCode} {Uri} {@Value}", nameof(PostDataAsync), response.StatusCode, uri, value);
-
-        //    return response.IsSuccessStatusCode;
-        //}
-
-        //public async Task<bool> PatchDataAsync<TData>(string uri, TData value)
-        //{
-        //    var response = await httpClient.PatchAsJsonAsync<TData>(uri, value);
-
-        //    logger.LogDebug("{Source} {StatusCode} {Uri} {@Value}", nameof(PatchDataAsync),response.StatusCode,  uri, value);
-
-        //    return response.IsSuccessStatusCode;
-        //}
-
         public async Task<bool> PostDataAsPostmanAsync<TData>(string uri, TData value)
         {
             var jsonString = JsonSerializer.Serialize(value, jsonSerializerOptions);
@@ -49,16 +31,13 @@ namespace DocCheck.Infrastructure.OData
                 Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
             };
 
-            var response = await httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);            
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-
-            logger.LogDebug("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", nameof(PatchDataAsPostmanAsync), response.StatusCode, uri, value, responseContent);
+            await LogResponse(nameof(PostDataAsPostmanAsync), uri, value, response);
 
             return response.IsSuccessStatusCode;
         }
-
+        
         public async Task<bool> PatchDataAsPostmanAsync<TData>(string uri, TData value)
         {
             var jsonString = JsonSerializer.Serialize(value, jsonSerializerOptions);
@@ -70,12 +49,19 @@ namespace DocCheck.Infrastructure.OData
 
             var response = await httpClient.SendAsync(request);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-
-            logger.LogDebug("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", nameof(PatchDataAsPostmanAsync), response.StatusCode, uri, value, responseContent);
+            await LogResponse(nameof(PatchDataAsPostmanAsync), uri, value, response);
 
             return response.IsSuccessStatusCode;
+        }
+
+        private async Task LogResponse<TData>(string source, string uri, TData value, HttpResponseMessage response)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+                logger.LogDebug("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", source, response.StatusCode, uri, value, responseContent);
+            else
+                logger.LogError("{Source} {StatusCode} {Uri} {@Value} {ResponseContent}", source, response.StatusCode, uri, value, responseContent);
         }
     }
 }
