@@ -6,7 +6,7 @@ namespace DocCheck.Infrastructure.OData
 {
     public class ODataClient(HttpClient httpClient, ILogger<ODataClient> logger)
     {
-        private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+        private readonly JsonSerializerOptions jsonSerializerOptions = new()
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // чтобы не было \u0414
             PropertyNamingPolicy = null, // имена свойств остаются как в C#
