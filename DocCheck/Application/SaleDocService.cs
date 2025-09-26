@@ -20,12 +20,14 @@ namespace DocCheck.Application
         Task<SaleDoc?> GetAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
+        Task<SaleDoc?> GetByTaskAsync(Guid taskId);
         Task DeleteUserAsync(string userId);
         Task DeleteAsync(Guid id);
 
         Task ActualizeAsync();
 
         string?[]? GetCustomers();
+        Task HandleTaskAsync(string message);
     }
 
     public class SaleDocService(
@@ -125,6 +127,8 @@ namespace DocCheck.Application
             await UpdateAsync(item);
 
             await CreateOrUpdate1cOriginalDocumentReceivedRecord(item);
+
+            item.TaskId = await CreateTask(item);
         }
 
         private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
@@ -173,6 +177,32 @@ namespace DocCheck.Application
 
                 await oDataService.PatchInformationRegister_КОД_ПолученОригиналДокумента(record);
             }
+        }
+
+        private async Task<Guid?> CreateTask(SaleDoc item)
+        {
+            if (item.Position != Position.Managers)
+                return null;
+
+            var oneSTask = new OneSTask
+            {
+                Date = DateTime.Now,
+                Исполнитель = item.AuthorId,
+                Исполнитель_Type = "StandardODATA.Catalog_Пользователи",
+                СрокИсполнения = DateTime.Now.AddDays(1),
+                Предмет = item.BaseDocId?.ToString(),
+                Предмет_Type = "StandardODATA.Document_РеализацияТоваровУслуг",
+                ПредметСтрокой = $"Реализация № {item.BaseDoc?.Number} {item.BaseDoc?.Date}",
+                Description = "Переделать документ реализации",
+                Описание = $"#DocCheck\n{item.GetErrorDetails()}"
+            };
+
+            var result = await oDataService.PostTask(oneSTask);
+
+            if (result.Ref_Key is null)
+                return null;
+
+            return Guid.Parse(result.Ref_Key);
         }
 
         public async Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams)
@@ -243,6 +273,13 @@ namespace DocCheck.Application
             return item;
         }
 
+        public async Task<SaleDoc?> GetByTaskAsync(Guid taskId)
+        {
+            var result = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.TaskId == taskId);
+
+            return result;
+        }
+
         private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
         {
             if (item.Position == Position.Closed)
@@ -305,6 +342,28 @@ namespace DocCheck.Application
                 .ToArray();
 
             return result;
+        }
+
+        public async Task HandleTaskAsync(string message)
+        {
+            var oneSTask = JsonSerializer.Deserialize<OneSTask>(message);
+
+            if (oneSTask is null || oneSTask.Ref_Key is null)
+                return;
+
+            var taskId = Guid.Parse(oneSTask.Ref_Key);
+
+            var saleDoc = await GetByTaskAsync(taskId);
+
+            if (saleDoc is null)
+                return;
+
+            if (oneSTask.Executed)
+                saleDoc.PositionId = Position.ForDispatch.Id;
+            else
+                saleDoc.PositionId = Position.Managers.Id;
+
+            await dbContext.SaveChangesAsync();
         }
     }
 }

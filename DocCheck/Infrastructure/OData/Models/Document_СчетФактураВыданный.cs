@@ -9,19 +9,23 @@
         public string? ДокументОснование_Type { get; set; }
         public string? Контрагент { get; set; }
 
+        public Catalog_Пользователи? Автор { get; set; }
+
         internal static string GetUri(string refKey) =>
             $"Document_СчетФактураВыданный" +
             $"?$format=json" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент" +
+            $"&$expand=Автор" +
+            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
             $"&$filter=Ref_Key eq guid'{refKey}'";
 
         internal static string GetUriByBaseDoc(string baseDocRefKey) =>
             $"Document_СчетФактураВыданный" +
             $"?$format=json" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент" +
+            $"&$expand=Автор" +
+            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
             $"&$filter=ДокументОснование eq cast(guid'{baseDocRefKey}', 'Document_РеализацияТоваровУслуг')";
 
-        //public bool Корректировочный { get; set; }
+        //public bool КорректиЬуровочный { get; set; }
         //public string Ответственный_Key { get; set; }
         //public string Автор_Key { get; set; }
         //public Document_СчетФактураВыданный_ДокументыОснования[] ДокументыОснования { get; set; }

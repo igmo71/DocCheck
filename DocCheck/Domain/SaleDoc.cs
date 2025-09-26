@@ -45,6 +45,11 @@ namespace DocCheck.Domain
         public string? CustomerId { get; set; }
         public string? CustomerName { get; set; }
 
+        public string? AuthorId { get; set; }
+        public string? AuthorName { get; set; }
+
+        public Guid? TaskId { get; set; }
+
         ///
 
         public bool HasPaperworkErrors => PaperworkErrors.Count > 0;
@@ -74,10 +79,26 @@ namespace DocCheck.Domain
                 Date = documentInvoice.Date,
                 BaseDocId = documentInvoice.ДокументОснование,
                 BaseDocType = documentInvoice.ДокументОснование_Type,
-                CustomerId = documentInvoice.Контрагент
+                CustomerId = documentInvoice.Контрагент,
+                AuthorId = documentInvoice.Автор?.Ref_Key,
+                AuthorName = documentInvoice.Автор?.Description
             };
 
             return saleDoc;
+        }
+
+        internal string GetErrorDetails()
+        {
+            string result = string.Empty;
+
+            foreach(var error in PaperworkErrors)
+            {
+                result += $"\n{error.Type.Description()}";
+                if (!string.IsNullOrEmpty(error.Message))
+                    result += $": {error.Message}";
+            }
+
+            return result;
         }
     }
 }

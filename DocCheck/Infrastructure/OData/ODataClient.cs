@@ -1,4 +1,4 @@
-﻿using DocCheck.Components.Pages;
+﻿using DocCheck.Infrastructure.OData.Models;
 using System.Text;
 using System.Text.Json;
 
@@ -31,13 +31,13 @@ namespace DocCheck.Infrastructure.OData
                 Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
             };
 
-            var response = await httpClient.SendAsync(request);            
+            var response = await httpClient.SendAsync(request);
 
             await LogResponse(nameof(PostDataAsPostmanAsync), uri, value, response);
 
             return response.IsSuccessStatusCode;
         }
-        
+
         public async Task<bool> PatchDataAsPostmanAsync<TData>(string uri, TData value)
         {
             var jsonString = JsonSerializer.Serialize(value, jsonSerializerOptions);
@@ -52,6 +52,22 @@ namespace DocCheck.Infrastructure.OData
             await LogResponse(nameof(PatchDataAsPostmanAsync), uri, value, response);
 
             return response.IsSuccessStatusCode;
+        }
+
+        internal async Task<string> PostDataWithResponseAsPostmanAsync<TData>(string uri, TData value)
+        {
+            var jsonString = JsonSerializer.Serialize(value, jsonSerializerOptions);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
+            };
+
+            var response = await httpClient.SendAsync(request);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            return responseContent;
         }
 
         private async Task LogResponse<TData>(string source, string uri, TData value, HttpResponseMessage response)

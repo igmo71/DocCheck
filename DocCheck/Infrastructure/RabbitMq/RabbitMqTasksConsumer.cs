@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using DocCheck.Application;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 
@@ -62,7 +63,7 @@ namespace DocCheck.Infrastructure.RabbitMq
 
                         try
                         {
-                            //await HandleTask(message);
+                            await HandleTask(message);
 
                             await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                             _logger.LogDebug("RabbitMq Tasks Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
@@ -90,14 +91,14 @@ namespace DocCheck.Infrastructure.RabbitMq
             }
         }
 
-        //private async Task CreateSaleDoc(string message)
-        //{
-        //    using IServiceScope serviceScope = _serviceScopeFactory.CreateScope();
+        private async Task HandleTask(string message)
+        {
+            using IServiceScope serviceScope = _serviceScopeFactory.CreateScope();
 
-        //    var saleDocService = serviceScope.ServiceProvider.GetService<ISaleDocService>()
-        //        ?? throw new InvalidOperationException("SaleDocService is null");
+            var saleDocService = serviceScope.ServiceProvider.GetService<ISaleDocService>()
+                ?? throw new InvalidOperationException("SaleDocService is null");
 
-        //    await saleDocService.CreateByBaseDocAsync(message);
-        //}
+            await saleDocService.HandleTaskAsync(message);
+        }
     }
 }

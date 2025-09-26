@@ -1,4 +1,6 @@
 ﻿using DocCheck.Infrastructure.OData.Models;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace DocCheck.Infrastructure.OData
 {
@@ -16,6 +18,7 @@ namespace DocCheck.Infrastructure.OData
         Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи();
         Task<Catalog_Контрагенты?> GetCatalog_Контрагенты(string refKey);
         Task<Catalog_Контрагенты[]?> GetCatalog_Контрагенты_BySearchTerm(string searchTerm);
+        Task<OneSTask> PostTask(OneSTask oneSTask);
     }
 
     public class ODataService(ODataClient oDataClient) : IODataService
@@ -129,6 +132,17 @@ namespace DocCheck.Infrastructure.OData
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Catalog_Контрагенты>>(uri);
 
             var result = rootobject?.Value;
+
+            return result;
+        }
+
+        public async Task<OneSTask?> PostTask(OneSTask value)
+        {
+            var uri = OneSTask.PostUri();
+
+            var response = await oDataClient.PostDataWithResponseAsPostmanAsync(uri, value);
+
+            var result = JsonSerializer.Deserialize<OneSTask>(response);
 
             return result;
         }
