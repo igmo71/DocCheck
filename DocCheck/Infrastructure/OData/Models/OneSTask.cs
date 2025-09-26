@@ -39,4 +39,6 @@ public class OneSTask
     public string? ГруппаИсполнителейЗадачnavigationLinkUrl { get; set; }
 
     internal static string PostUri() => $"Task_ЗадачаИсполнителя?$format=json";
+
+    internal static string GetUri(string refKey) => $"Task_ЗадачаИсполнителя?$format=json&$filter=Ref_Key eq guid'{refKey}'";
 }

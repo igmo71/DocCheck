@@ -346,7 +346,9 @@ namespace DocCheck.Application
 
         public async Task HandleTaskAsync(string message)
         {
-            var oneSTask = JsonSerializer.Deserialize<OneSTask>(message);
+            //var oneSTask = JsonSerializer.Deserialize<OneSTask>(message);
+            var oneSTask = await oDataService.GetTask(message);
+
 
             if (oneSTask is null || oneSTask.Ref_Key is null)
                 return;

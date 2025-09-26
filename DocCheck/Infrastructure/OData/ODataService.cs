@@ -18,7 +18,8 @@ namespace DocCheck.Infrastructure.OData
         Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи();
         Task<Catalog_Контрагенты?> GetCatalog_Контрагенты(string refKey);
         Task<Catalog_Контрагенты[]?> GetCatalog_Контрагенты_BySearchTerm(string searchTerm);
-        Task<OneSTask> PostTask(OneSTask oneSTask);
+        Task<OneSTask?> PostTask(OneSTask oneSTask);
+        Task<OneSTask?> GetTask(string refKey);
     }
 
     public class ODataService(ODataClient oDataClient) : IODataService
@@ -143,6 +144,17 @@ namespace DocCheck.Infrastructure.OData
             var response = await oDataClient.PostDataWithResponseAsPostmanAsync(uri, value);
 
             var result = JsonSerializer.Deserialize<OneSTask>(response);
+
+            return result;
+        }
+
+        public async Task<OneSTask?> GetTask(string refKey)
+        {
+            var uri = OneSTask.GetUri(refKey);
+
+            var rootobject = await oDataClient.GetDataAsync<Rootobject<OneSTask>>(uri);
+
+            var result = rootobject?.Value?.FirstOrDefault();
 
             return result;
         }
