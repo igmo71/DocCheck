@@ -1,20 +1,19 @@
 ﻿using DocCheck.Application;
-using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 
 namespace DocCheck.Infrastructure.RabbitMq
 {
-    public class RabbitMqConsumer(
+    public class RabbitMqOrdersConsumer(
         IConfiguration configuration,
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<RabbitMqConsumer> logger) : BackgroundService
+        ILogger<RabbitMqOrdersConsumer> logger) : BackgroundService
     {
         private readonly RabbitMqConfig _config = configuration.GetSection(RabbitMqConfig.Section).Get<RabbitMqConfig>()
                 ?? throw new InvalidOperationException("RabbitMq Config not found");
         private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-        private readonly ILogger<RabbitMqConsumer> _logger = logger;
+        private readonly ILogger<RabbitMqOrdersConsumer> _logger = logger;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -38,7 +37,7 @@ namespace DocCheck.Infrastructure.RabbitMq
             {
                 try
                 {
-                    _logger.LogDebug("RabbitMq Consumer is running");
+                    _logger.LogDebug("RabbitMq Orders Consumer is running");
 
                     using var connection = await factory.CreateConnectionAsync(cancellationToken: stoppingToken);
 
@@ -80,7 +79,7 @@ namespace DocCheck.Infrastructure.RabbitMq
 
                         try
                         {
-                            await CreateSaleDoc(message);
+                            await HandleMessage(message);
 
                             await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                             _logger.LogDebug("RabbitMq Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
@@ -108,7 +107,7 @@ namespace DocCheck.Infrastructure.RabbitMq
             }
         }
 
-        private async Task CreateSaleDoc(string message)
+        private async Task HandleMessage(string message)
         {
             using IServiceScope serviceScope = _serviceScopeFactory.CreateScope();
 

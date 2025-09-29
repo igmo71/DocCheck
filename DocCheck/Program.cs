@@ -97,7 +97,7 @@ namespace DocCheck
 
             builder.Services.AddScoped<ISaleDocLogService, SaleDocLogService>();
 
-            builder.Services.AddHostedService<RabbitMqConsumer>();
+            builder.Services.AddHostedService<RabbitMqOrdersConsumer>();
             builder.Services.AddHostedService<RabbitMqTasksConsumer>();
 
             var app = builder.Build();

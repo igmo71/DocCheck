@@ -8,23 +8,23 @@ namespace DocCheck.Infrastructure.RabbitMq
     public class RabbitMqTasksConsumer(
         IConfiguration configuration,
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<RabbitMqConsumer> logger) : BackgroundService
+        ILogger<RabbitMqTasksConsumer> logger) : BackgroundService
     {
         private readonly RabbitMqConfig _config = configuration.GetSection(RabbitMqConfig.Section).Get<RabbitMqConfig>()
                 ?? throw new InvalidOperationException("RabbitMq Config not found");
         private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
-        private readonly ILogger<RabbitMqConsumer> _logger = logger;
+        private readonly ILogger<RabbitMqTasksConsumer> _logger = logger;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (!_config.IsUse)
             {
-                _logger.LogWarning("RabbitMq Tasks Service is not use");
+                _logger.LogWarning("RabbitMq Service is not use");
                 return;
             }
 
             if (_config.IsWrong)
-                throw new InvalidOperationException("RabbitMq Tasks Config is wrong");
+                throw new InvalidOperationException("RabbitMq Config is wrong");
 
             var factory = new ConnectionFactory()
             {
@@ -45,12 +45,27 @@ namespace DocCheck.Infrastructure.RabbitMq
 
 
                     string tasksExchange = "tasks";
-                    await channel.ExchangeDeclareAsync(exchange: tasksExchange, type: ExchangeType.Fanout, durable: true, autoDelete: false, cancellationToken: stoppingToken);
+                    await channel.ExchangeDeclareAsync(
+                        exchange: tasksExchange,
+                        type: ExchangeType.Fanout,
+                        durable: true,
+                        autoDelete: false, 
+                        cancellationToken: stoppingToken);
+
 
                     string docCheckQueue = "doc-check-task";
-                    await channel.QueueDeclareAsync(queue: docCheckQueue, durable: true, exclusive: false, autoDelete: false, cancellationToken: stoppingToken);
+                    await channel.QueueDeclareAsync(
+                        queue: docCheckQueue, 
+                        durable: true, 
+                        exclusive: false, 
+                        autoDelete: false, 
+                        cancellationToken: stoppingToken);
 
-                    await channel.QueueBindAsync(queue: docCheckQueue, exchange: tasksExchange, routingKey: "", cancellationToken: stoppingToken);
+                    await channel.QueueBindAsync(
+                        queue: docCheckQueue, 
+                        exchange: tasksExchange, 
+                        routingKey: "", 
+                        cancellationToken: stoppingToken);
 
                     var consumer = new AsyncEventingBasicConsumer(channel);
 
