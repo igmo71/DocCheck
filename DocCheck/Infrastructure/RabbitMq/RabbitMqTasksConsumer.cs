@@ -63,7 +63,7 @@ namespace DocCheck.Infrastructure.RabbitMq
 
                         try
                         {
-                            await HandleTask(message);
+                            await HandleMessage(message);
 
                             await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
                             _logger.LogDebug("RabbitMq Tasks Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
@@ -91,14 +91,14 @@ namespace DocCheck.Infrastructure.RabbitMq
             }
         }
 
-        private async Task HandleTask(string message)
+        private async Task HandleMessage(string message)
         {
             using IServiceScope serviceScope = _serviceScopeFactory.CreateScope();
 
             var saleDocService = serviceScope.ServiceProvider.GetService<ISaleDocService>()
                 ?? throw new InvalidOperationException("SaleDocService is null");
 
-            await saleDocService.HandleTaskAsync(message);
+            await saleDocService.HandleManagerTaskAsync(message);
         }
     }
 }

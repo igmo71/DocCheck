@@ -48,7 +48,7 @@ namespace DocCheck.Domain
         public string? AuthorId { get; set; }
         public string? AuthorName { get; set; }
 
-        public Guid? TaskId { get; set; }
+        public Guid? ManagerTaskId { get; set; }
 
         ///
 

@@ -20,14 +20,14 @@ namespace DocCheck.Application
         Task<SaleDoc?> GetAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
-        Task<SaleDoc?> GetByTaskAsync(Guid taskId);
+        Task<SaleDoc?> GetByManagerTaskIdAsync(Guid taskId);
         Task DeleteUserAsync(string userId);
         Task DeleteAsync(Guid id);
 
         Task ActualizeAsync();
 
         string?[]? GetCustomers();
-        Task HandleTaskAsync(string message);
+        Task HandleManagerTaskAsync(string message);
     }
 
     public class SaleDocService(
@@ -124,11 +124,11 @@ namespace DocCheck.Application
 
             dbContext.SaleDocLogs.Add(new SaleDocLog(item));
 
+            item.ManagerTaskId = await CreateManagerTask(item);
+
             await UpdateAsync(item);
 
             await CreateOrUpdate1cOriginalDocumentReceivedRecord(item);
-
-            item.TaskId = await CreateTask(item);
         }
 
         private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
@@ -179,8 +179,10 @@ namespace DocCheck.Application
             }
         }
 
-        private async Task<Guid?> CreateTask(SaleDoc item)
+        private async Task<Guid?> CreateManagerTask(SaleDoc item)
         {
+            logger.LogDebug("{Source} Start {@SaleDoc}", nameof(CreateManagerTask), item);
+
             if (item.Position != Position.Managers)
                 return null;
 
@@ -199,7 +201,9 @@ namespace DocCheck.Application
 
             var result = await oDataService.PostTask(oneSTask);
 
-            if (result.Ref_Key is null)
+            logger.LogDebug("{Source} {@PostedTask} {@Response}", nameof(CreateManagerTask), oneSTask, result);
+
+            if (result is null || result.Ref_Key is null)
                 return null;
 
             return Guid.Parse(result.Ref_Key);
@@ -273,9 +277,9 @@ namespace DocCheck.Application
             return item;
         }
 
-        public async Task<SaleDoc?> GetByTaskAsync(Guid taskId)
+        public async Task<SaleDoc?> GetByManagerTaskIdAsync(Guid managerTaskId)
         {
-            var result = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.TaskId == taskId);
+            var result = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.ManagerTaskId == managerTaskId);
 
             return result;
         }
@@ -344,18 +348,27 @@ namespace DocCheck.Application
             return result;
         }
 
-        public async Task HandleTaskAsync(string message)
+        public async Task HandleManagerTaskAsync(string message)
         {
-            //var oneSTask = JsonSerializer.Deserialize<OneSTask>(message);
-            var oneSTask = await oDataService.GetTask(message);
+            logger.LogDebug("{Source} Sart {Message}", nameof(HandleManagerTaskAsync), message);
 
+            var inputTask = JsonSerializer.Deserialize<OneSTask>(message);
 
-            if (oneSTask is null || oneSTask.Ref_Key is null)
+            if (inputTask?.Ref_Key is null)
+                return;
+
+            var oneSTask = await oDataService.GetTask(inputTask.Ref_Key);
+
+            logger.LogDebug("{Source} GetTask {@GetTask}", nameof(HandleManagerTaskAsync), oneSTask);
+
+            if (oneSTask?.Ref_Key is null)
                 return;
 
             var taskId = Guid.Parse(oneSTask.Ref_Key);
 
-            var saleDoc = await GetByTaskAsync(taskId);
+            var saleDoc = await GetByManagerTaskIdAsync(taskId);
+
+            logger.LogDebug("{Source} SaleDoc {@SaleDoc}", nameof(HandleManagerTaskAsync), saleDoc);
 
             if (saleDoc is null)
                 return;
@@ -364,6 +377,8 @@ namespace DocCheck.Application
                 saleDoc.PositionId = Position.ForDispatch.Id;
             else
                 saleDoc.PositionId = Position.Managers.Id;
+
+            logger.LogDebug("{Source} Position {Position}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description);
 
             await dbContext.SaveChangesAsync();
         }
