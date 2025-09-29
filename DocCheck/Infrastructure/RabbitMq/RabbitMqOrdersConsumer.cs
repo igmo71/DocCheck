@@ -75,19 +75,19 @@ namespace DocCheck.Infrastructure.RabbitMq
                         byte[] body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
 
-                        _logger.LogDebug("RabbitMq Consumer Received {DeliveryTag}", ea.DeliveryTag);
+                        _logger.LogDebug("RabbitMq Orders Consumer Received {DeliveryTag}", ea.DeliveryTag);
 
                         try
                         {
                             await HandleMessage(message);
 
                             await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
-                            _logger.LogDebug("RabbitMq Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
+                            _logger.LogDebug("RabbitMq Orders Consumer BasicAckAsync {DeliveryTag}", ea.DeliveryTag);
                         }
                         catch (Exception)
                         {
                             await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
-                            _logger.LogWarning("RabbitMq Consumer BasicNackAsync {DeliveryTag}", ea.DeliveryTag);
+                            _logger.LogWarning("RabbitMq Orders Consumer BasicNackAsync {DeliveryTag}", ea.DeliveryTag);
                         }
                     };
 
