@@ -392,6 +392,8 @@ namespace DocCheck.Application
 
         public async Task ActualizeAsync()
         {
+            logger.LogInformation("{Source} Start", nameof(ActualizeAsync));
+
             var items = dbContext.SaleDocs
                 .Include(e => e.PaperworkErrors)
                 .Include(e => e.QuantityErrors)
@@ -404,7 +406,7 @@ namespace DocCheck.Application
 
                 if (documentInvoice is null)
                 {
-                    logger.LogDebug("{Source} Document_СчетФактураВыданный Not Found by RefKey ({RefKey})", nameof(ActualizeAsync), item.Id.ToString());
+                    logger.LogWarning("{Source} Document_СчетФактураВыданный Not Found by RefKey ({RefKey})", nameof(ActualizeAsync), item.Id.ToString());
                     continue;
                 }
 
@@ -412,7 +414,7 @@ namespace DocCheck.Application
 
                 if (actualItem is null)
                 {
-                    logger.LogError("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", nameof(ActualizeAsync), documentInvoice);
+                    logger.LogWarning("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", nameof(ActualizeAsync), documentInvoice);
                     continue;
                 }
 
@@ -428,6 +430,8 @@ namespace DocCheck.Application
 
                 await dbContext.SaveChangesAsync();
             }
+
+            logger.LogInformation("{Source} Ok", nameof(ActualizeAsync));
         }
     }
 }
