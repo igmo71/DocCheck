@@ -11,19 +11,37 @@
 
         public Catalog_Пользователи? Автор { get; set; }
 
-        internal static string GetUri(string refKey) =>
-            $"Document_СчетФактураВыданный" +
-            $"?$format=json" +
-            $"&$expand=Автор" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
-            $"&$filter=Ref_Key eq guid'{refKey}'";
+        //internal static string GetUri(string refKey) =>
+        //    $"Document_СчетФактураВыданный" +
+        //    $"?$format=json" +
+        //    $"&$expand=Автор" +
+        //    $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
+        //    $"&$filter=Ref_Key eq guid'{refKey}'";
 
-        internal static string GetUriByBaseDoc(string baseDocRefKey) =>
-            $"Document_СчетФактураВыданный" +
+        //internal static string GetUriByBaseDoc(string baseDocRefKey) =>
+        //    $"Document_СчетФактураВыданный" +
+        //    $"?$format=json" +
+        //    $"&$expand=Автор" +
+        //    $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
+        //    $"&$filter=ДокументОснование eq cast(guid'{baseDocRefKey}', 'Document_РеализацияТоваровУслуг')";
+
+        internal static string GetUri(string key, GetBy getBy)
+        {
+            var uri = $"Document_СчетФактураВыданный" +
             $"?$format=json" +
             $"&$expand=Автор" +
-            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description" +
-            $"&$filter=ДокументОснование eq cast(guid'{baseDocRefKey}', 'Document_РеализацияТоваровУслуг')";
+            $"&$select=Ref_Key,Number,Date,ДокументОснование,ДокументОснование_Type,Контрагент,Автор/Ref_Key,Автор/Description";
+
+            if(getBy == GetBy.RefKey)
+                uri += $"&$filter=Ref_Key eq guid'{key}'";
+
+            if (getBy == GetBy.BaseDoc)
+                uri += $"&$filter=ДокументОснование eq cast(guid'{key}', 'Document_РеализацияТоваровУслуг')";
+
+            return uri ;
+        }
+
+        public enum GetBy { RefKey, BaseDoc }
 
         //public bool КорректиЬуровочный { get; set; }
         //public string Ответственный_Key { get; set; }

@@ -11,32 +11,86 @@ namespace DocCheck.Application
 {
     public interface ISaleDocService
     {
-        Task CreateIfNotExistsAsync(SaleDoc saleDoc);
-        Task<SaleDoc?> CreateByInvoiceAsync(string invoiceRefKey);
         Task CreateByBaseDocAsync(string mngrOrderString);
-        Task UpdateAsync(SaleDoc item);
         Task UpdateBySubmitAsync(SaleDoc saleDoc);
         Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams);
-        Task<SaleDoc?> GetAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
-        Task<SaleDoc?> GetByManagerTaskIdAsync(Guid taskId);
+        Task<SaleDoc?> GetAsync(Guid id);
         Task DeleteUserAsync(string userId);
         Task DeleteAsync(Guid id);
-
-        Task ActualizeAsync();
-
-        string?[]? GetCustomers();
         Task HandleManagerTaskAsync(string message);
+        Task ActualizeAsync();
     }
 
     public class SaleDocService(
        ApplicationDbContext dbContext,
        IODataService oDataService,
        AuthService authService,
+       IConfiguration configuration,
        ILogger<SaleDocService> logger) : ISaleDocService
     {
-        public async Task CreateIfNotExistsAsync(SaleDoc saleDoc)
+        public async Task CreateByBaseDocAsync(string mngrOrderString)
+        {
+            logger.LogDebug("{Source} Start {MngrOrderString}", nameof(CreateByBaseDocAsync), mngrOrderString);
+
+            var mngrOrders = JsonSerializer.Deserialize<MngrOrder[]>(mngrOrderString);
+
+            if (mngrOrders is null)
+            {
+                logger.LogError("{Source} Mngr Orders is null", nameof(CreateByBaseDocAsync));
+                return;
+            }
+
+            var baseDocs = mngrOrders.Where(e => e.Распоряжение_Name != null && e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName));
+
+            foreach (var baseDoc in baseDocs)
+            {
+                var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(baseDoc.Распоряжение_Id, Document_СчетФактураВыданный.GetBy.BaseDoc);
+
+                var saleDoc = await BuildByInvoice(documentInvoice);
+
+                if (saleDoc is null)
+                    logger.LogError("{Source} Failed to build a SaleDoc by baseDoc ({Распоряжение_Id})", nameof(CreateByBaseDocAsync), baseDoc.Распоряжение_Id);
+                else
+                    await CreateIfNotExistsAsync(saleDoc);
+            }
+
+            logger.LogDebug("{Source} Ok {MngrOrderString}", nameof(CreateByBaseDocAsync), mngrOrderString);
+        }
+
+        private async Task<SaleDoc?> BuildByInvoice(Document_СчетФактураВыданный? documentInvoice)
+        {
+            logger.LogDebug("{Source} Start {@DocumentInvoice}", nameof(BuildByInvoice), documentInvoice);
+
+            if (documentInvoice is null)
+            {
+                logger.LogError("{Source} Document_СчетФактураВыданный Not Found", nameof(BuildByInvoice));
+                return null;
+            }
+
+            if (documentInvoice.ДокументОснование is null)
+            {
+                logger.LogError("{Source} ДокументОснование Is Null", nameof(BuildByInvoice));
+                return null;
+            }
+
+            var documentBbase = await oDataService.GetDocument_РеализацияТоваровУслуг(documentInvoice.ДокументОснование);
+
+            if (documentBbase is null)
+            {
+                logger.LogError("{Source} Document_РеализацияТоваровУслуг Not Found", nameof(BuildByInvoice));
+                return null;
+            }
+
+            var saleDoc = SaleDoc.From(documentInvoice, documentBbase);
+
+            logger.LogDebug("{Source} Ok {@DocumentInvoice} {@SaleDoc}", nameof(BuildByInvoice), documentInvoice, saleDoc);
+
+            return saleDoc;
+        }
+
+        private async Task CreateIfNotExistsAsync(SaleDoc saleDoc)
         {
             if (dbContext.SaleDocs.Any(e => e.Id == saleDoc.Id))
             {
@@ -49,71 +103,6 @@ namespace DocCheck.Application
             await dbContext.SaleDocs.AddAsync(saleDoc);
 
             logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
-
-            await dbContext.SaveChangesAsync();
-        }
-
-        public async Task<SaleDoc?> CreateByInvoiceAsync(string invoiceRefKey)
-        {
-            var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(invoiceRefKey);
-            if (documentInvoice is null)
-            {
-                logger.LogError("{Source} Document_СчетФактураВыданный Not Found", nameof(CreateByInvoiceAsync));
-                return null;
-            }
-
-            var saleDoc = SaleDoc.From(documentInvoice);
-
-            await UpdateCustomer(saleDoc);
-
-            await CreateIfNotExistsAsync(saleDoc);
-
-            return saleDoc;
-        }
-
-        public async Task CreateByBaseDocAsync(string mngrOrderString)
-        {
-            var mngrOrders = JsonSerializer.Deserialize<MngrOrder[]>(mngrOrderString);
-            if (mngrOrders is null)
-            {
-                logger.LogError("{Source} Mngr Orders is null", nameof(CreateByBaseDocAsync));
-                return;
-            }
-
-            var baseDocs = mngrOrders.Where(e => e.Распоряжение_Name != null && e.Распоряжение_Name.Contains(Document_РеализацияТоваровУслуг.DocumentName));
-
-            foreach (var baseDoc in baseDocs)
-            {
-                var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный_ByBaseDoc(baseDoc.Распоряжение_Id);
-                if (documentInvoice is null)
-                {
-                    logger.LogError("{Source} Document_СчетФактураВыданный Not Found", nameof(CreateByBaseDocAsync));
-                    return;
-                }
-
-                var saleDoc = SaleDoc.From(documentInvoice);
-
-                await UpdateCustomer(saleDoc);
-
-                await CreateIfNotExistsAsync(saleDoc);
-            }
-        }
-
-        private async Task UpdateCustomer(SaleDoc saleDoc)
-        {
-            if (string.IsNullOrEmpty(saleDoc.CustomerId))
-                return;
-
-            var customer = await oDataService.GetCatalog_Контрагенты(saleDoc.CustomerId);
-
-            saleDoc.CustomerName = customer?.Description;
-        }
-
-        public async Task UpdateAsync(SaleDoc item)
-        {
-            item.UserId = await authService.GetCurrentUserIdAsync();
-
-            dbContext.Update(item);
 
             await dbContext.SaveChangesAsync();
         }
@@ -186,12 +175,26 @@ namespace DocCheck.Application
             if (item.Position != Position.Managers)
                 return null;
 
-            await CheckAuthor(item);
+            var taskHandlerConfig = configuration["TaskHandler"];
+
+            if(taskHandlerConfig is null)
+            {
+                logger.LogError("{Source} TaskHandler Config Not Found", nameof(CreateManagerTask));
+                return null;
+            }
+
+            var taskHandlerId = item.GetTaskHandler(taskHandlerConfig);
+
+            if (taskHandlerId is null)
+            {
+                logger.LogError("{Source} TaskHandler Id Not Found", nameof(CreateManagerTask));
+                return null;
+            }
 
             var oneSTask = new OneSTask
             {
                 Date = DateTime.Now,
-                Исполнитель = item.AuthorId,
+                Исполнитель = taskHandlerId,
                 Исполнитель_Type = "StandardODATA.Catalog_Пользователи",
                 СрокИсполнения = DateTime.Now.AddDays(1),
                 Предмет = item.BaseDocId?.ToString(),
@@ -201,7 +204,7 @@ namespace DocCheck.Application
                 Описание = $"#DocCheck\n{item.GetErrorDetails()}"
             };
 
-            var result = await oDataService.PostTask(oneSTask);
+            var result = await oDataService.CreateTask(oneSTask);
 
             logger.LogDebug("{Source} Ok {@PostedTask} {@Response}", nameof(CreateManagerTask), oneSTask, result);
 
@@ -210,26 +213,7 @@ namespace DocCheck.Application
 
             return Guid.Parse(result.Ref_Key);
         }
-
-        private async Task CheckAuthor(SaleDoc item)
-        {
-            if (item.AuthorId is not null)
-                return;
-            logger.LogDebug("{Source} Author is null", nameof(CheckAuthor));
-
-            var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(item.Id.ToString());
-
-            if (documentInvoice is null)
-                logger.LogError("{Source} Invoice not found", nameof(CheckAuthor));
-            else
-            {
-                item.AuthorId = documentInvoice.Автор?.Ref_Key;
-                item.AuthorName = documentInvoice.Автор?.Description;
-                await UpdateAsync(item);
-                logger.LogDebug("{Source} Ok", nameof(CheckAuthor));
-            }
-        }
-
+        
         public async Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams)
         {
             var result = await dbContext.SaleDocs
@@ -283,7 +267,7 @@ namespace DocCheck.Application
             if (!Guid.TryParse(invoiceRefKey, out var id))
                 return Error.GuidParseFail;
 
-            var item = await GetAsync(id) ?? await CreateByInvoiceAsync(invoiceRefKey);
+            var item = await GetAsync(id) ?? await CreateByInvoiceKeyAsync(invoiceRefKey);
 
             if (item is null)
                 return Error.NotFound;
@@ -298,11 +282,25 @@ namespace DocCheck.Application
             return item;
         }
 
-        public async Task<SaleDoc?> GetByManagerTaskIdAsync(Guid managerTaskId)
+        private async Task<SaleDoc?> CreateByInvoiceKeyAsync(string invoiceRefKey)
         {
-            var result = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.ManagerTaskId == managerTaskId);
+            logger.LogDebug("{Source} Start {InvoiceRefKey}", nameof(CreateByInvoiceKeyAsync), invoiceRefKey);
 
-            return result;
+            var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(invoiceRefKey, Document_СчетФактураВыданный.GetBy.RefKey);
+
+            var saleDoc = await BuildByInvoice(documentInvoice);
+
+            if (saleDoc is null)
+            {
+                logger.LogError("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", nameof(CreateByInvoiceKeyAsync), invoiceRefKey);
+                return null;
+            }
+
+            await CreateIfNotExistsAsync(saleDoc);
+
+            logger.LogDebug("{Source} Ok {InvoiceRefKey} {@SaleDoc}", nameof(CreateByInvoiceKeyAsync), invoiceRefKey, saleDoc);
+
+            return saleDoc;
         }
 
         private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
@@ -318,6 +316,15 @@ namespace DocCheck.Application
 
             if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
                 item.PositionId = Position.Accounting.Id;
+        }
+
+        private async Task UpdateAsync(SaleDoc item)
+        {
+            item.UserId = await authService.GetCurrentUserIdAsync();
+
+            dbContext.Update(item);
+
+            await dbContext.SaveChangesAsync();
         }
 
         public async Task DeleteUserAsync(string userId)
@@ -338,6 +345,48 @@ namespace DocCheck.Application
             await dbContext.SaveChangesAsync();
         }
 
+        public async Task HandleManagerTaskAsync(string message)
+        {
+            logger.LogDebug("{Source} Start {Message}", nameof(HandleManagerTaskAsync), message);
+
+            var inputTask = JsonSerializer.Deserialize<OneSTask>(message);
+
+            if (inputTask?.Ref_Key is null)
+            {
+                logger.LogDebug("{Source} Error Deserialize of InputTask {InputTask}", nameof(HandleManagerTaskAsync), inputTask);
+                return;
+            }
+
+            var oneSTask = await oDataService.GetTask(inputTask.Ref_Key);
+
+            if (oneSTask?.Ref_Key is null)
+            {
+                logger.LogDebug("{Source} OneSTask Not Found by TaskId ({TaskId})", nameof(HandleManagerTaskAsync), oneSTask?.Ref_Key);
+                return;
+            }
+
+            var taskId = Guid.Parse(oneSTask.Ref_Key);
+
+            var saleDoc = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.ManagerTaskId == taskId);
+
+            if (saleDoc is null)
+            {
+                logger.LogDebug("{Source} SaleDoc Not Found by TaskId ({TaskId})", nameof(HandleManagerTaskAsync), taskId);
+                return;
+            }
+
+            logger.LogDebug("{Source} {Position} ->   {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
+
+            if (oneSTask.Executed)
+                saleDoc.PositionId = Position.ForDispatch.Id;
+            else
+                saleDoc.PositionId = Position.Managers.Id;
+
+            await dbContext.SaveChangesAsync();
+
+            logger.LogDebug("{Source} {Position} <-   {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
+        }
+
         public async Task ActualizeAsync()
         {
             var items = dbContext.SaleDocs
@@ -346,62 +395,34 @@ namespace DocCheck.Application
 
             foreach (var item in items)
             {
-                if (item.CustomerId is null)
+                var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(item.Id.ToString(), Document_СчетФактураВыданный.GetBy.RefKey);
+
+                if (documentInvoice is null)
                 {
-                    var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(item.Id.ToString());
-                    if (documentInvoice is null || string.IsNullOrEmpty(documentInvoice.Контрагент))
-                        return;
-
-                    item.CustomerId = documentInvoice.Контрагент;
+                    logger.LogDebug("{Source} Document_СчетФактураВыданный Not Found by RefKey ({RefKey})", nameof(ActualizeAsync), item.Id.ToString());
+                    continue;
                 }
-                await UpdateCustomer(item);
+
+                var actualItem = await BuildByInvoice(documentInvoice);
+
+                if (actualItem is null)
+                {
+                    logger.LogError("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", nameof(ActualizeAsync), documentInvoice);
+                    continue;
+                }
+
+                item.AuthorId = actualItem.AuthorId;
+                item.AuthorName = actualItem.AuthorName;
+                item.CustomerId = actualItem.CustomerId;
+                item.CustomerName = actualItem.CustomerName;
+                item.ManagerId = actualItem.ManagerId;
+                item.ManagerName = actualItem.ManagerName;
+
+                if (item.Position == Position.Managers && item.ManagerTaskId is null)
+                    item.ManagerTaskId = await CreateManagerTask(item);
+
+                await dbContext.SaveChangesAsync();
             }
-            dbContext.SaveChanges();
-        }
-
-        public string?[]? GetCustomers()
-        {
-            var result = dbContext.SaleDocs
-                .DistinctBy(e => e.CustomerId)
-                .Select(e => e.CustomerName)
-                .ToArray();
-
-            return result;
-        }
-
-        public async Task HandleManagerTaskAsync(string message)
-        {
-            logger.LogDebug("{Source} Sart {Message}", nameof(HandleManagerTaskAsync), message);
-
-            var inputTask = JsonSerializer.Deserialize<OneSTask>(message);
-
-            if (inputTask?.Ref_Key is null)
-                return;
-
-            var oneSTask = await oDataService.GetTask(inputTask.Ref_Key);
-
-            logger.LogDebug("{Source} GetTask {@GetTask}", nameof(HandleManagerTaskAsync), oneSTask);
-
-            if (oneSTask?.Ref_Key is null)
-                return;
-
-            var taskId = Guid.Parse(oneSTask.Ref_Key);
-
-            var saleDoc = await GetByManagerTaskIdAsync(taskId);
-
-            logger.LogDebug("{Source} SaleDoc {@SaleDoc}", nameof(HandleManagerTaskAsync), saleDoc);
-
-            if (saleDoc is null)
-                return;
-
-            if (oneSTask.Executed)
-                saleDoc.PositionId = Position.ForDispatch.Id;
-            else
-                saleDoc.PositionId = Position.Managers.Id;
-
-            logger.LogDebug("{Source} Position {Position}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description);
-
-            await dbContext.SaveChangesAsync();
         }
     }
 }

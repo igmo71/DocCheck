@@ -48,6 +48,9 @@ namespace DocCheck.Domain
         public string? AuthorId { get; set; }
         public string? AuthorName { get; set; }
 
+        public string? ManagerId { get; set; }
+        public string? ManagerName { get; set; }
+
         public Guid? ManagerTaskId { get; set; }
 
         ///
@@ -70,7 +73,7 @@ namespace DocCheck.Domain
 
         public bool IsOverdue => (int)(DateTime.Today - (Date ?? new DateTime()).Date).TotalDays > 5;
 
-        public static SaleDoc From(Document_СчетФактураВыданный documentInvoice)
+        public static SaleDoc From(Document_СчетФактураВыданный documentInvoice, Document_РеализацияТоваровУслуг documentBase)
         {
             var saleDoc = new SaleDoc
             {
@@ -79,9 +82,12 @@ namespace DocCheck.Domain
                 Date = documentInvoice.Date,
                 BaseDocId = documentInvoice.ДокументОснование,
                 BaseDocType = documentInvoice.ДокументОснование_Type,
-                CustomerId = documentInvoice.Контрагент,
-                AuthorId = documentInvoice.Автор?.Ref_Key,
-                AuthorName = documentInvoice.Автор?.Description
+                CustomerId = documentBase.Контрагент_Key,
+                CustomerName = documentBase.Контрагент?.Description,
+                AuthorId = documentBase.Автор_Key,
+                AuthorName = documentBase.Автор?.Description,
+                ManagerId = documentBase.Менеджер_Key,
+                ManagerName = documentBase.Менеджер?.Description
             };
 
             return saleDoc;
@@ -99,6 +105,18 @@ namespace DocCheck.Domain
             }
 
             return result;
+        }
+
+        internal string? GetTaskHandler(string taskHandler)
+        {
+            if (taskHandler.Equals("Manager") && !string.IsNullOrEmpty(ManagerId))
+                return ManagerId;
+
+            if (taskHandler.Equals("Author") && !string.IsNullOrEmpty(AuthorId))
+                return AuthorId;
+
+            //return "ad310d19-7b3f-11ea-8148-0cc47adeb013"; // Могильницкий Игорь Анатольевич ))
+            return null;
         }
     }
 }

@@ -1,13 +1,15 @@
 ﻿using DocCheck.Infrastructure.OData.Models;
 using Newtonsoft.Json.Linq;
 using System.Text.Json;
+using static DocCheck.Infrastructure.OData.Models.Document_СчетФактураВыданный;
 
 namespace DocCheck.Infrastructure.OData
 {
     public interface IODataService
     {
-        Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный(string refKey);
-        Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey);
+        Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный(string key, Document_СчетФактураВыданный.GetBy getBy);
+        //Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey);
+
         Task<Document_РеализацияТоваровУслуг?> GetDocument_РеализацияТоваровУслуг(string refKey);
         Task<Document_РеализацияТоваровУслуг_Товары[]?> GetDocument_РеализацияТоваровУслуг_Товары(string refKey);
 
@@ -18,16 +20,16 @@ namespace DocCheck.Infrastructure.OData
         Task<Catalog_Пользователи[]?> GetSalesDepartment_Catalog_Пользователи();
         Task<Catalog_Контрагенты?> GetCatalog_Контрагенты(string refKey);
         Task<Catalog_Контрагенты[]?> GetCatalog_Контрагенты_BySearchTerm(string searchTerm);
-        Task<OneSTask?> PostTask(OneSTask oneSTask);
+        Task<OneSTask?> CreateTask(OneSTask oneSTask);
         Task<OneSTask?> GetTask(string refKey);
     }
 
-    public class ODataService(ODataClient oDataClient) : IODataService
+    public class ODataService(ODataClient oDataClient, ILogger<ODataService> logger) : IODataService
     {
 
-        public async Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный(string refKey)
+        public async Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный(string key, GetBy getBy)
         {
-            var uri = Document_СчетФактураВыданный.GetUri(refKey);
+            var uri = Document_СчетФактураВыданный.GetUri(key, getBy);
 
             var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_СчетФактураВыданный>>(uri);
 
@@ -36,16 +38,16 @@ namespace DocCheck.Infrastructure.OData
             return result;
         }
 
-        public async Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey)
-        {
-            var uri = Document_СчетФактураВыданный.GetUriByBaseDoc(documentSaleRefKey);
+        //public async Task<Document_СчетФактураВыданный?> GetDocument_СчетФактураВыданный_ByBaseDoc(string documentSaleRefKey)
+        //{
+        //    var uri = Document_СчетФактураВыданный.GetUriByBaseDoc(documentSaleRefKey);
 
-            var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_СчетФактураВыданный>>(uri);
+        //    var rootobject = await oDataClient.GetDataAsync<Rootobject<Document_СчетФактураВыданный>>(uri);
 
-            var result = rootobject?.Value?.FirstOrDefault();
+        //    var result = rootobject?.Value?.FirstOrDefault();
 
-            return result;
-        }
+        //    return result;
+        //}
 
         public async Task<Document_РеализацияТоваровУслуг?> GetDocument_РеализацияТоваровУслуг(string refKey)
         {
@@ -137,7 +139,7 @@ namespace DocCheck.Infrastructure.OData
             return result;
         }
 
-        public async Task<OneSTask?> PostTask(OneSTask value)
+        public async Task<OneSTask?> CreateTask(OneSTask value)
         {
             var uri = OneSTask.PostUri();
 
@@ -155,6 +157,8 @@ namespace DocCheck.Infrastructure.OData
             var rootobject = await oDataClient.GetDataAsync<Rootobject<OneSTask>>(uri);
 
             var result = rootobject?.Value?.FirstOrDefault();
+
+            logger.LogDebug("{Source} {@OneSTask}", nameof(GetTask), result);
 
             return result;
         }

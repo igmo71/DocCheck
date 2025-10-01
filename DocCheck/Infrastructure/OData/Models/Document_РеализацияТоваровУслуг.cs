@@ -29,7 +29,7 @@ namespace DocCheck.Infrastructure.OData.Models
             $"Document_РеализацияТоваровУслуг" +
             $"?$format=json" +
             $"&$expand=Менеджер,Автор,Контрагент" +
-            $"&$select=Ref_Key,Number,Date,СуммаДокумента,Менеджер/Description,Автор/Description,Контрагент/Description" +
+            $"&$select=Ref_Key,Number,Date,СуммаДокумента,Менеджер_Key,Менеджер/Description,Автор_Key,Автор/Description,Контрагент_Key,Контрагент/Description" +
             $"&$filter=Ref_Key eq guid'{refKey}'";
 
         //public string DataVersion { get; set; }
