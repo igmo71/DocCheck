@@ -56,6 +56,8 @@ namespace DocCheck.Infrastructure.OData
 
         internal async Task<string> PostDataWithResponseAsPostmanAsync<TData>(string uri, TData value)
         {
+            logger.LogDebug("{Source} Start {Value} {URI}", nameof(PostDataWithResponseAsPostmanAsync), value, uri);
+
             var jsonString = JsonSerializer.Serialize(value, jsonSerializerOptions);
 
             var request = new HttpRequestMessage(HttpMethod.Post, uri)
@@ -69,6 +71,8 @@ namespace DocCheck.Infrastructure.OData
 
             if(!response.IsSuccessStatusCode)
                 logger.LogError("{Source} {ResponseContent}", nameof(PostDataWithResponseAsPostmanAsync), responseContent);
+
+            logger.LogDebug("{Source} Ok {ResponseContent} {URI}", nameof(PostDataWithResponseAsPostmanAsync), responseContent, uri);
 
             return responseContent;
         }

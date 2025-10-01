@@ -186,6 +186,8 @@ namespace DocCheck.Application
             if (item.Position != Position.Managers)
                 return null;
 
+            await CheckAuthor(item);
+
             var oneSTask = new OneSTask
             {
                 Date = DateTime.Now,
@@ -207,6 +209,25 @@ namespace DocCheck.Application
                 return null;
 
             return Guid.Parse(result.Ref_Key);
+        }
+
+        private async Task CheckAuthor(SaleDoc item)
+        {
+            if (item.AuthorId is not null)
+                return;
+            logger.LogDebug("{Source} Author is null", nameof(CheckAuthor));
+
+            var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(item.Id.ToString());
+
+            if (documentInvoice is null)
+                logger.LogError("{Source} Invoice not found", nameof(CheckAuthor));
+            else
+            {
+                item.AuthorId = documentInvoice.Автор?.Ref_Key;
+                item.AuthorName = documentInvoice.Автор?.Description;
+                await UpdateAsync(item);
+                logger.LogDebug("{Source} Ok", nameof(CheckAuthor));
+            }
         }
 
         public async Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams)
