@@ -201,7 +201,7 @@ namespace DocCheck.Application
 
             var result = await oDataService.PostTask(oneSTask);
 
-            logger.LogDebug("{Source} {@PostedTask} {@Response}", nameof(CreateManagerTask), oneSTask, result);
+            logger.LogDebug("{Source} Ok {@PostedTask} {@Response}", nameof(CreateManagerTask), oneSTask, result);
 
             if (result is null || result.Ref_Key is null)
                 return null;

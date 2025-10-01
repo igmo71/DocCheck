@@ -67,6 +67,9 @@ namespace DocCheck.Infrastructure.OData
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
+            if(!response.IsSuccessStatusCode)
+                logger.LogError("{Source} {ResponseContent}", nameof(PostDataWithResponseAsPostmanAsync), responseContent);
+
             return responseContent;
         }
 
