@@ -177,7 +177,7 @@ namespace DocCheck.Application
 
             var taskHandlerConfig = configuration["TaskHandler"];
 
-            if(taskHandlerConfig is null)
+            if (taskHandlerConfig is null)
             {
                 logger.LogError("{Source} TaskHandler Config Not Found", nameof(CreateManagerTask));
                 return null;
@@ -191,6 +191,9 @@ namespace DocCheck.Application
                 return null;
             }
 
+            if (item.BaseDoc is null && !string.IsNullOrEmpty(item.BaseDocId))
+                item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
+
             var oneSTask = new OneSTask
             {
                 Date = DateTime.Now,
@@ -199,7 +202,7 @@ namespace DocCheck.Application
                 СрокИсполнения = DateTime.Now.AddDays(1),
                 Предмет = item.BaseDocId?.ToString(),
                 Предмет_Type = "StandardODATA.Document_РеализацияТоваровУслуг",
-                ПредметСтрокой = $"Реализация № {item.BaseDoc?.Number} {item.BaseDoc?.Date}",
+                ПредметСтрокой = $"Реализация № {item.BaseDoc?.Number} от {item.BaseDoc?.Date}",
                 Description = "Переделать документ реализации",
                 Описание = $"#DocCheck\n{item.GetErrorDetails()}"
             };
@@ -213,7 +216,7 @@ namespace DocCheck.Application
 
             return Guid.Parse(result.Ref_Key);
         }
-        
+
         public async Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams)
         {
             var result = await dbContext.SaleDocs
@@ -390,6 +393,8 @@ namespace DocCheck.Application
         public async Task ActualizeAsync()
         {
             var items = dbContext.SaleDocs
+                .Include(e => e.PaperworkErrors)
+                .Include(e => e.QuantityErrors)
                 .Where(e => e.PositionId != Position.Closed.Id)
                 .ToList();
 
