@@ -92,6 +92,8 @@ namespace DocCheck.Application
 
         private async Task CreateIfNotExistsAsync(SaleDoc saleDoc)
         {
+            logger.LogDebug("{Source} Try {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
+
             if (dbContext.SaleDocs.Any(e => e.Id == saleDoc.Id))
             {
                 logger.LogDebug("{Source} Exists {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
@@ -102,13 +104,15 @@ namespace DocCheck.Application
 
             await dbContext.SaleDocs.AddAsync(saleDoc);
 
-            logger.LogDebug("{Source} Add {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
-
             await dbContext.SaveChangesAsync();
+
+            logger.LogDebug("{Source} Ok {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
         }
 
         public async Task UpdateBySubmitAsync(SaleDoc item)
         {
+            logger.LogDebug("{Source} Start {@SaleDoc}", nameof(UpdateBySubmitAsync), item);
+
             UpdatePositionWhenSubmit(item);
 
             dbContext.SaleDocLogs.Add(new SaleDocLog(item));
@@ -118,6 +122,8 @@ namespace DocCheck.Application
             await UpdateAsync(item);
 
             await CreateOrUpdate1cOriginalDocumentReceivedRecord(item);
+
+            logger.LogDebug("{Source} Ok {@SaleDoc}", nameof(UpdateBySubmitAsync), item);
         }
 
         private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
@@ -149,8 +155,12 @@ namespace DocCheck.Application
 
         private async Task CreateOrUpdate1cOriginalDocumentReceivedRecord(SaleDoc item)
         {
+            logger.LogDebug("{Source} Try {@SaleDoc}", nameof(CreateOrUpdate1cOriginalDocumentReceivedRecord), item);
+
             if (item.Position != Position.Closed || string.IsNullOrEmpty(item.BaseDocId))
                 return;
+
+            logger.LogDebug("{Source} Start {@SaleDoc}", nameof(CreateOrUpdate1cOriginalDocumentReceivedRecord), item);
 
             var record = await oDataService.GetInformationRegister_КОД_ПолученОригиналДокумента(item.BaseDocId);
 
@@ -158,22 +168,30 @@ namespace DocCheck.Application
             {
                 record = new InformationRegister_КОД_ПолученОригиналДокумента() { Документ_Key = item.BaseDocId, ЕстьДокументы = true };
 
-                await oDataService.PostInformationRegister_КОД_ПолученОригиналДокумента(record);
+                var isSuccess = await oDataService.PostInformationRegister_КОД_ПолученОригиналДокумента(record);
+
+                if(isSuccess)
+                    logger.LogDebug("{Source} Posted {@SaleDoc}", nameof(CreateOrUpdate1cOriginalDocumentReceivedRecord), item);
             }
             else
             {
                 record.ЕстьДокументы = true;
 
-                await oDataService.PatchInformationRegister_КОД_ПолученОригиналДокумента(record);
+                var isSuccess = await oDataService.PatchInformationRegister_КОД_ПолученОригиналДокумента(record);
+
+                if (isSuccess)
+                    logger.LogDebug("{Source} Patched {@SaleDoc}", nameof(CreateOrUpdate1cOriginalDocumentReceivedRecord), item);
             }
         }
 
         private async Task<Guid?> CreateManagerTask(SaleDoc item)
         {
-            logger.LogDebug("{Source} Start {@SaleDoc}", nameof(CreateManagerTask), item);
+            logger.LogDebug("{Source} Try {@SaleDoc}", nameof(CreateManagerTask), item);
 
             if (item.Position != Position.Managers)
                 return null;
+
+            logger.LogDebug("{Source} Start {@SaleDoc}", nameof(CreateManagerTask), item);
 
             var taskHandlerConfig = configuration["TaskHandler"];
 
