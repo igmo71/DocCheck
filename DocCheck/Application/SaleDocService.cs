@@ -126,8 +126,10 @@ namespace DocCheck.Application
             logger.LogDebug("{Source} Ok {@SaleDoc}", nameof(UpdateBySubmitAsync), item);
         }
 
-        private static void UpdatePositionWhenSubmit(SaleDoc saleDoc)
+        private void UpdatePositionWhenSubmit(SaleDoc saleDoc)
         {
+            logger.LogDebug("{Source} From {Position}", nameof(UpdatePositionWhenSubmit), saleDoc.Position.Description);
+
             if (saleDoc.IsCorrect)
             {
                 switch (saleDoc.Position.Id)
@@ -151,6 +153,8 @@ namespace DocCheck.Application
             {
                 saleDoc.PositionId = Position.Managers.Id;
             }
+
+            logger.LogDebug("{Source} To {Position}", nameof(UpdatePositionWhenSubmit), saleDoc.Position.Description);
         }
 
         private async Task CreateOrUpdate1cOriginalDocumentReceivedRecord(SaleDoc item)
@@ -170,7 +174,7 @@ namespace DocCheck.Application
 
                 var isSuccess = await oDataService.PostInformationRegister_КОД_ПолученОригиналДокумента(record);
 
-                if(isSuccess)
+                if (isSuccess)
                     logger.LogDebug("{Source} Posted {@SaleDoc}", nameof(CreateOrUpdate1cOriginalDocumentReceivedRecord), item);
             }
             else
@@ -283,15 +287,30 @@ namespace DocCheck.Application
 
         public async Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode)
         {
+            logger.LogDebug("{Source} Start {Barcode}", nameof(GetByBarcodeAsync), barcode);
+
             var invoiceRefKey = GuidConvert.FromNumStr(barcode);
 
             if (!Guid.TryParse(invoiceRefKey, out var id))
+            {
+                logger.LogError("{Source} Error Parse {Barcode}", nameof(GetByBarcodeAsync), barcode);
                 return Error.GuidParseFail;
+            }
 
-            var item = await GetAsync(id) ?? await CreateByInvoiceKeyAsync(invoiceRefKey);
+            var item = await GetAsync(id);
 
             if (item is null)
-                return Error.NotFound;
+            {
+                logger.LogDebug("{Source} Not Found By InvoiceKey({Id}). Try Create. {Barcode}", nameof(GetByBarcodeAsync), id, barcode);
+
+                await CreateByInvoiceKeyAsync(invoiceRefKey);
+
+                if (item is null)
+                {
+                    logger.LogError("{Source} Error Create By InvoiceKey {Barcode}", nameof(GetByBarcodeAsync), barcode);
+                    return Error.NotFound;
+                }
+            }
 
             await UpdatePositionWhenOpenByBarcodeAsync(item);
 
@@ -299,6 +318,8 @@ namespace DocCheck.Application
 
             if (!string.IsNullOrEmpty(item.BaseDocId))
                 item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
+
+            logger.LogDebug("{Source} Ok {Barcode}", nameof(GetByBarcodeAsync), barcode);
 
             return item;
         }
@@ -326,6 +347,8 @@ namespace DocCheck.Application
 
         private async Task UpdatePositionWhenOpenByBarcodeAsync(SaleDoc item)
         {
+            logger.LogDebug("{Source} From {Position}", nameof(UpdatePositionWhenOpenByBarcodeAsync), item.Position.Description);
+
             if (item.Position == Position.Closed)
                 return;
 
@@ -337,6 +360,8 @@ namespace DocCheck.Application
 
             if (await authService.IsCurrentUserInRole(Position.Accounting.Role))
                 item.PositionId = Position.Accounting.Id;
+
+            logger.LogDebug("{Source} To {Position}", nameof(UpdatePositionWhenOpenByBarcodeAsync), item.Position.Description);
         }
 
         private async Task UpdateAsync(SaleDoc item)
