@@ -403,15 +403,7 @@ namespace DocCheck.Application
                 return;
             }
 
-            var oneSTask = await oDataService.GetTask(inputTask.Ref_Key);
-
-            if (oneSTask?.Ref_Key is null)
-            {
-                logger.LogDebug("{Source} OneSTask Not Found by TaskId ({TaskId})", nameof(HandleManagerTaskAsync), oneSTask?.Ref_Key);
-                return;
-            }
-
-            var taskId = Guid.Parse(oneSTask.Ref_Key);
+            var taskId = Guid.Parse(inputTask.Ref_Key);
 
             var saleDoc = await dbContext.SaleDocs.FirstOrDefaultAsync(e => e.ManagerTaskId == taskId);
 
@@ -421,7 +413,15 @@ namespace DocCheck.Application
                 return;
             }
 
-            logger.LogDebug("{Source} {Position} ->   {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
+            var oneSTask = await oDataService.GetTask(inputTask.Ref_Key);
+
+            if (oneSTask?.Ref_Key is null)
+            {
+                logger.LogDebug("{Source} OneSTask Not Found by TaskId ({TaskId})", nameof(HandleManagerTaskAsync), oneSTask?.Ref_Key);
+                return;
+            }
+
+            logger.LogDebug("{Source} From {Position}  {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
 
             if (oneSTask.Executed)
                 saleDoc.PositionId = Position.ForDispatch.Id;
@@ -430,7 +430,7 @@ namespace DocCheck.Application
 
             await dbContext.SaveChangesAsync();
 
-            logger.LogDebug("{Source} {Position} <-   {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
+            logger.LogDebug("{Source} To {Position}  {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
         }
 
         public async Task ActualizeAsync()
