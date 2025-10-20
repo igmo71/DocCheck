@@ -424,7 +424,10 @@ namespace DocCheck.Application
             logger.LogDebug("{Source} From {Position}  {oneSTask}", nameof(HandleManagerTaskAsync), saleDoc.Position.Description, oneSTask);
 
             if (oneSTask.Executed)
+            {
                 saleDoc.PositionId = Position.ForDispatch.Id;
+                saleDoc.Redispatch++;
+            }
             else
                 saleDoc.PositionId = Position.Managers.Id;
 
