@@ -20,5 +20,15 @@ namespace DocCheck.Common
             4 => Closed,
             _ => throw new ArgumentException($"Position with id {id} not found")
         };
+
+        public static Position[] GetAll() =>
+        [
+            Undefine,
+            ForDispatch,
+            Operators,
+            Managers,
+            Accounting,
+            Closed
+        ];
     }
 }

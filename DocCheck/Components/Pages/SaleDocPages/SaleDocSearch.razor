@@ -34,10 +34,10 @@
 
 @code {
     [Parameter]
-    public SearchParams? SearchParams { get; set; }
+    public SaleDocSearchParams? SearchParams { get; set; }
 
     [Parameter]
-    public EventCallback<SearchParams> Filter { get; set; }
+    public EventCallback<SaleDocSearchParams> Filter { get; set; }
 
     [Parameter]
     public EventCallback ResetFilter { get; set; }

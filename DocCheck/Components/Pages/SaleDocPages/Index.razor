@@ -44,7 +44,7 @@ else
     private List<SaleDoc>? saleDocsManagers;
     private List<SaleDoc>? saleDocsAccounting;
 
-    private SearchParams searchParams = new();
+    private SaleDocSearchParams searchParams = new();
 
     // protected override async Task OnInitializedAsync()
     // {
@@ -56,7 +56,7 @@ else
         if (firstRender)
         {
 
-            var storageResult = await ProtectedSessionStore.GetAsync<SearchParams>("searchParams");
+            var storageResult = await ProtectedSessionStore.GetAsync<SaleDocSearchParams>("searchParams");
 
             if (storageResult.Success && storageResult.Value is not null)
                 searchParams = storageResult.Value;
@@ -67,7 +67,7 @@ else
         }
     }
 
-    private async Task LoadSaleDocs(SearchParams searchParams)
+    private async Task LoadSaleDocs(SaleDocSearchParams searchParams)
     {
         saleDocs = await SaleDocService.GetListUnclosedAsync(searchParams);
 

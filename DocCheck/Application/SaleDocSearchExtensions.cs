@@ -1,10 +1,10 @@
 ﻿using DocCheck.Domain;
 
-namespace DocCheck.Common
+namespace DocCheck.Application
 {
     public static class SaleDocSearchExtensions
     {
-        public static IQueryable<SaleDoc> HandleSearch(this IQueryable<SaleDoc> query, SearchParams searchParams)
+        public static IQueryable<SaleDoc> HandleSearch(this IQueryable<SaleDoc> query, SaleDocSearchParams searchParams)
         {
             if (searchParams.Customer is not null)
                 query = query.Where(e => e.CustomerName != null && e.CustomerName.ToLower().Contains(searchParams.Customer.ToLower()));

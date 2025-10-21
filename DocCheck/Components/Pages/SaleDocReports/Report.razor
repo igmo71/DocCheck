@@ -1,0 +1,152 @@
+﻿@page "/report"
+
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Data
+@using DocCheck.Domain
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject ISaleDocReportService ReportService
+
+<h3>Report</h3>
+
+<EditForm Model="ReportParamsModel" OnSubmit="BuildReport" FormName="ReportParamsForm">
+	<div class="row">
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">Период с:</span>
+				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
+				<span class="input-group-text">по:</span>
+				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.PositionId">
+				<option value="">
+					Этап ...
+				</option>
+				@foreach (var position in positions)
+				{
+					<option value="@position.Id">@position.Description</option>
+				}
+			</InputSelect>
+		</div>
+		<div class="col-auto">
+			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
+				<option value="">
+					Менеджер ...
+				</option>
+				@if (managers is not null)
+				{
+					foreach (var manager in managers)
+					{
+						<option value="@manager.Key">@manager.Value</option>
+					}
+				}
+			</InputSelect>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">Контрагент</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">УПД</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-primary" type="submit">Сформировать</button>
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
+		</div>
+	</div>
+</EditForm>
+
+<div class="grid table-responsive" tabindex="-1">
+	<QuickGrid ItemsProvider="itemsProvider" Virtualize="true" @ref="grid" ItemKey="@(e => e.Id)" Class="table">
+		<PropertyColumn Property="@(c => c.Position.Description)" Sortable="false" Title="Этап" />
+		<PropertyColumn Property="@(c => c.Date)" Format="dd.MM.yyyy" Sortable="true" Title="Дата" />
+
+		<TemplateColumn Sortable="true" Title="Номер" Context="context">
+			<a href="saledoclogs?SaleDocId=@(context.Id)">@context.Number</a>
+		</TemplateColumn>
+		<TemplateColumn Sortable="false" Title="Менеджер/Контрагент" Context="context">
+			<div>@context.ManagerName</div>
+			<div>@context.CustomerName</div>
+		</TemplateColumn>
+
+		<PropertyColumn Property="@(c => c.Redispatch)" Sortable="false" Title="Переотправок" />
+
+		<TemplateColumn Context="context" Title="Перечень Ошибок" Class="text-wrap">
+			@foreach (var error in context.PaperworkErrors.OrderBy(e => e.Type))
+			{
+				<div>
+					@((int)error.Type) - @error.Type.Description();
+				</div>
+			}
+		</TemplateColumn>
+		<TemplateColumn Context="context" Title="Прочее">
+
+			<div>
+				@context.GetError(PaperworkErrorType.Other)?.Message
+			</div>
+
+		</TemplateColumn>
+		<TemplateColumn Context="context" Title="Ошибка состава">
+			<div>
+				@context.GetError(PaperworkErrorType.QuantityError)?.Message
+			</div>
+		</TemplateColumn>
+	</QuickGrid>
+</div>
+
+@code {
+	[SupplyParameterFromForm]
+	private ReportParams ReportParamsModel { get; set; } = new();
+
+	private Position[] positions = Position.GetAll();
+	private Dictionary<string, string>? managers;
+
+	private QuickGrid<SaleDoc>? grid;
+	private GridItemsProvider<SaleDoc>? itemsProvider;
+	int numResults;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		managers = await ReportService.GetManagers();
+
+		itemsProvider = async gridRequest =>
+		{
+			var reportResult = await ReportService.BuildReport(gridRequest, ReportParamsModel);
+
+			if (reportResult.TotalItemCount != numResults && !gridRequest.CancellationToken.IsCancellationRequested)
+			{
+				numResults = reportResult.TotalItemCount;
+
+				StateHasChanged();
+			}
+			
+
+			return reportResult;
+		};
+	}
+
+	private async Task BuildReport(EditContext args)
+	{
+		if (grid is not null)
+			await grid.RefreshDataAsync();
+	}
+
+	private async Task ClearReportParams(MouseEventArgs args)
+	{
+		ReportParamsModel = new();
+
+		if (grid is not null)
+			await grid.RefreshDataAsync();
+	}
+}

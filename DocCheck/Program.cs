@@ -45,7 +45,7 @@ namespace DocCheck
             
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddQuickGridEntityFrameworkAdapter();
@@ -99,6 +99,8 @@ namespace DocCheck
 
             builder.Services.AddHostedService<RabbitMqOrdersConsumer>();
             builder.Services.AddHostedService<RabbitMqTasksConsumer>();
+
+            builder.Services.AddScoped<ISaleDocReportService, SaleDocReportService>();
 
             var app = builder.Build();
 

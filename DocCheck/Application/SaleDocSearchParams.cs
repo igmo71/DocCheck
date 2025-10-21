@@ -1,6 +1,6 @@
-﻿namespace DocCheck.Common
+﻿namespace DocCheck.Application
 {
-    public class SearchParams
+    public class SaleDocSearchParams
     {
         public string? Customer { get; set; }
         public string? SaleDocNumber { get; set; }

@@ -13,7 +13,7 @@ namespace DocCheck.Application
     {
         Task CreateByBaseDocAsync(string mngrOrderString);
         Task UpdateBySubmitAsync(SaleDoc saleDoc);
-        Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams);
+        Task<List<SaleDoc>> GetListUnclosedAsync(SaleDocSearchParams searchParams);
         Task<ServiceResult<SaleDoc>> GetByAccessRightsAsync(Guid id);
         Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode);
         Task<SaleDoc?> GetAsync(Guid id);
@@ -239,7 +239,7 @@ namespace DocCheck.Application
             return Guid.Parse(result.Ref_Key);
         }
 
-        public async Task<List<SaleDoc>> GetListUnclosedAsync(SearchParams searchParams)
+        public async Task<List<SaleDoc>> GetListUnclosedAsync(SaleDocSearchParams searchParams)
         {
             var result = await dbContext.SaleDocs
                 .AsNoTracking()
