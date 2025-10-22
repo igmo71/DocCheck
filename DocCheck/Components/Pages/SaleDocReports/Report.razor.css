@@ -1,6 +1,6 @@
 ﻿/* Fix height and enable scrolling */
 .grid {
-    height: 36rem;
+    height: 30rem;
     overflow-y: auto;
 }
 
@@ -12,13 +12,15 @@
 ::deep thead {
     position: sticky;
     top: 0;
-    background-color: #eee;
+    background-color: #d8d8d8;
+    outline: 1px solid gray;
     z-index: 1;
 }
 
 /* For virtualized grids, it's essential that all rows have the same known height */
 ::deep tr {
     height: 30px;
+    border-bottom: 0.5px solid silver;
 }
 
 ::deep tbody td {
@@ -26,17 +28,4 @@
     overflow: hidden;
     max-width: 0;
     text-overflow: ellipsis;
-}
-
-
-/**/
-
-.vertical-header {
-    writing-mode: vertical-lr;
-    transform: rotate(180deg);
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-    height: 100px;
-    width: 10px;
 }

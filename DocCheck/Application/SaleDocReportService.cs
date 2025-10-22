@@ -7,8 +7,8 @@ namespace DocCheck.Application
 {
     public interface ISaleDocReportService
     {
-        Task<GridItemsProviderResult<SaleDoc>> BuildReport(GridItemsProviderRequest<SaleDoc> gridRequest, ReportParams reportParams);
-        Task<Dictionary<string, string>> GetManagers();
+        GridItemsProviderResult<SaleDoc> BuildReport(GridItemsProviderRequest<SaleDoc> gridRequest, ReportParams reportParams);
+        Dictionary<string, string> GetManagers();
     }
 
     public class ReportParams
@@ -21,21 +21,23 @@ namespace DocCheck.Application
         public string? SaleDocTerm { get; set; }
     }
 
-    public class SaleDocReportService(IDbContextFactory<ApplicationDbContext> dbFactory, ILogger<SaleDocReportService> logger) : ISaleDocReportService
+    public class SaleDocReportService(IDbContextFactory<ApplicationDbContext> dbFactory) : ISaleDocReportService
     {
-        public async Task<GridItemsProviderResult<SaleDoc>> BuildReport(GridItemsProviderRequest<SaleDoc> gridRequest, ReportParams reportParams)
+        public GridItemsProviderResult<SaleDoc> BuildReport(GridItemsProviderRequest<SaleDoc> gridRequest, ReportParams reportParams)
         {
-            await using var dbContext = await dbFactory.CreateDbContextAsync();
+            using var dbContext = dbFactory.CreateDbContext();
 
-            var totalItemCount = await dbContext.SaleDocs.CountAsync();
-
-            var items = await dbContext.SaleDocs
+            var query = dbContext.SaleDocs
                 .AsNoTracking()
+                .HandleReportParams(reportParams);
+
+            var totalItemCount = query
+                .Count();
+
+            var items = query
                 .Include(e => e.PaperworkErrors)
-                .HandleReportParams(reportParams)
                 .HandleGridRequest(gridRequest)
-                .AsNoTracking()
-                .ToArrayAsync();
+                .ToArray();
 
             var gridResult = new GridItemsProviderResult<SaleDoc>()
             {
@@ -46,11 +48,11 @@ namespace DocCheck.Application
             return gridResult;
         }
 
-        public async Task<Dictionary<string, string>> GetManagers()
+        public Dictionary<string, string> GetManagers()
         {
-            await using var dbContext = await dbFactory.CreateDbContextAsync();
+            using var dbContext = dbFactory.CreateDbContext();
 
-            var result = await dbContext.SaleDocs
+            var result = dbContext.SaleDocs
                 .Where(e => e.ManagerId != null && e.ManagerName != null)
                 .GroupBy(e => new { e.ManagerId, e.ManagerName })
                 .Select(g => new
@@ -59,7 +61,7 @@ namespace DocCheck.Application
                     ManagerName = g.Key.ManagerName
                 })
                 .OrderBy(e => e.ManagerName)
-                .ToDictionaryAsync(e => e.ManagerId!.ToString(), e => e.ManagerName!);
+                .ToDictionary(e => e.ManagerId!.ToString(), e => e.ManagerName!);
 
             return result;
         }
