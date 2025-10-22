@@ -8,15 +8,13 @@
 
 @inject ISaleDocReportService ReportService
 
-<h3>Report</h3>
-
 <EditForm Model="ReportParamsModel" OnSubmit="BuildReport" FormName="ReportParamsForm">
 	<div class="row">
 		<div class="col-auto">
 			<div class="input-group mb-3">
-				<span class="input-group-text">Период с:</span>
+				<span class="input-group-text">С</span>
 				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
-				<span class="input-group-text">по:</span>
+				<span class="input-group-text">по</span>
 				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
 			</div>
 		</div>
@@ -30,6 +28,18 @@
 					<option value="@position.Id">@position.Description</option>
 				}
 			</InputSelect>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">УПД</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">Контрагент</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
+			</div>
 		</div>
 		<div class="col-auto">
 			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
@@ -46,37 +56,30 @@
 			</InputSelect>
 		</div>
 		<div class="col-auto">
-			<div class="input-group mb-3">
-				<span class="input-group-text">Контрагент</span>
-				<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
-			</div>
-		</div>
-		<div class="col-auto">
-			<div class="input-group mb-3">
-				<span class="input-group-text">УПД</span>
-				<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
-			</div>
-		</div>
-		<div class="col-auto">
 			<button class="btn btn-primary" type="submit">Сформировать</button>
 		</div>
 		<div class="col-auto">
 			<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
 		</div>
+		@if (numResults != 0)
+		{
+			<div class="col-auto pt-2">
+				<span>Найдено @numResults</span>
+			</div>
+		}
 	</div>
 </EditForm>
 
-<div class="grid" tabindex="-1">
-	<QuickGrid ItemsProvider="itemsProvider" Virtualize="true" @ref="grid" ItemKey="@(e => e.Id)" OverscanCount="10" >
-		<PropertyColumn Property="@(c => c.Position.Description)" Sortable="false" Title="Этап" >
+<div class="grid mt-3" tabindex="-1">
+	<QuickGrid ItemsProvider="itemsProvider" Virtualize="true" @ref="grid" ItemKey="@(e => e.Id)" OverscanCount="40">
+		<PropertyColumn Property="@(c => c.Position.Description)" Sortable="false" Title="Этап">
 			<PlaceholderTemplate>
-				<p>
-					Loading&hellip;
-				</p>
+				<div class="spinner-grow" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
 			</PlaceholderTemplate>
 		</PropertyColumn>
 		<PropertyColumn Property="@(c => c.Date)" Format="dd.MM.yyyy" Sortable="true" Title="Дата" />
-
 		<TemplateColumn Sortable="true" Title="Номер" Context="context">
 			<a href="saledoclogs?SaleDocId=@(context.Id)">@context.Number</a>
 		</TemplateColumn>
@@ -84,16 +87,13 @@
 			@* <div>@context.ManagerName</div> *@
 			<div>@context.CustomerName</div>
 		</TemplateColumn>
-
-		<PropertyColumn Property="@(c => c.Redispatch)" Sortable="false" Title="Переотправок" />
-
 		<TemplateColumn Context="context" Title="Перечень Ошибок" Class="text-wrap">
-			@foreach (var error in context.PaperworkErrors.OrderBy(e => e.Type))
-			{
-				<div>
-					@((int)error.Type) - @error.Type.Description();
-				</div>
-			}
+			<p class="lh-sm">
+				@foreach (var error in context.PaperworkErrors.OrderBy(e => e.Type))
+				{
+					<div><small>@error.Type.Description()</small>></div>
+				}
+			</p>
 		</TemplateColumn>
 		<TemplateColumn Context="context" Title="Прочее">
 
@@ -107,8 +107,10 @@
 				@context.GetError(PaperworkErrorType.QuantityError)?.Message
 			</div>
 		</TemplateColumn>
+		<PropertyColumn Property="@(c => c.Redispatch)" Sortable="false" Title="Переотправок" />
 	</QuickGrid>
 </div>
+
 
 @code {
 	[SupplyParameterFromForm]
@@ -120,46 +122,36 @@
 	private QuickGrid<SaleDoc>? grid;
 	private GridItemsProvider<SaleDoc>? itemsProvider;
 	private int numResults;
-	private bool _loading;
 
 	protected override async Task OnInitializedAsync()
 	{
 		managers = ReportService.GetManagers();
 
-		itemsProvider = DebouncedProvider;
-	}
-
-	private async ValueTask<GridItemsProviderResult<SaleDoc>> DebouncedProvider(GridItemsProviderRequest<SaleDoc> gridRequest)
-	{
-		if (_loading)
+		itemsProvider = async gridRequest =>
 		{
-			return new GridItemsProviderResult<SaleDoc>
-			{
-				Items = Array.Empty<SaleDoc>(),
-				TotalItemCount = numResults
-			};
-		}
-
-		try
-		{
-			_loading = true;
-
 			var reportResult = ReportService.BuildReport(gridRequest, ReportParamsModel);
 
 			if (reportResult.TotalItemCount != numResults && !gridRequest.CancellationToken.IsCancellationRequested)
 			{
 				numResults = reportResult.TotalItemCount;
-
 				//StateHasChanged(); // !!!
 			}
 
 			return reportResult;
-		}
-		finally
-		{
-			_loading = false;
-		}
+		};
 	}
+
+	// private async ValueTask<GridItemsProviderResult<SaleDoc>> DebouncedProvider(GridItemsProviderRequest<SaleDoc> gridRequest)
+	// {
+	// 	var reportResult = ReportService.BuildReport(gridRequest, ReportParamsModel);
+
+	// 	if (reportResult.TotalItemCount != numResults && !gridRequest.CancellationToken.IsCancellationRequested)
+	// 	{
+	// 		numResults = reportResult.TotalItemCount;
+	// 	}
+
+	// 	return reportResult;
+	// }
 
 	private async Task BuildReport(EditContext args)
 	{
