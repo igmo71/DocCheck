@@ -3,7 +3,7 @@ namespace DocCheck.Common
 {
     public record Position(int Id, string Role, string Description, string SubmitLabel)
     {
-        public static Position Undefine { get; } = new(-1, "Undefine", "Не определен", "");
+        //public static Position Undefine { get; } = new(-1, "Undefine", "Не определен", "");
         public static Position ForDispatch { get; } = new(0, "ForDispatch", "К отправке", "Сохранить");
         public static Position Operators { get; } = new(1, "Operators", "Операторы РЦ", "В Бухгалтерию к приемке");
         public static Position Managers { get; } = new(2, "Managers", "Менеджеры", "К повторной отправке");
@@ -12,7 +12,7 @@ namespace DocCheck.Common
 
         internal static Position GetById(int id) => id switch
         {
-            -1 => Undefine,
+            //-1 => Undefine,
             0 => ForDispatch,
             1 => Operators,
             2 => Managers,
@@ -23,7 +23,7 @@ namespace DocCheck.Common
 
         public static Position[] GetAll() =>
         [
-            Undefine,
+            //Undefine,
             ForDispatch,
             Operators,
             Managers,
