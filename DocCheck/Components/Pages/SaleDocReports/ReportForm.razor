@@ -1,0 +1,113 @@
+@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Data
+@using DocCheck.Domain
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<EditForm Model="ReportParamsModel" OnSubmit="Submit" FormName="ReportParamsForm">
+	<div class="row">
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">С</span>
+				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
+				<span class="input-group-text">по</span>
+				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.PositionId">
+				<option value="">Этап ...</option>
+				@foreach (var position in positions)
+				{
+					<option value="@position.Id">@position.Description</option>
+				}
+			</InputSelect>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">УПД</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<div class="input-group mb-3">
+				<span class="input-group-text">Контрагент</span>
+				<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
+			</div>
+		</div>
+		<div class="col-auto">
+			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
+				<option value="">Менеджер ...</option>
+				@if (Managers is not null)
+				{
+					foreach (var manager in Managers)
+					{
+						<option value="@manager.Key">@manager.Value</option>
+					}
+				}
+			</InputSelect>
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-primary" type="submit">Сформировать</button>
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
+		</div>
+		@if (NumResults != 0)
+		{
+			<div class="col-auto pt-2"><span>Найдено @NumResults</span></div>
+		}
+	</div>
+</EditForm>
+
+@code {
+	[SupplyParameterFromForm]
+	private ReportParams ReportParamsModel { get; set; } = new();
+
+	[Parameter]
+	public Dictionary<string, string>? Managers { get; set; }
+
+	[Parameter]
+	public int NumResults { get; set; }
+
+	[Parameter]
+	public EventCallback<ReportParams> OnBuildReport{ get; set; }
+
+	[Parameter]
+	public EventCallback OnClearReportParams { get; set; }
+
+	private Position[] positions = Position.GetAll();
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var storageResult = await ProtectedSessionStore.GetAsync<ReportParams>("reportParams");
+
+			if (storageResult.Success && storageResult.Value is not null)
+				ReportParamsModel = storageResult.Value;
+
+			StateHasChanged();
+
+			await OnBuildReport.InvokeAsync(ReportParamsModel);
+		}
+	}
+
+	private async Task Submit()
+	{
+		await ProtectedSessionStore.SetAsync("reportParams", ReportParamsModel);
+
+		await OnBuildReport.InvokeAsync(ReportParamsModel);
+	}
+
+	private async Task ClearReportParams()
+	{
+		ReportParamsModel = new();
+
+		await ProtectedSessionStore.DeleteAsync("reportParams");
+
+		await OnClearReportParams.InvokeAsync();
+	}
+}
