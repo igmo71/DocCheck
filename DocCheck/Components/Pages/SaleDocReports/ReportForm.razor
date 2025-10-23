@@ -15,15 +15,15 @@
 			<div class="row">
 				<div class="col">
 					<div class="input-group mb-3">
-						<span class="input-group-text">С</span>
+						<span class="input-group-text">РЎ</span>
 						<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
-						<span class="input-group-text">по</span>
+						<span class="input-group-text">РїРѕ</span>
 						<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
 					</div>
 				</div>
 				<div class="col">
 					<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
-						<option value="">Менеджер ...</option>
+						<option value="">РњРµРЅРµРґР¶РµСЂ ...</option>
 						@if (managers is not null)
 						{
 							foreach (var manager in managers)
@@ -37,13 +37,13 @@
 			<div class="row">
 				<div class="col">
 					<div class="input-group mb-3">
-						<span class="input-group-text">УПД</span>
+						<span class="input-group-text">РЈРџР”</span>
 						<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
 					</div>
 				</div>
 				<div class="col">
 					<div class="input-group mb-3">
-						<span class="input-group-text">Контрагент</span>
+						<span class="input-group-text">РљРѕРЅС‚СЂР°РіРµРЅС‚</span>
 						<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
 					</div>
 				</div>
@@ -58,10 +58,10 @@
 		<div class="col-auto">
 			<div class="row">
 				<div class="col-auto">
-					<button class="btn btn-primary" type="submit">Сформировать</button>
+					<button class="btn btn-primary" type="submit">РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ</button>
 				</div>
 				<div class="col-auto">
-					<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
+					<button class="btn btn-primary" type="button" @onclick="ClearReportParams">РћС‡РёСЃС‚РёС‚СЊ</button>
 				</div>
 				<div class="col-auto">
 					<Export ReportParamsModel="ReportParamsModel" />
@@ -70,7 +70,7 @@
 			<div class="col-auto">
 				@if (NumResults != 0)
 				{
-					<div class="col-auto pt-2"><span>Найдено @NumResults</span></div>
+					<div class="col-auto pt-2"><span>РќР°Р№РґРµРЅРѕ @NumResults</span></div>
 				}
 			</div>
 			<div class="row">
