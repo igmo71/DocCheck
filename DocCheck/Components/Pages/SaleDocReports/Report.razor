@@ -87,6 +87,8 @@
 
 	private async Task ClearReportParams()
 	{
+		ReportParamsModel = new();
+
 		if (grid is not null)
 			await grid.RefreshDataAsync();
 	}	
