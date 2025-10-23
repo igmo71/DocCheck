@@ -26,18 +26,6 @@
             <dt class="col-sm-2">Дата</dt>
             <dd class="col-sm-10">@saledoc.Date</dd>
         </dl>
-       @*  <dl class="row">
-            <dt class="col-sm-2">BaseDocId</dt>
-            <dd class="col-sm-10">@saledoc.BaseDocId</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">BaseDocType</dt>
-            <dd class="col-sm-10">@saledoc.BaseDocType</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">UserId</dt>
-            <dd class="col-sm-10">@saledoc.UserId</dd>
-        </dl> *@
         <dl class="row">
             <dt class="col-sm-2">Колонка</dt>
             <dd class="col-sm-10">@saledoc.Position.Description</dd>
@@ -75,13 +63,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         saledoc = await SaleDocService.GetAsync(Id);
 
         if (saledoc is null)
-        {
             NavigationManager.NavigateTo("notfound");
-        }
     }
 
     private async Task DeleteSaleDoc()
