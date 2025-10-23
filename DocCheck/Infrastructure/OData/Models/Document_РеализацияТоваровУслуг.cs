@@ -205,4 +205,5 @@ namespace DocCheck.Infrastructure.OData.Models
     //    public string ОбъектРасчетов_Key { get; set; }
     //    public string ВариантОтсчета { get; set; }
     //}
+
 }
