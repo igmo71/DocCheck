@@ -13,6 +13,8 @@ namespace DocCheck.Domain
         [Key]
         public Guid Id { get; set; } // Ref_Key
 
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
         [MaxLength(36)]
         public string? Number { get; set; }
 
