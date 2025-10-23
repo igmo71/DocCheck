@@ -3,6 +3,7 @@
 @using DocCheck.Data
 @using DocCheck.Domain
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using static DocCheck.Components.InputSelectMultiple<int>
 
 @inject ProtectedSessionStorage ProtectedSessionStore
 @inject ISaleDocReportService ReportService
@@ -17,7 +18,7 @@
 				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
 			</div>
 		</div>
-		<div class="col-auto">
+		@* <div class="col-auto">
 			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.PositionId">
 				<option value="">Этап ...</option>
 				@foreach (var position in positions)
@@ -25,6 +26,12 @@
 					<option value="@position.Id">@position.Description</option>
 				}
 			</InputSelect>
+		</div> *@
+		<div class="col-auto">
+			<InputSelectMultiple TItem="int"
+								 Items="@(positions.Select(e => new SelectOption<int> { Value = e.Id, Text = e.Description }).ToList())"
+								 SelectedValues="selectedPositions"
+								 SelectedValuesChanged="PositionChanged" />
 		</div>
 		<div class="col-auto">
 			<div class="input-group mb-3">
@@ -74,13 +81,14 @@
 	public int NumResults { get; set; }
 
 	[Parameter]
-	public EventCallback<ReportParams> OnBuildReport{ get; set; }
+	public EventCallback<ReportParams> OnBuildReport { get; set; }
 
 	[Parameter]
 	public EventCallback OnClearReportParams { get; set; }
 
 	private Dictionary<string, string>? managers;
 	private Position[] positions = Position.GetAll();
+	private List<int> selectedPositions = [];
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -93,7 +101,7 @@
 			if (storageResult.Success && storageResult.Value is not null)
 				ReportParamsModel = storageResult.Value;
 
-			StateHasChanged();
+			//StateHasChanged();
 
 			await OnBuildReport.InvokeAsync(ReportParamsModel);
 		}
@@ -113,5 +121,9 @@
 		await ProtectedSessionStore.DeleteAsync("reportParams");
 
 		await OnClearReportParams.InvokeAsync();
+	}
+	private void PositionChanged(List<int> values)
+	{
+		selectedPositions = values;
 	}
 }
