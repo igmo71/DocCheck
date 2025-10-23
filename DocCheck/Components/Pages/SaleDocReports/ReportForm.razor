@@ -8,25 +8,47 @@
 @inject ProtectedSessionStorage ProtectedSessionStore
 @inject ISaleDocReportService ReportService
 
-<EditForm Model="ReportParamsModel" OnSubmit="Submit" FormName="ReportParamsForm">
+<EditForm Model="ReportParamsModel" OnSubmit="BuildReport" FormName="ReportParamsForm">
+
 	<div class="row">
 		<div class="col-auto">
-			<div class="input-group mb-3">
-				<span class="input-group-text">С</span>
-				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
-				<span class="input-group-text">по</span>
-				<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
+			<div class="row">
+				<div class="col">
+					<div class="input-group mb-3">
+						<span class="input-group-text">С</span>
+						<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateBegin" />
+						<span class="input-group-text">по</span>
+						<InputDate class="form-control" @bind-Value="ReportParamsModel!.DateEnd" />
+					</div>
+				</div>
+				<div class="col">
+					<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
+						<option value="">Менеджер ...</option>
+						@if (managers is not null)
+						{
+							foreach (var manager in managers)
+							{
+								<option value="@manager.Key">@manager.Value</option>
+							}
+						}
+					</InputSelect>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<div class="input-group mb-3">
+						<span class="input-group-text">УПД</span>
+						<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
+					</div>
+				</div>
+				<div class="col">
+					<div class="input-group mb-3">
+						<span class="input-group-text">Контрагент</span>
+						<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
+					</div>
+				</div>
 			</div>
 		</div>
-		@* <div class="col-auto">
-			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.PositionId">
-				<option value="">Этап ...</option>
-				@foreach (var position in positions)
-				{
-					<option value="@position.Id">@position.Description</option>
-				}
-			</InputSelect>
-		</div> *@
 		<div class="col-auto">
 			<InputSelectMultiple TItem="int"
 								 Items="@(positions.Select(e => new SelectOption<int> { Value = e.Id, Text = e.Description }).ToList())"
@@ -34,42 +56,26 @@
 								 SelectedValuesChanged="PositionChanged" />
 		</div>
 		<div class="col-auto">
-			<div class="input-group mb-3">
-				<span class="input-group-text">УПД</span>
-				<InputText class="form-control" @bind-Value="ReportParamsModel!.SaleDocTerm" />
+			<div class="row">
+				<div class="col-auto">
+					<button class="btn btn-primary" type="submit">Сформировать</button>
+				</div>
+				<div class="col-auto">
+					<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
+				</div>
+				<div class="col-auto">
+					<Export ReportParamsModel="ReportParamsModel" />
+				</div>
 			</div>
-		</div>
-		<div class="col-auto">
-			<div class="input-group mb-3">
-				<span class="input-group-text">Контрагент</span>
-				<InputText class="form-control" @bind-Value="ReportParamsModel!.CustomerTerm" />
-			</div>
-		</div>
-		<div class="col-auto">
-			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
-				<option value="">Менеджер ...</option>
-				@if (managers is not null)
+			<div class="col-auto">
+				@if (NumResults != 0)
 				{
-					foreach (var manager in managers)
-					{
-						<option value="@manager.Key">@manager.Value</option>
-					}
+					<div class="col-auto pt-2"><span>Найдено @NumResults</span></div>
 				}
-			</InputSelect>
+			</div>
+			<div class="row">
+			</div>
 		</div>
-		<div class="col-auto">
-			<button class="btn btn-primary" type="submit">Сформировать</button>
-		</div>
-		<div class="col-auto">
-			<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
-		</div>
-		<div class="col-auto">
-			<Export ReportParamsModel="ReportParamsModel" />
-		</div>
-		@if (NumResults != 0)
-		{
-			<div class="col-auto pt-2"><span>Найдено @NumResults</span></div>
-		}
 	</div>
 </EditForm>
 
@@ -92,14 +98,17 @@
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		managers = ReportService.GetManagers();
-
 		if (firstRender)
 		{
+			managers = ReportService.GetManagers();
+
 			var storageResult = await ProtectedSessionStore.GetAsync<ReportParams>("reportParams");
 
 			if (storageResult.Success && storageResult.Value is not null)
 				ReportParamsModel = storageResult.Value;
+
+			if (ReportParamsModel.PositionId is not null)
+				selectedPositions = ReportParamsModel.PositionId;
 
 			//StateHasChanged();
 
@@ -107,8 +116,10 @@
 		}
 	}
 
-	private async Task Submit()
+	private async Task BuildReport()
 	{
+		ReportParamsModel.PositionId = selectedPositions;
+
 		await ProtectedSessionStore.SetAsync("reportParams", ReportParamsModel);
 
 		await OnBuildReport.InvokeAsync(ReportParamsModel);
@@ -118,10 +129,13 @@
 	{
 		ReportParamsModel = new();
 
+		selectedPositions = [];
+
 		await ProtectedSessionStore.DeleteAsync("reportParams");
 
 		await OnClearReportParams.InvokeAsync();
 	}
+
 	private void PositionChanged(List<int> values)
 	{
 		selectedPositions = values;

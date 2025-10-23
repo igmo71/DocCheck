@@ -1,6 +1,7 @@
 ﻿using DocCheck.Domain;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace DocCheck.Application
 {
@@ -14,8 +15,12 @@ namespace DocCheck.Application
             if (reportParams.DateEnd is not null)
                 query = query.Where(e => e.Date < reportParams.DateEnd);
 
-            if (reportParams.PositionId is not null)
-                query = query.Where(e => e.PositionId == reportParams.PositionId);
+            if (reportParams.PositionId is not null && reportParams.PositionId.Count > 0)
+            {
+                var ids = reportParams.PositionId.ToArray();
+                //query = query.Where(e => ids.Contains(e.PositionId));
+                query = query.Where("@0.Contains(PositionId)", ids);
+            }
 
             if (!string.IsNullOrEmpty(reportParams.ManagerId))
                 query = query.Where(e => e.ManagerId == reportParams.ManagerId);

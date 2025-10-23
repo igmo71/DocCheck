@@ -16,7 +16,7 @@ namespace DocCheck.Application
     {
         public DateTime? DateBegin { get; set; }
         public DateTime? DateEnd { get; set; }
-        public int? PositionId { get; set; }
+        public List<int>? PositionId { get; set; }
         public string? ManagerId { get; set; }
         public string? CustomerTerm { get; set; }
         public string? SaleDocTerm { get; set; }
