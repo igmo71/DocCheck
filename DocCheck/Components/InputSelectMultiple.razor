@@ -1,0 +1,44 @@
+﻿@typeparam TItem
+
+<select multiple class="form-select" @onchange="OnChanged">
+    @foreach (var option in Items)
+    {
+        <option value="@option.Value"
+                selected="@SelectedValues.Contains(option.Value)">
+            @option.Text
+        </option>
+    }
+</select>
+
+@code {
+    [Parameter] public List<SelectOption<TItem>> Items { get; set; } = [];
+    [Parameter] public List<TItem> SelectedValues { get; set; } = [];
+    [Parameter] public EventCallback<List<TItem>> SelectedValuesChanged { get; set; }
+
+    private async Task OnChanged(ChangeEventArgs e)
+    {
+        var selected = new List<TItem>();
+        //var input = (Microsoft.AspNetCore.Components.Forms.ChangeEventArgs)e;
+
+        if (e.Value is not null)
+        {
+            var selectedOptions = ((IEnumerable<string>)e.Value).ToList();
+            foreach (var val in selectedOptions)
+            {
+                if (typeof(TItem) == typeof(int) && int.TryParse(val, out var i))
+                    selected.Add((TItem)(object)i);
+                else
+                    selected.Add((TItem)(object)val);
+            }
+        }
+
+        SelectedValues = selected;
+        await SelectedValuesChanged.InvokeAsync(SelectedValues);
+    }
+
+    public class SelectOption<T>
+    {
+        public T Value { get; set; } = default!;
+        public string Text { get; set; } = "";
+    }
+}

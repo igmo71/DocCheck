@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 @inject ProtectedSessionStorage ProtectedSessionStore
+@inject ISaleDocReportService ReportService
 
 <EditForm Model="ReportParamsModel" OnSubmit="Submit" FormName="ReportParamsForm">
 	<div class="row">
@@ -40,9 +41,9 @@
 		<div class="col-auto">
 			<InputSelect class="form-select" @bind-Value="ReportParamsModel!.ManagerId">
 				<option value="">Менеджер ...</option>
-				@if (Managers is not null)
+				@if (managers is not null)
 				{
-					foreach (var manager in Managers)
+					foreach (var manager in managers)
 					{
 						<option value="@manager.Key">@manager.Value</option>
 					}
@@ -54,6 +55,9 @@
 		</div>
 		<div class="col-auto">
 			<button class="btn btn-primary" type="button" @onclick="ClearReportParams">Очистить</button>
+		</div>
+		<div class="col-auto">
+			<Export ReportParamsModel="ReportParamsModel" />
 		</div>
 		@if (NumResults != 0)
 		{
@@ -67,9 +71,6 @@
 	private ReportParams ReportParamsModel { get; set; } = new();
 
 	[Parameter]
-	public Dictionary<string, string>? Managers { get; set; }
-
-	[Parameter]
 	public int NumResults { get; set; }
 
 	[Parameter]
@@ -78,10 +79,13 @@
 	[Parameter]
 	public EventCallback OnClearReportParams { get; set; }
 
+	private Dictionary<string, string>? managers;
 	private Position[] positions = Position.GetAll();
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
+		managers = ReportService.GetManagers();
+
 		if (firstRender)
 		{
 			var storageResult = await ProtectedSessionStore.GetAsync<ReportParams>("reportParams");

@@ -8,7 +8,7 @@
 
 @inject ISaleDocReportService ReportService
 
-<ReportForm OnBuildReport="BuildReport" OnClearReportParams="ClearReportParams" Managers="managers" NumResults="numResults" />
+<ReportForm OnBuildReport="BuildReport" OnClearReportParams="ClearReportParams" NumResults="numResults" />
 
 <div class="grid mt-3" tabindex="-1">
 	<QuickGrid ItemsProvider="itemsProvider" Virtualize="true" @ref="grid" ItemKey="@(e => e.Id)" OverscanCount="40">
@@ -23,8 +23,8 @@
 		<TemplateColumn Sortable="true" Title="Номер" Context="context">
 			<a href="saledoclogs?SaleDocId=@(context.Id)">@context.Number</a>
 		</TemplateColumn>
-		<TemplateColumn Sortable="false" Title="Контрагент" Context="context">
-			@* <div>@context.ManagerName</div> *@
+		<TemplateColumn Sortable="false" Title="Менеджер/Контрагент" Context="context">
+			<div>@context.ManagerName</div>
 			<div>@context.CustomerName</div>
 		</TemplateColumn>
 		<TemplateColumn Context="context" Title="Перечень Ошибок" Class="text-wrap">
@@ -49,12 +49,10 @@
 	</QuickGrid>
 </div>
 
-
 @code {
 	private ReportParams ReportParamsModel = new();
 
 	private Position[] positions = Position.GetAll();
-	private Dictionary<string, string>? managers;
 
 	private QuickGrid<SaleDoc>? grid;
 	private GridItemsProvider<SaleDoc>? itemsProvider;
@@ -64,8 +62,6 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		managers = ReportService.GetManagers();
-
 		itemsProvider = DebouncedProvider;
 	}
 
@@ -89,9 +85,9 @@
 			await grid.RefreshDataAsync();
 	}
 
-	private async Task ClearReportParams(/* MouseEventArgs args */)
+	private async Task ClearReportParams()
 	{
 		if (grid is not null)
 			await grid.RefreshDataAsync();
-	}
+	}	
 }

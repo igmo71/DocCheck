@@ -1,0 +1,53 @@
+﻿@using DocCheck.Application
+@using DocCheck.Common
+@using DocCheck.Domain
+@using System.Text
+
+@inject IWebHostEnvironment Env
+@inject IJSRuntime JS
+@inject ISaleDocReportService ReportService
+
+<button class="btn btn-primary" type="button" @onclick="ExportToCsv"> в Excel (csv)</button>
+
+@code {
+	[Parameter]
+	public ReportParams? ReportParamsModel { get; set; }
+
+	private async Task ExportToCsv()
+	{
+		if (ReportParamsModel is null)
+			return;
+
+		var reportResult = ReportService.BuildReport(ReportParamsModel);
+
+		if (reportResult is null)
+			return;
+
+		var csv = new StringBuilder();
+		csv.AppendLine("Номер;Дата;Контрагент;Менеджер;Этап;Переотправок;Прочее;Ошибка состава;Ошибки;");
+		foreach (var d in reportResult)
+		{
+			var paperworkErrorsBuilder = new StringBuilder();
+			foreach (var error in d.PaperworkErrors)
+				paperworkErrorsBuilder.Append($"{error.Type.Description()}, ");
+
+			var paperworkErrors = paperworkErrorsBuilder.ToString().TrimEnd(',', ' ');
+
+			csv.AppendLine($"{d.Date:dd.MM.yyyy};{d.Number};{d.CustomerName};{d.ManagerName};{d.Position.Description};{d.Redispatch};{d.GetError(PaperworkErrorType.Other)?.Message};{d.GetError(PaperworkErrorType.QuantityError)?.Message};{paperworkErrors};");
+		}
+
+		// Добавляем BOM для корректного открытия в Excel
+		// var utf8WithBom = new UTF8Encoding(true);
+		// var bytes = utf8WithBom.GetBytes(csv.ToString());
+
+		// windows-1251
+		var enc = Encoding.GetEncoding("windows-1251");
+		var bytes = enc.GetBytes(csv.ToString());
+
+		var fileName = $"ОтчётКонтроляДокументов_{DateTime.Now:yyyyMMddHHmmss}.csv";
+		var stream = new MemoryStream(bytes);
+		using var streamRef = new Microsoft.JSInterop.DotNetStreamReference(stream);
+
+		await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+	}
+}

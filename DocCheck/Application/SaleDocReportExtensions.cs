@@ -17,7 +17,7 @@ namespace DocCheck.Application
             if (reportParams.PositionId is not null)
                 query = query.Where(e => e.PositionId == reportParams.PositionId);
 
-            if (reportParams.ManagerId is not null)
+            if (!string.IsNullOrEmpty(reportParams.ManagerId))
                 query = query.Where(e => e.ManagerId == reportParams.ManagerId);
 
             if (!string.IsNullOrEmpty(reportParams.CustomerTerm))

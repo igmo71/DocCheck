@@ -7,6 +7,7 @@ namespace DocCheck.Application
 {
     public interface ISaleDocReportService
     {
+        SaleDoc[] BuildReport(ReportParams reportParams);
         GridItemsProviderResult<SaleDoc> BuildReport(GridItemsProviderRequest<SaleDoc> gridRequest, ReportParams reportParams);
         Dictionary<string, string> GetManagers();
     }
@@ -48,6 +49,19 @@ namespace DocCheck.Application
             return gridResult;
         }
 
+        public SaleDoc[] BuildReport(ReportParams reportParams)
+        {
+            using var dbContext = dbFactory.CreateDbContext();
+
+            var result = dbContext.SaleDocs
+                .AsNoTracking()
+                .HandleReportParams(reportParams)
+                .Include(e => e.PaperworkErrors)
+                .ToArray();
+
+            return result;
+        }
+
         public Dictionary<string, string> GetManagers()
         {
             using var dbContext = dbFactory.CreateDbContext();
@@ -55,11 +69,7 @@ namespace DocCheck.Application
             var result = dbContext.SaleDocs
                 .Where(e => e.ManagerId != null && e.ManagerName != null)
                 .GroupBy(e => new { e.ManagerId, e.ManagerName })
-                .Select(g => new
-                {
-                    ManagerId = g.Key.ManagerId,
-                    ManagerName = g.Key.ManagerName
-                })
+                .Select(g => new { g.Key.ManagerId, g.Key.ManagerName })
                 .OrderBy(e => e.ManagerName)
                 .ToDictionary(e => e.ManagerId!.ToString(), e => e.ManagerName!);
 
