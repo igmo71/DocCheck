@@ -32,13 +32,15 @@ namespace DocCheck.Application
     {
         public async Task CreateByBaseDocAsync(string mngrOrderString)
         {
-            logger.LogDebug("{Source} Start {MngrOrderString}", nameof(CreateByBaseDocAsync), mngrOrderString);
+            var source = nameof(CreateByBaseDocAsync);
+
+            logger.LogDebug("{Source} Start {MngrOrderString}", source, mngrOrderString);
 
             var mngrOrders = JsonSerializer.Deserialize<MngrOrder[]>(mngrOrderString);
 
             if (mngrOrders is null)
             {
-                logger.LogError("{Source} Mngr Orders is null", nameof(CreateByBaseDocAsync));
+                logger.LogError("{Source} Mngr Orders is null", source);
                 return;
             }
 
@@ -51,12 +53,12 @@ namespace DocCheck.Application
                 var saleDoc = await BuildByInvoice(documentInvoice);
 
                 if (saleDoc is null)
-                    logger.LogError("{Source} Failed to build a SaleDoc by baseDoc ({Распоряжение_Id})", nameof(CreateByBaseDocAsync), baseDoc.Распоряжение_Id);
+                    logger.LogError("{Source} Failed to build a SaleDoc by baseDoc ({Распоряжение_Id})", source, baseDoc.Распоряжение_Id);
                 else
                     await CreateIfNotExistsAsync(saleDoc);
             }
 
-            logger.LogDebug("{Source} Ok {MngrOrderString}", nameof(CreateByBaseDocAsync), mngrOrderString);
+            logger.LogDebug("{Source} Ok {MngrOrderString}", source, mngrOrderString);
         }
 
         private async Task<SaleDoc?> BuildByInvoice(Document_СчетФактураВыданный? documentInvoice)
@@ -92,11 +94,13 @@ namespace DocCheck.Application
 
         private async Task CreateIfNotExistsAsync(SaleDoc saleDoc)
         {
-            logger.LogDebug("{Source} Try {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
+            var source = nameof(CreateIfNotExistsAsync);
+
+            logger.LogDebug("{Source} Try {@SaleDoc}", source, saleDoc);
 
             if (dbContext.SaleDocs.Any(e => e.Id == saleDoc.Id))
             {
-                logger.LogDebug("{Source} Exists {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
+                logger.LogDebug("{Source} Exists {@SaleDoc}", source, saleDoc);
                 return;
             }
 
@@ -106,7 +110,7 @@ namespace DocCheck.Application
 
             await dbContext.SaveChangesAsync();
 
-            logger.LogDebug("{Source} Ok {@SaleDoc}", nameof(CreateIfNotExistsAsync), saleDoc);
+            logger.LogDebug("{Source} Ok {@SaleDoc}", source, saleDoc);
         }
 
         public async Task UpdateBySubmitAsync(SaleDoc item)
@@ -287,13 +291,17 @@ namespace DocCheck.Application
 
         public async Task<ServiceResult<SaleDoc>> GetByBarcodeAsync(string barcode)
         {
-            logger.LogDebug("{Source} Start {Barcode}", nameof(GetByBarcodeAsync), barcode);
+            var source = nameof(GetByBarcodeAsync);
+
+            logger.LogDebug("{Source} Start {Barcode}", source, barcode);
 
             var invoiceRefKey = GuidConvert.FromNumStr(barcode);
 
+            logger.LogDebug("{Source} GuidConvert.FromNumStr {Barcode} -> {InvoiceRefKey}", source, barcode, invoiceRefKey);
+
             if (!Guid.TryParse(invoiceRefKey, out var id))
             {
-                logger.LogError("{Source} Error Parse {Barcode}", nameof(GetByBarcodeAsync), barcode);
+                logger.LogError("{Source} Error Parse {InvoiceRefKey}", source, invoiceRefKey);
                 return Error.GuidParseFail;
             }
 
@@ -301,13 +309,13 @@ namespace DocCheck.Application
 
             if (item is null)
             {
-                logger.LogDebug("{Source} Not Found By InvoiceKey({Id}). Try Create. {Barcode}", nameof(GetByBarcodeAsync), id, barcode);
+                logger.LogDebug("{Source} Not Found By InvoiceKey ({InvoiceRefKey}). Try Create. {Barcode}", source, invoiceRefKey, barcode);
 
-                await CreateByInvoiceKeyAsync(invoiceRefKey);
+                item = await CreateByInvoiceKeyAsync(invoiceRefKey);
 
                 if (item is null)
                 {
-                    logger.LogError("{Source} Error Create By InvoiceKey {Barcode}", nameof(GetByBarcodeAsync), barcode);
+                    logger.LogError("{Source} Error Create By InvoiceKey ({InvoiceRefKey}) {Barcode}", source, invoiceRefKey, barcode);
                     return Error.NotFound;
                 }
             }
@@ -319,14 +327,16 @@ namespace DocCheck.Application
             if (!string.IsNullOrEmpty(item.BaseDocId))
                 item.BaseDoc = await oDataService.GetDocument_РеализацияТоваровУслуг(item.BaseDocId);
 
-            logger.LogDebug("{Source} Ok {Barcode}", nameof(GetByBarcodeAsync), barcode);
+            logger.LogDebug("{Source} Ok {Barcode}", source, barcode);
 
             return item;
         }
 
         private async Task<SaleDoc?> CreateByInvoiceKeyAsync(string invoiceRefKey)
         {
-            logger.LogDebug("{Source} Start {InvoiceRefKey}", nameof(CreateByInvoiceKeyAsync), invoiceRefKey);
+            var source = nameof(CreateByInvoiceKeyAsync);
+
+            logger.LogDebug("{Source} Start {InvoiceRefKey}", source, invoiceRefKey);
 
             var documentInvoice = await oDataService.GetDocument_СчетФактураВыданный(invoiceRefKey, Document_СчетФактураВыданный.GetBy.RefKey);
 
@@ -334,13 +344,13 @@ namespace DocCheck.Application
 
             if (saleDoc is null)
             {
-                logger.LogError("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", nameof(CreateByInvoiceKeyAsync), invoiceRefKey);
+                logger.LogError("{Source} Failed to build a SaleDoc by invoiceRefKey ({invoiceRefKey})", source, invoiceRefKey);
                 return null;
             }
 
             await CreateIfNotExistsAsync(saleDoc);
 
-            logger.LogDebug("{Source} Ok {InvoiceRefKey} {@SaleDoc}", nameof(CreateByInvoiceKeyAsync), invoiceRefKey, saleDoc);
+            logger.LogDebug("{Source} Ok {InvoiceRefKey} {@SaleDoc}", source, invoiceRefKey, saleDoc);
 
             return saleDoc;
         }
