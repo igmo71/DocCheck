@@ -31,7 +31,10 @@ namespace DocCheck
             builder.Services.AddSerilog();
 
             builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+                .AddInteractiveServerComponents().AddCircuitOptions(options =>
+                {
+                    options.DetailedErrors = true;
+                });
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();

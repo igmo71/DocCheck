@@ -68,10 +68,10 @@ namespace DocCheck.Application
 
             var result = dbContext.SaleDocs
                 .Where(e => e.ManagerId != null && e.ManagerName != null)
-                .GroupBy(e => new { e.ManagerId, e.ManagerName })
-                .Select(g => new { g.Key.ManagerId, g.Key.ManagerName })
+                .GroupBy(e => e.ManagerId)
+                .Select(g => new { ManagerId = g.Key!, ManagerName = g.Max(e => e.ManagerName) })
                 .OrderBy(e => e.ManagerName)
-                .ToDictionary(e => e.ManagerId!.ToString(), e => e.ManagerName!);
+                .ToDictionary(e => e.ManagerId, e => e.ManagerName!);
 
             return result;
         }
